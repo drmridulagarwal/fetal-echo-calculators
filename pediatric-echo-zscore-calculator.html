@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pediatric Echo Measurements &amp; Z-Scores — fetal-echo.org</title>
+<style>
+:root{
+  --bg:#f6f8fb; --card:#ffffff; --ink:#1d2733; --muted:#5b6b7c; --line:#e5ebf2;
+  --brand:#15607a; --brand-soft:#e8f1f5; --accent:#0f8a6d;
+  --ok:#2f9e6b; --okbg:#e8f6ee; --bord:#d99100; --bordbg:#fcf3df;
+  --bad:#c33a3a; --badbg:#fbe4e4;
+  --radius:14px; --shadow:0 1px 3px rgba(20,40,60,.06),0 6px 24px rgba(20,40,60,.06);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:0 auto;padding:22px 16px 70px}
+header.app{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+.logo{flex:0 0 auto;width:42px;height:42px;border-radius:10px;background:var(--brand);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:17px}
+.home-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;
+  color:var(--brand);text-decoration:none;background:var(--brand-soft);border-radius:7px;
+  padding:4px 10px;margin-bottom:10px;width:fit-content}
+.home-btn:hover{background:#d5e6ee}
+h1{font-size:20px;margin:0;letter-spacing:-.2px}
+.sub{color:var(--muted);font-size:13px;margin:2px 0 0}
+.disclaimer{margin:14px 0 18px;padding:10px 13px;background:#fff7e8;border:1px solid #f0dcae;
+  border-radius:10px;font-size:12.5px;color:#7a5c12}
+.disclaimer b{color:#5e470c}
+.warn{margin:10px 0 4px;padding:9px 12px;background:#fff7e8;border:1px solid #f0dcae;
+  border-radius:9px;font-size:12px;color:#7a5c12}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+.card h2{font-size:14px;margin:0 0 2px;letter-spacing:.02em;text-transform:uppercase;color:var(--brand)}
+.card .hint{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 16px}
+@media(max-width:620px){.grid,.grid3{grid-template-columns:1fr}}
+.field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:4px}
+.field .u{color:var(--muted);font-weight:400}
+.field input,.field select{width:100%;padding:9px 10px;border:1px solid var(--line);
+  border-radius:9px;font-size:14px;background:#fcfdfe;color:var(--ink);transition:border .15s,box-shadow .15s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.bsa-bar{background:var(--brand-soft);border-radius:9px;padding:9px 13px;font-size:12.5px;
+  margin-top:12px;color:var(--brand);font-weight:600;display:none}
+.mrow{display:grid;grid-template-columns:1.7fr .85fr auto;gap:10px;align-items:center;
+  padding:8px 0;border-top:1px solid var(--line)}
+.mrow:first-of-type{border-top:none}
+.mrow .ml{font-size:13px}
+.mrow .ml .uu{color:var(--muted);font-size:11.5px}
+.mrow input{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-size:14px;
+  background:#fcfdfe;text-align:right;font-variant-numeric:tabular-nums}
+.mrow input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.zbox{min-width:165px;text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums}
+.zval{font-weight:700}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.03em;
+  padding:2px 7px;border-radius:5px;margin-left:4px;white-space:nowrap}
+.t-ok{background:var(--okbg);color:var(--ok)}
+.t-bord{background:var(--bordbg);color:var(--bord)}
+.t-bad{background:var(--badbg);color:var(--bad)}
+.t-k1{background:#e3f2fd;color:#1565c0}
+.t-k2{background:#fff3e0;color:#e65100}
+.t-k3{background:var(--badbg);color:var(--bad)}
+.zbox.ok .zval{color:var(--ok)} .zbox.bord .zval{color:var(--bord)} .zbox.bad .zval{color:var(--bad)}
+.group-label{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);margin:16px 0 6px;padding-top:4px}
+.group-label:first-child{margin-top:4px}
+.der-row{display:grid;grid-template-columns:1.7fr auto;gap:10px;align-items:center;
+  padding:7px 0;border-top:1px solid var(--line);font-size:13px}
+.der-row .dl{color:var(--muted)}
+.der-row .dv{font-weight:700;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+details.sec{margin-bottom:16px;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+details.sec>summary{cursor:pointer;list-style:none;padding:16px 18px;font-size:14px;font-weight:700;
+  color:var(--brand);text-transform:uppercase;letter-spacing:.02em;
+  display:flex;justify-content:space-between;align-items:center}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary .cv{font-size:11px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0}
+details.sec[open]>summary{border-bottom:1px solid var(--line)}
+.sec-body{padding:6px 18px 18px}
+.sec-note{font-size:12px;color:var(--muted);margin:4px 0 12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:0;background:#fff;color:var(--muted);font-size:12.5px;font-weight:600;
+  padding:7px 13px;cursor:pointer;transition:background .12s,color .12s}
+.seg button.on{background:var(--brand);color:#fff}
+.findings .fitem{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;
+  padding:10px 0;border-top:1px solid var(--line)}
+.findings .fitem:first-of-type{border-top:none}
+.dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.dot.bad{background:var(--bad)} .dot.bord{background:var(--bord)} .dot.ok{background:var(--ok)}
+.fitem .fl{font-size:13.5px;font-weight:600}
+.fitem .fi{font-size:12.5px;color:var(--muted);margin-top:2px}
+.fitem .fz{font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.empty{font-size:13px;color:var(--muted);padding:8px 0}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);font-size:13px;font-weight:600;
+  padding:10px 16px;border-radius:9px;cursor:pointer}
+.btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn:hover{filter:brightness(.97)}
+.refs{font-size:11.5px;color:var(--muted)} .refs li{margin-bottom:6px}
+.refs a{color:var(--brand)}
+footer{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px}
+.privacy{font-size:11.5px;color:#5b6b7c;background:#eef5f8;border:1px solid #d7e6ec;
+  border-radius:9px;padding:9px 12px;margin-top:10px}
+
+/* ===== PRINT ===== */
+#printArea{display:none}
+@media print{
+  body{background:#fff}
+  .wrap{max-width:100%;padding:0}
+  .noprint{display:none !important}
+  #printArea{display:block;font-size:12px;color:#000}
+  #printArea h2{font-size:15px;margin:0 0 2px}
+  #printArea .ph{display:flex;justify-content:space-between;border-bottom:2px solid #15607a;
+    padding-bottom:8px;margin-bottom:10px}
+  #printArea .ph-l div{font-size:12px;margin:1px 0}
+  #printArea .ph-r{text-align:right;font-size:11.5px}
+  #printArea .ph-r div{margin:1px 0}
+  #printArea table{width:100%;border-collapse:collapse;margin:8px 0 14px}
+  #printArea th,#printArea td{border:1px solid #cfd8e0;padding:4px 7px;font-size:11px;text-align:left}
+  #printArea th{background:#eef5f8;font-weight:700}
+  #printArea td.r{text-align:right;font-variant-numeric:tabular-nums}
+  #printArea .pbad{color:#c33a3a;font-weight:700}
+  #printArea .pbord{color:#b07400;font-weight:700}
+  #printArea .pgl{font-weight:700;color:#15607a;font-size:11.5px;background:#f0f6f9;padding:5px 7px}
+  #printArea .pnote{font-size:9.5px;color:#666}
+  #printArea .kawa-txt{font-size:9.5px;color:#1565c0;display:block}
+  #printArea .kawa-txt.med{color:#e65100}
+  #printArea .kawa-txt.giant{color:#c33a3a;font-weight:700}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ===== HEADER ===== -->
+<a class="home-btn noprint" href="index.html">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+  All calculators
+</a>
+<header class="app noprint">
+  <div class="logo">PE</div>
+  <div>
+    <h1>Pediatric Echo Measurements &amp; Z-Scores <span class="sub" style="display:inline">v1.0</span></h1>
+    <p class="sub">M-mode · Coronaries · 2D structures · Function · evidence-anchored reference ranges · fetal-echo.org</p>
+  </div>
+</header>
+
+<div class="disclaimer noprint">
+  <b>Clinical decision-support only — not a diagnostic tool.</b> Z-scores are calculated from published regression equations and are valid only within the patient weight/BSA range of each reference. Verify all measurements against the original publication before clinical application. For use by qualified clinicians only.
+</div>
+
+<!-- ===== OCR SCAN BAR ===== -->    <div class="field"><label>ID / MRN <span class="u">optional · printout only</span></label><input id="pmrn" type="text" placeholder="—"></div>
+    <div class="field"><label>Date of birth <span class="u">optional</span></label><input id="pdob" type="date"></div>
+    <div class="field"><label>Study date</label><input id="pdate" type="date"></div>
+  </div>
+  <div class="group-label" style="margin-top:14px">Biometric inputs</div>
+  <div class="grid3">
+    <div class="field"><label>Weight <span class="u">kg</span></label><input id="wt" type="number" step="0.1" min="0" inputmode="decimal" placeholder="kg" oninput="recalc()"></div>
+    <div class="field"><label>Height <span class="u">cm</span></label><input id="ht" type="number" step="0.1" min="0" inputmode="decimal" placeholder="cm" oninput="recalc()"></div>
+    <div class="field"><label>Heart rate <span class="u">bpm · for report</span></label><input id="hr" type="number" step="1" min="0" inputmode="numeric" placeholder="bpm"></div>
+  </div>
+  <div class="bsa-bar" id="bsaBar"></div>
+</div>
+
+<!-- ===== SECTION 1: M-MODE (KAMPMANN 2000) ===== -->
+<details class="sec noprint" open>
+  <summary>M-mode — LV dimensions &amp; function <span class="cv">Kampmann 2000</span></summary>
+  <div class="sec-body">
+    <div class="sec-note">All measurements in <b>mm</b>. BSA formula: DuBois &amp; DuBois. Reference: Kampmann C et al. Heart 2000;83:667–72.</div>
+    <div class="group-label">LV internal dimensions</div>
+    <div class="mrow"><div class="ml">LVIDd — LV internal diameter, diastole <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_lvedd" data-label="LVIDd" data-unit="mm" data-sec="M-mode" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_lvedd"></div></div>
+    <div class="mrow"><div class="ml">LVIDs — LV internal diameter, systole <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_lvesd" data-label="LVIDs" data-unit="mm" data-sec="M-mode" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_lvesd"></div></div>
+    <div class="mrow"><div class="ml">IVSd — Interventricular septum, diastole <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_ivsd" data-label="IVSd" data-unit="mm" data-sec="M-mode" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_ivsd"></div></div>
+    <div class="mrow"><div class="ml">LVPWd — LV posterior wall, diastole <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_lvpwd" data-label="LVPWd" data-unit="mm" data-sec="M-mode" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_lvpwd"></div></div>
+    <div class="mrow"><div class="ml">IVSs — Interventricular septum, systole <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_ivss" data-label="IVSs" data-unit="mm" data-sec="M-mode" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_ivss"></div></div>
+    <div class="mrow"><div class="ml">LVPWs — LV posterior wall, systole <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_lvpws" data-label="LVPWs" data-unit="mm" data-sec="M-mode" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_lvpws"></div></div>
+    <div class="group-label">Aortic root &amp; left atrium</div>
+    <div class="mrow"><div class="ml">Ao — Aortic root <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_ao" data-label="Aortic root (Ao)" data-unit="mm" data-sec="M-mode" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_ao"></div></div>
+    <div class="mrow"><div class="ml">LA — Left atrium <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_la" data-label="LA diameter" data-unit="mm" data-sec="M-mode" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_la"></div></div>
+    <div class="group-label">Derived — calculated automatically</div>
+    <div class="der-row"><div class="dl">FS% — Fractional shortening <span style="font-size:11px">(normal ≥ 28%)</span></div><div class="dv" id="d_fs">—</div></div>
+    <div class="der-row"><div class="dl">LV Mass — Devereux formula <span style="font-size:11px">grams</span></div><div class="dv" id="d_lvm">—</div></div>
+    <div class="der-row"><div class="dl">LV Mass Index <span style="font-size:11px">g/m² (DuBois BSA)</span></div><div class="dv" id="d_lvmi">—</div></div>
+    <div class="der-row"><div class="dl">LA:Ao ratio</div><div class="dv" id="d_laao">—</div></div>
+  </div>
+</details>
+
+<!-- ===== SECTION 2: CORONARIES ===== -->
+<details class="sec noprint" open>
+  <summary>Coronary Arteries <span class="cv">McCrindle 2007 · Dallaire 2011</span></summary>
+  <div class="sec-body">
+    <div class="sec-note">
+      Measurements in <b>mm</b>. BSA formula: Haycock. Toggle reference set below.<br>
+      <div style="margin-top:8px">
+        <div class="seg">
+          <button id="btn_boston" class="on" onclick="setCorRef('boston')">Boston · McCrindle 2007</button>
+          <button id="btn_montreal" onclick="setCorRef('montreal')">Montreal · Dallaire 2011</button>
+        </div>
+      </div>
+      <span style="display:block;margin-top:8px">Both fully implemented with verified coefficients (open-source parameterz). Kawasaki classification applies to coronary z-scores.</span>
+    </div>
+    <div class="group-label">Main coronary arteries</div>
+    <div class="mrow"><div class="ml">LMCA — Left main coronary artery <span class="uu">mm</span></div>
+      <input type="number" step="0.01" inputmode="decimal" id="in_lmca" data-label="LMCA" data-unit="mm" data-sec="Coronaries" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_lmca"></div></div>
+    <div class="mrow"><div class="ml">LAD — Left anterior descending <span class="uu">mm</span></div>
+      <input type="number" step="0.01" inputmode="decimal" id="in_lad" data-label="LAD" data-unit="mm" data-sec="Coronaries" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_lad"></div></div>
+    <div class="mrow"><div class="ml">LCx — Left circumflex <span class="uu">mm</span></div>
+      <input type="number" step="0.01" inputmode="decimal" id="in_lcx" data-label="LCx" data-unit="mm" data-sec="Coronaries" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_lcx"></div></div>
+    <div class="mrow"><div class="ml">RCA — Right coronary artery <span class="uu">mm</span></div>
+      <input type="number" step="0.01" inputmode="decimal" id="in_rca" data-label="RCA" data-unit="mm" data-sec="Coronaries" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_rca"></div></div>
+    <div id="lcx_boston_note" class="warn" style="margin-top:10px;display:none">
+      McCrindle 2007 does not include LCx. Switching to <b>Montreal · Dallaire 2011</b> will show LCx z-score (circ). Kobayashi 2016 LMS coefficients for LCx are pending.
+    </div>
+  </div>
+</details>
+
+<!-- ===== SECTION 3: 2D STRUCTURES (CANTINOTTI 2014) ===== -->
+<details class="sec noprint">
+  <summary>2D Structures <span class="cv">Cantinotti 2014</span></summary>
+  <div class="sec-body">
+    <div class="sec-note">Measurements in <b>mm</b>. BSA formula: Haycock. Reference: Cantinotti M et al. J Am Soc Echocardiogr 2014;27:179–191. Valid range: age 0–3 years, BSA 0.12–0.67 m².</div>
+    <div class="warn">⚠ <b>Z-score coefficients pending.</b> Enter Cantinotti 2014 Table 3–5 polynomial coefficients into the <code>CANTINOTTI</code> object in the source JavaScript. Measurements are recorded immediately and will appear in the printout.</div>
+    <div class="group-label">RV dimensions</div>
+    <div class="mrow"><div class="ml">RVID basal — RV basal diameter, diastole <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_rvb" data-label="RVID basal" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_rvb"></div></div>
+    <div class="mrow"><div class="ml">RVID mid — RV mid-cavity diameter, diastole <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_rvm" data-label="RVID mid" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_rvm"></div></div>
+    <div class="group-label">Aortic root &amp; ascending aorta (2D)</div>
+    <div class="mrow"><div class="ml">Aortic annulus <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_aoan" data-label="Aortic annulus (2D)" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_aoan"></div></div>
+    <div class="mrow"><div class="ml">Aortic sinus — sinus of Valsalva <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_aosv" data-label="Aortic sinus (SoV)" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_aosv"></div></div>
+    <div class="mrow"><div class="ml">STJ — Sinotubular junction <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_stj" data-label="STJ" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_stj"></div></div>
+    <div class="mrow"><div class="ml">Ascending aorta <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_ascao" data-label="Ascending aorta" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_ascao"></div></div>
+    <div class="group-label">Pulmonary arteries</div>
+    <div class="mrow"><div class="ml">MPA — Main pulmonary artery <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_mpa" data-label="MPA" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_mpa"></div></div>
+    <div class="mrow"><div class="ml">RPA — Right pulmonary artery <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_rpa" data-label="RPA" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_rpa"></div></div>
+    <div class="mrow"><div class="ml">LPA — Left pulmonary artery <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_lpa" data-label="LPA" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_lpa"></div></div>
+    <div class="group-label">AV valve annuli</div>
+    <div class="mrow"><div class="ml">Mitral valve annulus <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_mva" data-label="Mitral valve annulus" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_mva"></div></div>
+    <div class="mrow"><div class="ml">Tricuspid valve annulus <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_tva" data-label="Tricuspid valve annulus" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_tva"></div></div>
+    <div class="group-label">Aortic arch &amp; isthmus</div>
+    <div class="mrow"><div class="ml">Transverse aortic arch <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_tarch" data-label="Transverse arch" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_tarch"></div></div>
+    <div class="mrow"><div class="ml">Aortic isthmus <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_isth" data-label="Aortic isthmus" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_isth"></div></div>
+    <div class="mrow"><div class="ml">Descending aorta (diaphragm level) <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_dao" data-label="Descending aorta" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_dao"></div></div>
+    <div class="group-label">Outflow tracts &amp; semilunar valve annuli</div>
+    <div class="mrow"><div class="ml">Pulmonary valve annulus <span class="uu">mm · ToF / RVOTO</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_pvan" data-label="Pulmonary valve annulus" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_pvan"></div></div>
+    <div class="mrow"><div class="ml">RVOT — RV outflow tract <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_rvot" data-label="RVOT" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_rvot"></div></div>
+    <div class="mrow"><div class="ml">LVOT — LV outflow tract <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_lvot" data-label="LVOT" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_lvot"></div></div>
+  </div>
+</details>
+
+<!-- ===== SECTION 4: FUNCTIONAL ===== -->
+<details class="sec noprint">
+  <summary>Function — TAPSE · Strain · EF <span class="cv">Normal range guides</span></summary>
+  <div class="sec-body">
+    <div class="sec-note">Age- and BSA-adjusted z-scores for TAPSE (Koestenberger 2014) are pending coefficient entry. EF and strain thresholds are shown as approximate guides — vendor-specific variation applies.</div>
+    <div class="group-label">RV systolic function</div>
+    <div class="mrow"><div class="ml">TAPSE — Tricuspid annular plane systolic excursion <span class="uu">mm</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_tapse" data-label="TAPSE" data-unit="mm" data-sec="Function" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_tapse"></div></div>
+    <div class="mrow"><div class="ml">RV S′ — Tissue Doppler, lateral annulus <span class="uu">cm/s</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_rvsp" data-label="RV S′" data-unit="cm/s" data-sec="Function" placeholder="cm/s" oninput="recalc()">
+      <div class="zbox" id="z_rvsp"></div></div>
+    <div class="group-label">LV systolic function</div>
+    <div class="mrow"><div class="ml">LV EF% — Biplane Simpson <span class="uu">%</span></div>
+      <input type="number" step="1" inputmode="decimal" id="in_ef" data-label="LV EF% (Biplane)" data-unit="%" data-sec="Function" placeholder="%" oninput="recalc()">
+      <div class="zbox" id="z_ef"></div></div>
+    <div class="mrow"><div class="ml">LV GLS — Global longitudinal strain <span class="uu">% · enter negative</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_gls" data-label="LV GLS" data-unit="%" data-sec="Function" placeholder="e.g. −22" oninput="recalc()">
+      <div class="zbox" id="z_gls"></div></div>
+    <div class="group-label">RV strain</div>
+    <div class="mrow"><div class="ml">RV GLS — Global longitudinal strain <span class="uu">%</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_rvgls" data-label="RV GLS" data-unit="%" data-sec="Function" placeholder="e.g. −25" oninput="recalc()">
+      <div class="zbox" id="z_rvgls"></div></div>
+    <div class="mrow"><div class="ml">RV FWLS — Free wall longitudinal strain <span class="uu">%</span></div>
+      <input type="number" step="0.1" inputmode="decimal" id="in_rvfwls" data-label="RV FWLS" data-unit="%" data-sec="Function" placeholder="e.g. −28" oninput="recalc()">
+      <div class="zbox" id="z_rvfwls"></div></div>
+  </div>
+</details>
+
+<!-- ===== FINDINGS ===== -->
+<div class="card noprint">
+  <h2>Findings &amp; Interpretation</h2>
+  <p class="hint">Parameters outside reference ranges are listed here, most abnormal first. <b>|Z| ≥ 2</b> = abnormal; <b>|Z| 1.5–2</b> = borderline. Coronary z-scores show Kawasaki classification.</p>
+  <div class="findings" id="findingsList">
+    <div class="empty">Enter measurements above — out-of-range results will be highlighted here.</div>
+  </div>
+  <div class="btns">
+    <button class="btn primary" onclick="generatePrint()">Print / Save PDF</button>
+    <button class="btn" onclick="resetAll()">Clear all</button>
+  </div>
+  <div class="privacy">Patient name and ID are used only to label this printout on your device. They are <b>never transmitted or stored on any server</b>.</div>
+</div>
+
+<!-- ===== REFERENCES ===== -->
+<div class="card noprint">
+  <h2>References</h2>
+  <ul class="refs">
+    <li>Kampmann C, Wiethoff CM, Wenzel A, et al. Normal values of M mode echocardiographic measurements of more than 2000 healthy infants and children in central Europe. <i>Heart</i> 2000;83:667–672. PMID 10768901.</li>
+    <li>McCrindle BW, Li JS, Minich LL, et al. Coronary artery involvement in children with Kawasaki disease: risk factors from analysis of serial normalized measurements. <i>Circulation</i> 2007;116:174–179. PMID 17576869.</li>
+    <li>Dallaire F, Dahdah N. New equations and a critical appraisal of coronary artery Z scores in healthy children. <i>J Am Soc Echocardiogr</i> 2011;24:60–74. PMID 21030204.</li>
+    <li>Cantinotti M, Scalese M, Murzi B, et al. Echocardiographic nomograms for chamber diameters and areas in Caucasian children. <i>J Am Soc Echocardiogr</i> 2014;27:179–191. PMID 24239168.</li>
+    <li>Kobayashi T, Fuse S, Sakamoto N, et al. A new Z score curve of the coronary arterial internal lumen diameter. <i>Pediatr Infect Dis J</i> 2016;35:175–180. PMID 26555022.</li>
+    <li>Koestenberger M, Ravekes W, Everett AD, et al. Right ventricular function in infants, children and adolescents: reference values of the tricuspid annular plane systolic excursion (TAPSE) in 640 healthy subjects and calculation of z score values. <i>J Am Soc Echocardiogr</i> 2009;22:715–719. PMID 19419851.</li>
+  </ul>
+</div>
+
+<footer class="noprint" style="padding:18px 0 22px;border-top:1px solid var(--line);margin-top:18px">
+  <div style="display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap;margin-bottom:8px">
+    <div style="text-align:center">
+      <div id="qr-footer" style="width:72px;height:72px;margin:0 auto;background:var(--line);border-radius:6px;display:flex;align-items:center;justify-content:center">
+        <span style="font-size:9px;color:var(--muted)">QR</span>
+      </div>
+      <div style="font-size:9px;margin-top:4px;color:var(--muted)">Scan to open calculator</div>
+    </div>
+    <div style="text-align:left;line-height:1.7">
+      <div style="font-weight:700;font-size:14px;color:var(--brand)">fetal-echo.org</div>
+      <div style="font-size:12px">Pediatric Echo Z-Score Calculator · v1.0</div>
+      <div style="margin-top:4px;font-size:11px">
+        <a href="https://fetal-echo.org" target="_blank" style="color:var(--brand);text-decoration:none">fetal-echo.org</a>
+        &nbsp;·&nbsp;
+        <a id="gh-link" href="https://github.com/fmknp6psrt-arch/fetal-echo-calculators" target="_blank" style="color:var(--brand);text-decoration:none">GitHub</a>
+      </div>
+    </div>
+  </div>
+  <div style="color:var(--muted);font-size:10px">For use by qualified clinicians only · Clinical decision-support, not a diagnostic tool</div>
+</footer>
+
+<!-- ===== PRINT AREA ===== -->
+<div id="printArea"></div>
+
+</div><!-- /wrap -->
+
+<script>
+/* ========================================
+   PEDIATRIC ECHO Z-SCORE CALCULATOR v1.0
+   fetal-echo.org
+   ======================================== */
+
+const $ = id => document.getElementById(id);
+
+/* ── BSA formulas ── */
+const bsaDuBois  = (wt, ht) => 0.007184 * Math.pow(wt, 0.425) * Math.pow(ht, 0.725);
+const bsaHaycock = (wt, ht) => 0.024265 * Math.pow(wt, 0.5378) * Math.pow(ht, 0.3964);
+
+/* ================================================================
+   KAMPMANN 2000 — TABLE 2 LOOKUP
+   Source: Kampmann C et al. Heart 2000;83:667-72 (doi:10.1136/heart.83.6.667)
+   BSA formula: DuBois & DuBois
+   Values: [mean−2SD, mean, mean+2SD] in mm at each BSA step (m²).
+   SD = (max − min) / 4.  Floor BSA used (largest step ≤ patient BSA).
+   Valid range: BSA 0.25–2.00 m².
+   ================================================================ */
+const K_BSA = [0.25,0.275,0.30,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.80,0.90,1.00,1.10,1.20,1.30,1.40,1.50,1.75,2.00];
+
+const K_TABLE = {
+  ivsd: [
+    [2.4,3.8,5.2],[2.4,3.8,5.2],[2.5,3.9,5.3],[2.5,3.9,5.3],[2.6,4.1,5.6],
+    [2.6,4.2,5.8],[2.7,4.3,5.9],[3.1,4.6,6.1],[3.3,4.8,6.3],[3.3,4.8,6.3],
+    [3.5,5.0,6.5],[3.6,5.2,6.8],[3.8,5.6,7.4],[4.0,5.8,7.6],[4.3,6.2,8.1],
+    [4.7,6.5,8.3],[4.8,6.6,8.4],[4.9,6.7,8.5],[5.2,7.4,9.6],[5.6,8.0,10.4],[6.8,9.3,11.8]
+  ],
+  ivss: [
+    [2.5,5.2,7.9],[2.6,5.4,8.2],[3.0,5.8,8.6],[3.0,5.8,8.6],[3.2,6.2,9.2],
+    [3.3,6.3,9.3],[3.5,6.6,9.7],[3.7,6.8,9.9],[3.8,6.9,10.0],[3.8,6.9,10.0],
+    [4.2,7.2,10.2],[4.4,7.5,10.6],[4.9,8.3,11.7],[5.1,8.4,11.7],[5.4,9.0,12.6],
+    [5.4,9.0,12.6],[5.4,9.0,12.6],[5.8,9.2,12.6],[5.8,9.5,13.2],[5.8,9.8,13.8],[6.5,10.3,14.1]
+  ],
+  lvedd: [
+    [16.4,20.0,23.6],[17.0,21.2,25.4],[18.0,22.9,25.8],[19.0,23.6,27.2],[21.0,26.0,31.0],
+    [22.0,27.1,32.1],[23.4,29.0,34.6],[25.6,31.0,36.4],[26.0,31.6,37.2],[27.2,33.2,39.2],
+    [27.4,33.9,40.4],[29.6,35.8,42.0],[31.0,37.1,43.2],[31.7,38.5,45.3],[32.5,39.4,46.3],
+    [35.5,41.7,47.9],[35.8,42.4,49.0],[37.3,43.3,49.3],[39.0,45.4,51.8],[36.8,46.8,54.8],[45.4,53.4,61.4]
+  ],
+  lvesd: [
+    [10.2,13.2,16.2],[10.4,13.6,16.8],[10.8,14.8,18.8],[10.8,14.8,18.8],[12.0,16.1,20.1],
+    [13.0,17.0,21.0],[14.0,18.0,22.0],[15.0,19.3,23.6],[15.4,19.9,24.4],[15.7,20.4,25.1],
+    [16.1,21.3,26.5],[17.7,22.7,27.7],[18.0,23.6,29.2],[18.6,24.4,30.2],[19.6,25.2,30.8],
+    [21.5,27.1,32.7],[21.5,27.1,32.7],[22.0,27.6,33.2],[22.5,28.6,34.7],[23.4,29.8,36.2],[25.6,34.4,43.2]
+  ],
+  lvpwd: [
+    [2.6,3.6,4.6],[2.7,3.8,4.9],[2.8,4.1,5.4],[2.8,4.1,5.4],[2.9,4.2,5.5],
+    [3.1,4.6,6.1],[3.1,4.6,6.1],[3.3,4.8,6.3],[3.3,4.8,6.3],[3.4,4.9,6.4],
+    [3.5,5.2,6.9],[3.6,5.7,7.8],[3.7,5.9,8.1],[3.7,5.9,8.1],[3.9,6.3,8.7],
+    [4.0,6.6,9.2],[4.3,6.9,9.5],[4.3,6.9,9.5],[4.9,7.7,10.5],[5.1,8.1,11.1],[5.1,8.1,11.1]
+  ],
+  lvpws: [
+    [3.7,5.7,7.7],[3.9,5.9,7.9],[4.2,6.3,8.4],[4.4,6.6,8.8],[4.5,6.8,9.1],
+    [5.0,7.3,9.6],[5.2,7.5,9.8],[5.7,8.0,10.3],[5.7,8.0,10.3],[5.8,8.2,10.6],
+    [6.1,8.7,11.3],[6.2,9.1,12.0],[6.8,9.5,12.2],[6.8,9.5,12.2],[7.0,10.3,13.6],
+    [7.6,10.7,13.8],[8.1,11.0,13.9],[8.5,11.5,14.5],[8.5,12.0,15.5],[9.5,12.8,16.1],[9.6,14.2,18.8]
+  ],
+  ao: [  /* AoD */
+    [8.0,10.4,12.8],[8.6,11.1,13.6],[9.0,11.3,13.6],[10.0,12.0,14.0],[10.9,12.9,14.9],
+    [11.9,14.1,16.3],[12.2,14.9,17.7],[12.6,15.2,17.8],[12.8,15.6,18.4],[13.2,16.2,19.2],
+    [13.5,16.9,20.3],[14.5,17.9,21.3],[15.1,18.7,22.3],[16.3,19.9,23.5],[17.5,20.9,24.3],
+    [17.5,21.0,24.5],[17.5,21.7,25.9],[17.9,22.7,27.5],[18.2,23.6,29.0],[18.2,24.4,30.6],[23.0,27.4,31.8]
+  ],
+  la: [  /* LAD */
+    [10.5,14.0,17.5],[11.5,15.1,18.7],[11.5,15.3,19.1],[12.0,16.3,20.6],[13.0,16.8,20.6],
+    [13.8,17.8,21.8],[14.5,18.7,22.9],[15.3,19.7,24.1],[16.1,20.1,24.1],[16.1,20.8,25.5],
+    [16.2,21.2,26.2],[16.5,22.5,28.5],[17.0,23.2,29.4],[19.2,25.0,30.8],[19.5,25.2,30.9],
+    [20.9,26.0,31.1],[21.7,27.3,32.9],[22.8,28.2,33.6],[23.7,29.9,36.1],[23.8,30.4,37.0],[23.7,32.5,41.3]
+  ],
+};
+
+function kampmannZ(val, key, bsaD) {
+  const rows = K_TABLE[key];
+  if (!rows || !isFinite(bsaD) || bsaD < 0.15 || bsaD > 2.00) return null;
+  const extrapolated = bsaD < 0.25; // below published validation range (Kampmann min = 0.25 m²)
+  // Floor lookup: largest BSA step ≤ patient BSA (clamps to 0.25 row for small patients)
+  let idx = 0;
+  for (let i = 0; i < K_BSA.length; i++) { if (K_BSA[i] <= bsaD) idx = i; }
+  const [lo, mn, hi] = rows[idx];
+  const sd = (hi - lo) / 4;
+  if (sd <= 0) return null;
+  return { z: (val - mn) / sd, extrapolated };
+}
+
+/* ================================================================
+   CANTINOTTI 2014 COEFFICIENTS
+   Source: Cantinotti M et al. J Am Soc Echocardiogr 2014;27:179-91
+   BSA: Haycock
+   Equation form: Mean(mm) = a + b×BSA_H + c×BSA_H²; SD = fixed
+   Set a = null until values are entered from Tables 3-5.
+   ================================================================ */
+const CANTINOTTI = {
+  rvb:   { a: null, b: null, c: null, sd: null },
+  rvm:   { a: null, b: null, c: null, sd: null },
+  aoan:  { a: null, b: null, c: null, sd: null },
+  aosv:  { a: null, b: null, c: null, sd: null },
+  stj:   { a: null, b: null, c: null, sd: null },
+  ascao: { a: null, b: null, c: null, sd: null },
+  mpa:   { a: null, b: null, c: null, sd: null },
+  rpa:   { a: null, b: null, c: null, sd: null },
+  lpa:   { a: null, b: null, c: null, sd: null },
+  mva:   { a: null, b: null, c: null, sd: null },
+  tva:   { a: null, b: null, c: null, sd: null },
+  tarch: { a: null, b: null, c: null, sd: null },
+  isth:  { a: null, b: null, c: null, sd: null },
+  dao:   { a: null, b: null, c: null, sd: null },
+  pvan:  { a: null, b: null, c: null, sd: null },
+  rvot:  { a: null, b: null, c: null, sd: null },
+  lvot:  { a: null, b: null, c: null, sd: null },
+};
+
+function cantinottiZ(val, key, bsaH) {
+  const c = CANTINOTTI[key];
+  if (!c || c.a === null) return null;
+  const mean = c.a + c.b * bsaH + c.c * bsaH * bsaH;
+  if (!isFinite(mean) || c.sd <= 0) return null;
+  return (val - mean) / c.sd;
+}
+
+/* ================================================================
+   McCRINDLE 2007 (BOSTON) — VERIFIED COEFFICIENTS
+   Source: McCrindle 2007 Circulation 116:174-9
+   Verified via: github.com/parameterz/parameterz-coronaries (ca_defs.js)
+   BSA: Haycock
+   Mean(mm) = 10 × (a1 + b1×BSA^exp)
+   SD(mm)   = 10 × (a2 + b2×BSA)
+   ================================================================ */
+const BOSTON = {
+  lmca: { a1:-0.02887, b1:0.31747, exp:0.36008, a2:0.03040, b2:0.01514 },
+  lad:  { a1:-0.02852, b1:0.26108, exp:0.37893, a2:0.01465, b2:0.01996 },
+  rca:  { a1:-0.02756, b1:0.26117, exp:0.39992, a2:0.02407, b2:0.01597 },
+};
+
+function bostonZ(val, key, bsaH) {
+  const c = BOSTON[key]; if (!c) return null;
+  const mean = 10 * (c.a1 + c.b1 * Math.pow(bsaH, c.exp));
+  const sd   = 10 * (c.a2 + c.b2 * bsaH);
+  return sd > 0 ? (val - mean) / sd : null;
+}
+
+/* ================================================================
+   DALLAIRE 2011 (MONTREAL) — VERIFIED COEFFICIENTS
+   Source: Dallaire 2011 JASE 24:60-74
+   Verified via: github.com/parameterz/parameterz-coronaries (ca_defs.js)
+   BSA: Haycock
+   Mean(mm) = a1 + b1×√BSA
+   SD(mm)   = a2 + b2×√BSA
+   ================================================================ */
+const MONTREAL = {
+  lmca: { a1:-0.1817, b1:2.9238, a2:0.1801, b2:0.2530 },
+  lad:  { a1:-0.1502, b1:2.2672, a2:0.1709, b2:0.2293 },
+  circ: { a1:-0.2716, b1:2.3458, a2:0.1142, b2:0.3423 },
+  rca:  { a1:-0.3039, b1:2.7521, a2:0.1626, b2:0.2881 },
+};
+
+function montrealZ(val, key, bsaH) {
+  const c = MONTREAL[key]; if (!c) return null;
+  const sq = Math.sqrt(bsaH);
+  const mean = c.a1 + c.b1 * sq;
+  const sd   = c.a2 + c.b2 * sq;
+  return sd > 0 ? (val - mean) / sd : null;
+}
+
+/* ── coronary reference toggle ── */
+let corRef = 'boston';
+function setCorRef(r) {
+  corRef = r;
+  $('btn_boston').className   = r === 'boston'   ? 'on' : '';
+  $('btn_montreal').className = r === 'montreal' ? 'on' : '';
+  recalc();
+}
+
+/* ── Kawasaki classification ── */
+function kawasaki(z) {
+  if (!isFinite(z) || z < 2.5) return '';
+  if (z >= 10) return { txt: 'GIANT aneurysm (Z≥10)', cls: 'k3' };
+  if (z >= 5)  return { txt: 'Medium aneurysm (Z≥5)',  cls: 'k2' };
+  return            { txt: 'Small aneurysm (Z≥2.5)', cls: 'k1' };
+}
+
+/* ── helpers ── */
+function fmtZ(z) {
+  return isFinite(z) ? ((z >= 0 ? '+' : '') + z.toFixed(2)) : '—';
+}
+function zCls(z) {
+  if (!isFinite(z)) return '';
+  const a = Math.abs(z);
+  return a >= 2 ? 'bad' : a >= 1.5 ? 'bord' : 'ok';
+}
+function numId(id) { const v = parseFloat($(id).value); return isFinite(v) ? v : NaN; }
+
+/* ── render z-score box ── */
+function renderZ(elId, z, kawa) {
+  const el = $(elId); if (!el) return;
+  if (!isFinite(z)) { el.className = 'zbox'; el.innerHTML = ''; return; }
+  const cls = zCls(z);
+  const a = Math.abs(z);
+  const tCls = a >= 2 ? 't-bad' : a >= 1.5 ? 't-bord' : 't-ok';
+  const tTxt = a >= 2 ? 'Abnormal' : a >= 1.5 ? 'Borderline' : 'Normal';
+  let html = `<span class="zval">Z ${fmtZ(z)}</span><span class="tag ${tCls}">${tTxt}</span>`;
+  if (kawa && kawa.txt) {
+    html += `<br><span class="tag t-${kawa.cls}" style="margin-top:3px">${kawa.txt}</span>`;
+  }
+  el.className = 'zbox' + (cls ? ' ' + cls : '');
+  el.innerHTML = html;
+}
+
+function renderPending(elId) {
+  const el = $(elId); if (!el) return;
+  el.className = 'zbox';
+  el.innerHTML = '<span style="font-size:11px;color:var(--muted)">⊘ coeff. pending</span>';
+}
+
+function clearZ(elId) {
+  const el = $(elId); if (!el) return;
+  el.className = 'zbox'; el.innerHTML = '';
+}
+
+/* ── simple range display (functional parameters) ── */
+function renderRange(elId, val, unit, normalLow, borderLow, higherBetter) {
+  const el = $(elId); if (!el) return;
+  if (!isFinite(val)) { el.className = 'zbox'; el.innerHTML = ''; return; }
+  let cls, tCls, tTxt;
+  if (higherBetter) {
+    cls = val >= normalLow ? 'ok' : val >= borderLow ? 'bord' : 'bad';
+    tTxt = val >= normalLow ? 'Normal' : val >= borderLow ? 'Borderline' : 'Low';
+  } else {
+    // lower is worse (e.g., strain absolute value)
+    cls = val >= normalLow ? 'ok' : val >= borderLow ? 'bord' : 'bad';
+    tTxt = val >= normalLow ? 'Normal' : val >= borderLow ? 'Borderline' : 'Low';
+  }
+  tCls = 't-' + cls;
+  el.className = 'zbox ' + cls;
+  el.innerHTML = `<span class="zval">${val.toFixed(1)} ${unit}</span><span class="tag ${tCls}">${tTxt}</span>`;
+}
+
+/* ── global results store (for findings panel + print) ── */
+const RESULTS = {};
+function setResult(key, label, unit, sec, val, z, kawa, note) {
+  if (!isFinite(val)) { delete RESULTS[key]; return; }
+  RESULTS[key] = { label, unit, sec, val, z: isFinite(z) ? z : null, kawa: kawa || null, note: note || null };
+}
+function clrResult(key) { delete RESULTS[key]; }
+
+/* ================================================================
+   MAIN RECALCULATION
+   ================================================================ */
+function recalc() {
+  const wt = numId('wt'), ht = numId('ht');
+  const bsaD = (wt > 0 && ht > 0) ? bsaDuBois(wt, ht)  : NaN;
+  const bsaH = (wt > 0 && ht > 0) ? bsaHaycock(wt, ht) : NaN;
+
+  /* BSA display bar */
+  if (isFinite(bsaD)) {
+    $('bsaBar').style.display = 'block';
+    $('bsaBar').textContent = `BSA: ${bsaD.toFixed(3)} m² (DuBois) · ${bsaH.toFixed(3)} m² (Haycock)`;
+  } else {
+    $('bsaBar').style.display = 'none';
+  }
+
+  /* ── M-mode Kampmann scaffold ── */
+  [['lvedd','LVIDd'],['lvesd','LVIDs'],['ivsd','IVSd'],['lvpwd','LVPWd'],
+   ['ivss','IVSs'],['lvpws','LVPWs'],['ao','Aortic root (Ao)'],['la','LA diameter']
+  ].forEach(([k, lbl]) => {
+    const v = numId('in_' + k);
+    if (!isFinite(v)) { clearZ('z_' + k); clrResult(k); return; }
+    if (!isFinite(bsaD)) {
+      const el = $('z_' + k);
+      if (el) { el.className = 'zbox'; el.innerHTML = '<span style="font-size:11px;color:var(--muted)">↑ Enter wt &amp; ht</span>'; }
+      clrResult(k); return;
+    }
+    const res = kampmannZ(v, k, bsaD);
+    if (res === null) {
+      // BSA outside even extended range (< 0.15 or > 2.0)
+      const el = $('z_' + k);
+      if (el) { el.className = 'zbox'; el.innerHTML = '<span style="font-size:11px;color:var(--muted)">BSA out of range</span>'; }
+      clrResult(k); return;
+    }
+    renderZ('z_' + k, res.z, null);
+    if (res.extrapolated) {
+      const el = $('z_' + k);
+      if (el) el.innerHTML += '<br><span style="font-size:10px;color:#b08000">⚠ BSA &lt; 0.25 — extrapolated</span>';
+    }
+    setResult(k, lbl, 'mm', 'M-mode', v, res.z, null);
+  });
+
+  /* Derived LV */
+  const lvedd = numId('in_lvedd'), lvesd = numId('in_lvesd');
+  const ivsd  = numId('in_ivsd'),  lvpwd = numId('in_lvpwd');
+  const ao    = numId('in_ao'),    la    = numId('in_la');
+
+  if (isFinite(lvedd) && isFinite(lvesd) && lvedd > 0) {
+    const fs = (lvedd - lvesd) / lvedd * 100;
+    $('d_fs').textContent = fs.toFixed(1) + '%';
+    $('d_fs').style.color = fs >= 28 ? 'var(--ok)' : 'var(--bad)';
+  } else { $('d_fs').textContent = '—'; $('d_fs').style.color = ''; }
+
+  if (isFinite(lvedd) && isFinite(ivsd) && isFinite(lvpwd)) {
+    const ledd = lvedd / 10, isd = ivsd / 10, pwd = lvpwd / 10; // mm → cm
+    const lvm = 0.8 * (1.04 * (Math.pow(ledd + isd + pwd, 3) - Math.pow(ledd, 3))) + 0.6;
+    $('d_lvm').textContent = lvm.toFixed(1) + ' g';
+    $('d_lvmi').textContent = isFinite(bsaD) ? (lvm / bsaD).toFixed(1) + ' g/m²' : '— (enter wt & ht)';
+  } else { $('d_lvm').textContent = '—'; $('d_lvmi').textContent = '—'; }
+
+  if (isFinite(ao) && isFinite(la) && ao > 0) {
+    $('d_laao').textContent = (la / ao).toFixed(2);
+  } else { $('d_laao').textContent = '—'; }
+
+  /* ── Coronaries ── */
+  /* LMCA, LAD, RCA */
+  [['lmca','LMCA'],['lad','LAD'],['rca','RCA']].forEach(([k, lbl]) => {
+    const v = numId('in_' + k);
+    if (!isFinite(v) || !isFinite(bsaH)) { clearZ('z_' + k); clrResult(k); return; }
+    const z = corRef === 'boston' ? bostonZ(v, k, bsaH) : montrealZ(v, k, bsaH);
+    const kw = kawasaki(z);
+    renderZ('z_' + k, z, kw || null);
+    setResult(k, lbl, 'mm', 'Coronaries', v, z, kw || null);
+  });
+
+  /* LCx — always Dallaire 2011 (circ); McCrindle does not include LCx */
+  const lcxV = numId('in_lcx');
+  if (isFinite(lcxV) && isFinite(bsaH)) {
+    const zLcx = montrealZ(lcxV, 'circ', bsaH);
+    const kw = kawasaki(zLcx);
+    renderZ('z_lcx', zLcx, kw || null);
+    const lcxNote = corRef === 'boston' ? '(Dallaire 2011)' : null;
+    setResult('lcx', 'LCx', 'mm', 'Coronaries', lcxV, zLcx, kw || null, lcxNote);
+  } else { clearZ('z_lcx'); clrResult('lcx'); }
+
+  $('lcx_boston_note').style.display = 'none';
+
+  /* ── 2D structures Cantinotti scaffold ── */
+  [['rvb','RVID basal'],['rvm','RVID mid'],['aoan','Aortic annulus (2D)'],
+   ['aosv','Aortic sinus (SoV)'],['stj','STJ'],['ascao','Ascending aorta'],
+   ['mpa','MPA'],['rpa','RPA'],['lpa','LPA'],
+   ['mva','Mitral valve annulus'],['tva','Tricuspid valve annulus'],
+   ['tarch','Transverse arch'],['isth','Aortic isthmus'],['dao','Descending aorta'],
+   ['pvan','Pulmonary valve annulus'],['rvot','RVOT'],['lvot','LVOT']
+  ].forEach(([k, lbl]) => {
+    const v = numId('in_' + k);
+    if (!isFinite(v)) { clearZ('z_' + k); clrResult(k); return; }
+    const z = isFinite(bsaH) ? cantinottiZ(v, k, bsaH) : null;
+    if (z === null) renderPending('z_' + k); else renderZ('z_' + k, z, null);
+    setResult(k, lbl, 'mm', '2D Structures', v, z, null);
+  });
+
+  /* ── Functional ── */
+  /* TAPSE — age-adjusted z-score pending; guide thresholds only */
+  const tapseV = numId('in_tapse');
+  if (isFinite(tapseV)) {
+    const cls = tapseV >= 15 ? 'ok' : tapseV >= 10 ? 'bord' : 'bad';
+    const tCls = 't-' + cls;
+    const tTxt = tapseV >= 15 ? 'Normal (guide)' : tapseV >= 10 ? 'Borderline' : 'Low';
+    $('z_tapse').className = 'zbox ' + cls;
+    $('z_tapse').innerHTML = `<span class="zval">${tapseV.toFixed(1)} mm</span><span class="tag ${tCls}">${tTxt}</span><br><span style="font-size:10px;color:var(--muted)">Age-adjusted Z: pending</span>`;
+    setResult('tapse', 'TAPSE', 'mm', 'Function', tapseV, NaN, null);
+  } else { clearZ('z_tapse'); clrResult('tapse'); }
+
+  /* RV S' */
+  const rvspV = numId('in_rvsp');
+  if (isFinite(rvspV)) {
+    const cls = rvspV >= 9 ? 'ok' : rvspV >= 6 ? 'bord' : 'bad';
+    $('z_rvsp').className = 'zbox ' + cls;
+    $('z_rvsp').innerHTML = `<span class="zval">${rvspV.toFixed(1)} cm/s</span><span class="tag t-${cls}">${rvspV >= 9 ? 'Normal' : rvspV >= 6 ? 'Borderline' : 'Low'}</span>`;
+    setResult('rvsp', "RV S′", 'cm/s', 'Function', rvspV, NaN, null);
+  } else { clearZ('z_rvsp'); clrResult('rvsp'); }
+
+  /* LV EF% */
+  const efV = numId('in_ef');
+  if (isFinite(efV)) {
+    const cls = efV >= 55 ? 'ok' : efV >= 45 ? 'bord' : 'bad';
+    $('z_ef').className = 'zbox ' + cls;
+    $('z_ef').innerHTML = `<span class="zval">${efV.toFixed(0)}%</span><span class="tag t-${cls}">${efV >= 55 ? 'Normal' : efV >= 45 ? 'Borderline' : 'Low'}</span>`;
+    setResult('ef', 'LV EF% (Biplane)', '%', 'Function', efV, NaN, null);
+  } else { clearZ('z_ef'); clrResult('ef'); }
+
+  /* LV GLS — normal ≤ −18% (absolute ≥ 18) */
+  const glsV = numId('in_gls');
+  if (isFinite(glsV)) {
+    const a = Math.abs(glsV);
+    const cls = a >= 18 ? 'ok' : a >= 15 ? 'bord' : 'bad';
+    $('z_gls').className = 'zbox ' + cls;
+    $('z_gls').innerHTML = `<span class="zval">${glsV.toFixed(1)}%</span><span class="tag t-${cls}">${a >= 18 ? 'Normal' : a >= 15 ? 'Borderline' : 'Low'}</span>`;
+    setResult('gls', 'LV GLS', '%', 'Function', glsV, NaN, null);
+  } else { clearZ('z_gls'); clrResult('gls'); }
+
+  /* RV GLS — normal ≤ −20% (absolute ≥ 20) */
+  const rvglsV = numId('in_rvgls');
+  if (isFinite(rvglsV)) {
+    const a = Math.abs(rvglsV);
+    const cls = a >= 20 ? 'ok' : a >= 16 ? 'bord' : 'bad';
+    $('z_rvgls').className = 'zbox ' + cls;
+    $('z_rvgls').innerHTML = `<span class="zval">${rvglsV.toFixed(1)}%</span><span class="tag t-${cls}">${a >= 20 ? 'Normal' : a >= 16 ? 'Borderline' : 'Low'}</span>`;
+    setResult('rvgls', 'RV GLS', '%', 'Function', rvglsV, NaN, null);
+  } else { clearZ('z_rvgls'); clrResult('rvgls'); }
+
+  /* RV FWLS — normal ≤ −20% */
+  const rvfwlsV = numId('in_rvfwls');
+  if (isFinite(rvfwlsV)) {
+    const a = Math.abs(rvfwlsV);
+    const cls = a >= 20 ? 'ok' : a >= 16 ? 'bord' : 'bad';
+    $('z_rvfwls').className = 'zbox ' + cls;
+    $('z_rvfwls').innerHTML = `<span class="zval">${rvfwlsV.toFixed(1)}%</span><span class="tag t-${cls}">${a >= 20 ? 'Normal' : a >= 16 ? 'Borderline' : 'Low'}</span>`;
+    setResult('rvfwls', 'RV FWLS', '%', 'Function', rvfwlsV, NaN, null);
+  } else { clearZ('z_rvfwls'); clrResult('rvfwls'); }
+
+  renderFindings();
+}
+
+/* ── Findings panel ── */
+function renderFindings() {
+  const arr = Object.values(RESULTS)
+    .filter(r => r.z !== null && isFinite(r.z) && Math.abs(r.z) >= 1.5)
+    .sort((a, b) => Math.abs(b.z) - Math.abs(a.z));
+  const L = $('findingsList');
+  if (!arr.length) {
+    L.innerHTML = '<div class="empty">No Z-score abnormalities detected. Out-of-range results will be highlighted here as you enter measurements.</div>';
+    return;
+  }
+  L.innerHTML = arr.map(r => {
+    const sev = Math.abs(r.z) >= 2 ? 'bad' : 'bord';
+    const kawaHtml = r.kawa && r.kawa.txt ? `<div class="fi" style="color:#1565c0">${r.kawa.txt}</div>` : '';
+    return `<div class="fitem">
+      <div class="dot ${sev}"></div>
+      <div><div class="fl">${r.label}</div><div class="fi">${r.val.toFixed(2)} ${r.unit}</div>${kawaHtml}</div>
+      <div class="fz" style="color:var(--${sev})">Z ${fmtZ(r.z)}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Clear all ── */
+function resetAll() {
+  document.querySelectorAll('input[type="number"]').forEach(i => { i.value = ''; });
+  document.querySelectorAll('.zbox').forEach(el => { el.className = 'zbox'; el.innerHTML = ''; });
+  Object.keys(RESULTS).forEach(k => delete RESULTS[k]);
+  ['d_fs','d_lvm','d_lvmi','d_laao'].forEach(id => {
+    const el = $(id); if (el) { el.textContent = '—'; el.style.color = ''; }
+  });
+  $('bsaBar').style.display = 'none';
+  $('printArea').innerHTML = '';
+  renderFindings();
+}
+
+/* ================================================================
+   PRINT — only entered measurements appear
+   ================================================================ */
+function generatePrint() {
+  const name = $('pname').value.trim();
+  const mrn  = $('pmrn').value.trim();
+  const dob  = $('pdob').value;
+  const wt   = numId('wt'), ht = numId('ht'), hr = numId('hr');
+  const bsaD = (wt > 0 && ht > 0) ? bsaDuBois(wt, ht)  : NaN;
+  const bsaH = (wt > 0 && ht > 0) ? bsaHaycock(wt, ht) : NaN;
+
+  const studyVal  = $('pdate').value || new Date().toISOString().slice(0,10);
+  const studyFmt  = new Date(studyVal + 'T12:00:00').toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+  const dobFmt    = dob ? new Date(dob + 'T12:00:00').toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}) : '—';
+
+  /* Collect only entered measurements, grouped by section */
+  const ORDER = ['M-mode','Coronaries','2D Structures','Function'];
+  const bySection = {};
+  ORDER.forEach(s => bySection[s] = []);
+  Object.values(RESULTS).forEach(r => {
+    if (isFinite(r.val) && bySection[r.sec]) bySection[r.sec].push(r);
+  });
+
+  /* Also pick up any entered functional values with no z-score */
+  let tableHtml = '';
+  ORDER.forEach(sec => {
+    const items = bySection[sec];
+    if (!items || !items.length) return; // skip empty sections entirely
+    tableHtml += `<tr><td colspan="4" class="pgl">${sec}</td></tr>`;
+    items.forEach(r => {
+      const a = (r.z !== null && isFinite(r.z)) ? Math.abs(r.z) : null;
+      const zTxt = a !== null ? fmtZ(r.z) : '—';
+      const zCss = a !== null ? (a >= 2 ? 'pbad' : a >= 1.5 ? 'pbord' : '') : '';
+      const kawaHtml = r.kawa && r.kawa.txt
+        ? `<br><span class="kawa-txt ${r.kawa.cls === 'k3' ? 'giant' : r.kawa.cls === 'k2' ? 'med' : ''}">${r.kawa.txt}</span>`
+        : '';
+      const noteHtml = r.note ? `<br><span class="kawa-txt">${r.note}</span>` : '';
+      tableHtml += `<tr>
+        <td>${r.label}</td>
+        <td class="r">${r.val.toFixed(2)}</td>
+        <td>${r.unit}</td>
+        <td class="r ${zCss}">${zTxt}${kawaHtml}${noteHtml}</td>
+      </tr>`;
+    });
+  });
+
+  /* Derived values — only if source measurements were entered */
+  const lvedd = numId('in_lvedd'), lvesd = numId('in_lvesd');
+  const ivsd  = numId('in_ivsd'),  lvpwd = numId('in_lvpwd');
+  const ao    = numId('in_ao'),    la    = numId('in_la');
+  let derivedHtml = '';
+  if (isFinite(lvedd) && isFinite(lvesd) && lvedd > 0) {
+    const fs = (lvedd - lvesd) / lvedd * 100;
+    derivedHtml += `<tr><td>FS%</td><td class="r">${fs.toFixed(1)}</td><td>%</td><td class="${fs < 28 ? 'pbad' : ''}">Normal ≥ 28%</td></tr>`;
+  }
+  if (isFinite(lvedd) && isFinite(ivsd) && isFinite(lvpwd)) {
+    const lvm = 0.8 * (1.04 * (Math.pow((lvedd+ivsd+lvpwd)/10, 3) - Math.pow(lvedd/10, 3))) + 0.6;
+    derivedHtml += `<tr><td>LV Mass (Devereux)</td><td class="r">${lvm.toFixed(1)}</td><td>g</td><td></td></tr>`;
+    if (isFinite(bsaD)) {
+      derivedHtml += `<tr><td>LV Mass Index</td><td class="r">${(lvm/bsaD).toFixed(1)}</td><td>g/m²</td><td></td></tr>`;
+    }
+  }
+  if (isFinite(ao) && isFinite(la) && ao > 0) {
+    derivedHtml += `<tr><td>LA:Ao ratio</td><td class="r">${(la/ao).toFixed(2)}</td><td></td><td></td></tr>`;
+  }
+  if (derivedHtml) {
+    tableHtml += `<tr><td colspan="4" class="pgl">Derived values</td></tr>${derivedHtml}`;
+  }
+
+  if (!tableHtml) {
+    tableHtml = '<tr><td colspan="4" style="color:#888;font-style:italic">No measurements entered.</td></tr>';
+  }
+
+  /* Flagged summary */
+  const flagged = Object.values(RESULTS)
+    .filter(r => r.z !== null && isFinite(r.z) && Math.abs(r.z) >= 1.5)
+    .sort((a,b) => Math.abs(b.z) - Math.abs(a.z));
+  const flagHtml = flagged.length
+    ? '<ul style="margin:4px 0 0;padding-left:16px">' +
+      flagged.map(r => {
+        const a = Math.abs(r.z);
+        const kw = r.kawa && r.kawa.txt ? ` · ${r.kawa.txt}` : '';
+        return `<li class="${a>=2?'pbad':'pbord'}">${r.label}: Z ${fmtZ(r.z)}${kw}</li>`;
+      }).join('') + '</ul>'
+    : '<p style="margin:4px 0;font-style:italic">All entered parameters with available z-scores are within the reference range.</p>';
+
+  const refLine = corRef === 'boston'
+    ? 'Coronary z-scores: McCrindle 2007 (Boston); LCx: Dallaire 2011 (Montreal). M-mode: Kampmann 2000. 2D: Cantinotti 2014 (pending).'
+    : 'Coronary z-scores: Dallaire 2011 (Montreal). M-mode: Kampmann 2000. 2D: Cantinotti 2014 (pending).';
+
+  $('printArea').innerHTML = `
+    <div class="ph">
+      <div class="ph-l">
+        <h2>Pediatric Echocardiography — Measurements &amp; Z-Scores</h2>
+      </div>
+      <div class="ph-r">
+        ${name ? `<div><b>Name:</b> ${name}</div>` : ''}
+        ${mrn  ? `<div><b>ID/MRN:</b> ${mrn}</div>` : ''}
+        ${dob  ? `<div><b>DOB:</b> ${dobFmt}</div>` : ''}
+        <div><b>Study date:</b> ${studyFmt}</div>
+        ${isFinite(wt) ? `<div><b>Weight:</b> ${wt} kg &nbsp;· Height: ${isFinite(ht) ? ht + ' cm' : '—'}</div>` : ''}
+        ${isFinite(bsaD) ? `<div><b>BSA:</b> ${bsaD.toFixed(3)} m² (DuBois) · ${bsaH.toFixed(3)} m² (Haycock)</div>` : ''}
+        ${isFinite(hr) ? `<div><b>HR:</b> ${hr} bpm</div>` : ''}
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>Parameter</th><th>Value</th><th>Unit</th><th>Z-score</th></tr>
+      </thead>
+      <tbody>${tableHtml}</tbody>
+    </table>
+
+    <div class="pgl" style="margin-top:10px">Flagged parameters (|Z| ≥ 1.5)</div>
+    ${flagHtml}
+
+    <p class="pnote" style="margin-top:14px">${refLine}</p>
+    <p class="pnote">Clinical decision-support only. Not a diagnostic tool. Verify all measurements against original publications before clinical use.</p>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:12px;border-top:1px solid #e5ebf2;padding-top:10px">
+      ${window._qrDataUrl ? `<img src="${window._qrDataUrl}" width="60" height="60" style="border:1px solid #e5ebf2;border-radius:4px" alt="QR code">` : ''}
+      <div style="font-size:9px;color:#5b6b7c;line-height:1.6">
+        <b style="color:#15607a;font-size:10px">fetal-echo.org</b><br>
+        Pediatric Echo Z-Score Calculator<br>
+        fetal-echo.org/pediatric-echo-zscore-calculator/
+      </div>
+    </div>
+  `;
+
+  window.print();
+}
+
+/* ── Initialise ── */
+document.addEventListener('DOMContentLoaded', () => {
+  $('pdate').value = new Date().toISOString().slice(0,10);
+  renderFindings();
+});
+
+
+/* ── QR code ── */
+(function() {
+  const CALC_URL = 'https://fmknp6psrt-arch.github.io/fetal-echo-calculators/pediatric-echo-zscore-calculator.html';
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+  s.onload = function() {
+    const el = document.getElementById('qr-footer');
+    el.innerHTML = '';   // clear the placeholder
+    new QRCode(el, { text: CALC_URL, width: 72, height: 72,
+      colorDark: '#15607a', colorLight: '#ffffff' });
+    // Capture data URL for print reports
+    setTimeout(function() {
+      const cv = el.querySelector('canvas');
+      if (cv) window._qrDataUrl = cv.toDataURL('image/png');
+    }, 400);
+  };
+  document.head.appendChild(s);
+})();
+</script>
+</body>
+</html>

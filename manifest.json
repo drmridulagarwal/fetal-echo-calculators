@@ -1,0 +1,64 @@
+{
+  "name": "Fetal Echo Calculators",
+  "short_name": "Fetal Echo",
+  "description": "Fetal cardiac Z-scores, function & coarctation risk — clinical decision-support for qualified fetal cardiologists. fetal-echo.org",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f0f5f8",
+  "theme_color": "#15607a",
+  "lang": "en",
+  "categories": ["medical", "health"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icons/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Fetal Echo Calculators — hub"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "CoA Risk Tool",
+      "short_name": "CoA Risk",
+      "description": "Fetal coarctation risk stratification",
+      "url": "/coa.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Z-Score Calculator",
+      "short_name": "Z-Scores",
+      "description": "Fetal cardiac Z-scores & function",
+      "url": "/zscore.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Paediatric Echo Z-Scores",
+      "short_name": "Paed Z-Scores",
+      "description": "Paediatric echo Z-scores & Kawasaki risk",
+      "url": "/pediatric-echo-zscore-calculator.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

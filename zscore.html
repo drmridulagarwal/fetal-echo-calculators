@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fetal Z-Score &amp; Function Calculator — fetal-echo.org</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<style>
+  :root{
+    --bg:#f6f8fb; --card:#ffffff; --ink:#1d2733; --muted:#5b6b7c; --line:#e5ebf2;
+    --brand:#15607a; --brand-soft:#e8f1f5; --accent:#0f8a6d;
+    --ok:#2f9e6b; --okbg:#e8f6ee; --bord:#d99100; --bordbg:#fcf3df;
+    --bad:#c33a3a; --badbg:#fbe4e4;
+    --radius:14px; --shadow:0 1px 3px rgba(20,40,60,.06),0 6px 24px rgba(20,40,60,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:22px 16px 70px}
+  header.app{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+  .logo{flex:0 0 auto;width:42px;height:42px;border-radius:10px;background:var(--brand);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px}
+  h1{font-size:20px;margin:0;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:13px;margin:2px 0 0}
+  .disclaimer{margin:14px 0 18px;padding:10px 13px;background:#fff7e8;border:1px solid #f0dcae;
+    border-radius:10px;font-size:12.5px;color:#7a5c12}
+  .disclaimer b{color:#5e470c}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+  .card h2{font-size:14px;margin:0 0 2px;letter-spacing:.02em;text-transform:uppercase;color:var(--brand)}
+  .card .hint{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 16px}
+  @media(max-width:620px){.grid,.grid3{grid-template-columns:1fr}}
+  .field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:4px}
+  .field .u{color:var(--muted);font-weight:400}
+  .field input,.field select{width:100%;padding:9px 10px;border:1px solid var(--line);
+    border-radius:9px;font-size:14px;background:#fcfdfe;color:var(--ink);transition:border .15s,box-shadow .15s}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .seg button{border:0;background:#fff;color:var(--muted);font-size:12.5px;font-weight:600;padding:7px 12px;cursor:pointer}
+  .seg button.on{background:var(--brand);color:#fff}
+  .mrow{display:grid;grid-template-columns:1.5fr .9fr auto;gap:10px;align-items:center;
+    padding:8px 0;border-top:1px solid var(--line)}
+  .mrow:first-of-type{border-top:none}
+  .mrow .ml{font-size:13px}
+  .mrow .ml .uu{color:var(--muted);font-size:11.5px}
+  .mrow input{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-size:14px;
+    background:#fcfdfe;text-align:right;font-variant-numeric:tabular-nums}
+  .mrow input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+  .zbox{min-width:140px;text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums}
+  .zval{font-weight:700}
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.03em;padding:2px 7px;border-radius:5px;margin-left:6px}
+  .t-ok{background:var(--okbg);color:var(--ok)} .t-bord{background:var(--bordbg);color:var(--bord)}
+  .t-bad{background:var(--badbg);color:var(--bad)}
+  .zbox.ok .zval{color:var(--ok)} .zbox.bord .zval{color:var(--bord)} .zbox.bad .zval{color:var(--bad)}
+  .group-label{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);margin:16px 0 6px}
+  .group-label:first-child{margin-top:0}
+  details.sec{margin-bottom:16px;background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  details.sec>summary{cursor:pointer;list-style:none;padding:16px 18px;font-size:14px;font-weight:700;
+    color:var(--brand);text-transform:uppercase;letter-spacing:.02em;display:flex;justify-content:space-between;align-items:center}
+  details.sec>summary::-webkit-details-marker{display:none}
+  details.sec>summary .cv{font-size:11px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0}
+  details.sec[open]>summary{border-bottom:1px solid var(--line)}
+  .sec-body{padding:6px 18px 18px}
+  .sec-note{font-size:12px;color:var(--muted);margin:2px 0 12px}
+  /* findings */
+  .findings .fitem{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;
+    padding:10px 0;border-top:1px solid var(--line)}
+  .findings .fitem:first-of-type{border-top:none}
+  .dot{width:10px;height:10px;border-radius:50%;margin-top:5px}
+  .dot.bad{background:var(--bad)} .dot.bord{background:var(--bord)}
+  .fitem .fl{font-size:13.5px;font-weight:600}
+  .fitem .fi{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .fitem .fz{font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .empty{font-size:13px;color:var(--muted);padding:8px 0}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);font-size:13px;font-weight:600;
+    padding:10px 16px;border-radius:9px;cursor:pointer}
+  .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn:hover{filter:brightness(.98)}
+  .refs{font-size:11.5px;color:var(--muted)} .refs li{margin-bottom:6px}
+  .refs a{color:var(--brand);text-decoration:none}
+  footer{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px}
+  .privacy{font-size:11.5px;color:#5b6b7c;background:#eef5f8;border:1px solid #d7e6ec;border-radius:9px;
+    padding:9px 12px;margin-top:10px}
+  .home-btn{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;
+    color:var(--brand);text-decoration:none;background:var(--brand-soft);border-radius:7px;
+    padding:4px 10px;margin-bottom:10px;width:fit-content}
+  .home-btn:hover{background:#d5e6ee}
+  /* print */
+  #printArea{display:none}
+  @media print{
+    body{background:#fff}
+    .wrap{max-width:100%;padding:0}
+    .noprint{display:none !important}
+    #printArea{display:block;font-size:12px;color:#000}
+    #printArea h2{font-size:15px;margin:0 0 2px}
+    #printArea .ph{display:flex;justify-content:space-between;border-bottom:2px solid #15607a;padding-bottom:8px;margin-bottom:10px}
+    #printArea table{width:100%;border-collapse:collapse;margin:6px 0 14px}
+    #printArea th,#printArea td{border:1px solid #cfd8e0;padding:4px 7px;text-align:left;font-size:11px}
+    #printArea th{background:#eef5f8}
+    #printArea td.r{text-align:right;font-variant-numeric:tabular-nums}
+    #printArea .pbad{color:#c33a3a;font-weight:700}
+    #printArea .pbord{color:#b07400;font-weight:700}
+    #printArea .pgl{font-weight:700;color:#15607a;margin:10px 0 2px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="home-btn noprint" href="index.html">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    All calculators
+  </a>
+
+  <header class="app noprint">
+    <div class="logo">FE</div>
+    <div style="flex:1">
+      <h1>Fetal Z-Score &amp; Function Calculator <span class="sub" style="display:inline">v1.0</span></h1>
+      <p class="sub">Cardiac dimensions, valves, great vessels &amp; function · evidence-anchored Z-scores · fetal-echo.org</p>
+    </div>
+    <div style="flex:0 0 auto;text-align:center;margin-left:10px">
+      <div id="_qrzscore" style="border-radius:6px;border:1px solid var(--line);width:72px;height:72px;overflow:hidden;background:#fff;display:block"></div>
+      <p style="font-size:9px;color:var(--muted);margin:3px 0 0">fetal-echo.org</p>
+    </div>
+  </header>
+
+  <div class="disclaimer noprint">
+    <b>Clinical decision-support aid — not a diagnostic test.</b> Z-scores are computed from published reference
+    equations and are valid only within the gestational-age / weight range of each source. Always interpret
+    alongside serial measurements, image quality and the wider clinical picture. Assumes a singleton,
+    structurally evaluated fetal heart.
+  </div>
+
+  <!-- ===== SHARED INPUTS ===== -->
+  <div class="card noprint">
+    <h2>Patient &amp; biometry</h2>
+    <p class="hint">Enter biometry once — every calculator below uses it. Name and ID are optional and only used to label a printout.</p>
+    <div class="grid">
+      <div class="field"><label>Patient name <span class="u">optional · for printout only</span></label><input id="pname" type="text" placeholder="—"></div>
+      <div class="field"><label>ID / MRN <span class="u">optional · for printout only</span></label><input id="pmrn" type="text" placeholder="—"></div>
+    </div>
+    <div class="group-label">Biometric inputs</div>
+    <div class="grid3">
+      <div class="field"><label>Gestational age <span class="u">weeks</span></label><input id="gaW" type="number" step="1" min="14" max="41" inputmode="numeric" placeholder="weeks"></div>
+      <div class="field"><label>+ days <span class="u">0–6</span></label><input id="gaD" type="number" step="1" min="0" max="6" inputmode="numeric" placeholder="days"></div>
+      <div class="field"><label>Estimated fetal weight <span class="u">grams</span></label><input id="efw" type="number" step="1" min="0" inputmode="numeric" placeholder="g"></div>
+      <div class="field"><label>Biparietal diameter <span class="u">cm</span></label><input id="bpd" type="number" step="0.01" min="0" inputmode="decimal" placeholder="cm"></div>
+      <div class="field"><label>Femur length <span class="u">cm</span></label><input id="fl" type="number" step="0.01" min="0" inputmode="decimal" placeholder="cm"></div>
+      <div class="field"><label>Heart rate <span class="u">bpm · for output</span></label><input id="hr" type="number" step="1" min="0" inputmode="numeric" placeholder="bpm"></div>
+    </div>
+    <p class="sec-note" id="gaEcho" style="margin-top:12px"></p>
+  </div>
+
+  <!-- sections injected by JS -->
+  <div id="sections" class="noprint"></div>
+
+  <!-- ===== CoA / LEFT-HEART ALERT ===== -->
+  <div class="card noprint" id="coaCard" style="display:none"></div>
+
+  <!-- ===== FINDINGS ===== -->
+  <div class="card noprint" id="findingsCard">
+    <h2>Findings &amp; interpretation</h2>
+    <p class="hint">Parameters that fall outside the reference range are flagged here, most abnormal first.
+      <b>|Z| ≥ 2</b> = outside the 95% range (red); <b>|Z| 1.5–2</b> = borderline (orange).</p>
+    <div class="findings" id="findingsList"><div class="empty">Enter measurements above — flagged results will appear here.</div></div>
+    <div class="btns">
+      <a class="btn" href="index.html" style="text-decoration:none">← All Calculators</a>
+      <button class="btn primary" onclick="generatePrint()">Generate printable PDF</button>
+      <button class="btn" onclick="resetAll()">Clear all</button>
+    </div>
+    <div class="privacy">Patient name and ID are used only to label this printout on your own device. They are
+      <b>not transmitted, saved, or stored in any database</b>. The study date is added automatically.</div>
+  </div>
+
+  <!-- ===== REFERENCES ===== -->
+  <div class="card noprint">
+    <h2>References</h2>
+    <ul class="refs" id="refsList"></ul>
+  </div>
+
+  <footer class="noprint">fetal-echo.org · Fetal Z-Score &amp; Function Calculator v1.0</footer>
+
+  <!-- ===== PRINT AREA ===== -->
+  <div id="printArea"></div>
+</div>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+function erf(x){ // Abramowitz-Stegun 7.1.26
+  const s=x<0?-1:1; x=Math.abs(x);
+  const t=1/(1+0.3275911*x);
+  const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);
+  return s*y;
+}
+const normsdist = z => 0.5*(1+erf(z/Math.SQRT2));
+const ln = Math.log;
+function num(id){ const v=parseFloat($(id).value); return isFinite(v)?v:NaN; }
+
+/* shared context */
+function ctx(){
+  const w=num('gaW'), d=num('gaD');
+  const GA = isFinite(w)? w + (isFinite(d)?d:0)/7 : NaN;
+  const EFWg = num('efw');
+  return { GA, BPD:num('bpd'), FL:num('fl'), EFWg, EFWkg: isFinite(EFWg)?EFWg/1000:NaN, HR:num('hr') };
+}
+
+/* z-score constructors. Each returns {z, mean(optional in observed units)} given observed value */
+// log-linear on an independent var x:  z=(ln(obs)-(M*ln(x)+C))/R
+const zLogLin = (M,C,R,xKey) => (obs,c)=>{ const x=c[xKey]; if(!(obs>0)||!(x>0))return null; return {z:(ln(obs)-(M*ln(x)+C))/R}; };
+// generic: transform t(obs), expected E(c), sd S(c)
+const zGen = (t,E,S) => (obs,c)=>{ const ob=t(obs,c); const e=E(c), s=S(c); if(!isFinite(ob)||!isFinite(e)||!isFinite(s)||s===0)return null; return {z:(ob-e)/s, mean: t===IDENT?e:undefined}; };
+const IDENT=(v)=>v, LNT=(v)=>v>0?ln(v):NaN, SQRTT=(v)=>v>=0?Math.sqrt(v):NaN;
+
+/* ---------- Schneider valves & great vessels ---------- */
+const SCH = { // [M,C,R] per scale
+ GA:{ aov:[1.263,-5.019,0.1282], pv:[1.352,-5.114,0.1208], aao:[1.261,-4.886,0.133], mpa:[1.347,-5.025,0.157],
+      tv:[1.395,-4.766,0.1394], mv:[1.173,-4.084,0.1315], dao:[1.36,-5.365,0.1216], ivc:[1.201,-5.14,0.1893],
+      rpa:[1.23,-5.307,0.1802], lpa:[1.231,-5.39,0.1966], duct:[1.013,-4.44,0.1913] },
+ BPD:{ aov:[1.039,-2.848,0.1307], pv:[1.126,-2.813,0.1171], aao:[1.06,-2.758,0.1227], mpa:[1.144,-2.774,0.1455],
+      tv:[1.188,-2.439,0.1456], mv:[0.9921,-2.118,0.1296], dao:[1.101,-2.998,0.1332], ivc:[1.031,-3.159,0.1892],
+      rpa:[1.025,-3.223,0.1813], lpa:[1.062,-3.383,0.2001], duct:[0.8236,-2.694,0.2042] },
+ FL:{ aov:[0.8972,-2.274,0.1103], pv:[0.9437,-2.148,0.111], aao:[0.8968,-2.141,0.1225], mpa:[0.9465,-2.072,0.1645],
+      tv:[0.9937,-1.735,0.1386], mv:[0.8473,-1.55,0.1202], dao:[0.9415,-2.368,0.1224], ivc:[0.8365,-2.502,0.1885],
+      rpa:[0.8685,-2.623,0.178], lpa:[0.9219,-2.785,0.1935], duct:[0.737,-2.251,0.183] }
+};
+const SCH_X = { GA:'GA', BPD:'BPD', FL:'FL' };
+let schScale='GA';
+const schItems=[
+ ['aov','Aortic valve'],['pv','Pulmonary valve'],['aao','Ascending aorta'],['mpa','Main pulmonary artery'],
+ ['tv','Tricuspid valve'],['mv','Mitral valve'],['dao','Descending aorta'],['ivc','Inferior vena cava'],
+ ['rpa','Right pulmonary artery'],['lpa','Left pulmonary artery'],['duct','Arterial duct']
+];
+
+/* ---------- Pasquini isthmus / duct (measured in mm) ---------- */
+const PAS_GA={ i3vt:[1.223608,-2.822,0.16424], isag:[1.109503,-2.489632,0.18183], duct:[1.396496,-3.359462,0.17569] };
+const PAS_FL={ i3vt:[0.9085,-2.4485,0.181], isag:[0.8792125,-2.261143,0.181], duct:[1.090026,-3.008687,0.17931] };
+let pasScale='GA';
+const pasItems=[['i3vt','Aortic isthmus, 3-vessel-trachea'],['isag','Aortic isthmus, sagittal'],['duct','Arterial duct']];
+
+/* ---------- BCN by GA (mm / cm2) ---------- */
+const P2=(a,b,cc)=>c=>a+b*c.GA+cc*c.GA*c.GA;
+const bcnGA=[
+ ['bw','Left ventricle wall','mm', zGen(LNT, c=>-0.970568592909118+0.0936658343925508*c.GA-0.000913622071892547*c.GA*c.GA, ()=>0.190439313650131)],
+ ['rw','Right ventricle wall','mm', zGen(IDENT, c=>-0.445951760973519+0.108766625379162*c.GA, c=>-0.0504912+0.0179596*c.GA)],
+ ['sw','Interventricular septum','mm', zGen(IDENT, c=>-0.468131781638101+0.117158248794647*c.GA, c=>0.0494452+0.0144878*c.GA)],
+ ['ctd','Cardiac transverse diameter','mm', zGen(IDENT, c=>-29.6752664577459+2.84666741688009*c.GA-0.0269609311535815*c.GA*c.GA, c=>-0.397814998263969+0.104491773839594*c.GA)],
+ ['cld','Cardiac longitudinal diameter','mm', zGen(IDENT, c=>-1.06572461520973+0.0777775643496273*c.GA*c.GA-0.00116815224006141*Math.pow(c.GA,3), c=>-0.345887163712683+0.117181259923521*c.GA)],
+ ['ca','Cardiac area','cm²', zGen(LNT, c=>-10.2607128331884+3.80206831258552*ln(c.GA)-0.0000156065790842761*Math.pow(c.GA,3), ()=>0.140699058771133)],
+ ['latd','LA transverse diameter','mm', zGen(IDENT, c=>-7.38671799479575+0.80863773589466*c.GA-0.00561090909293484*c.GA*c.GA, c=>-0.258158863073101+0.0608103295667803*c.GA)],
+ ['lald','LA longitudinal diameter','mm', zGen(IDENT, c=>-10.1159102+0.998379671*c.GA-0.008586164*c.GA*c.GA, c=>-0.456642079+0.074862019*c.GA)],
+ ['laa','LA area','cm²', zGen(IDENT, c=>-1.68183665+0.103507682*c.GA, c=>-0.350735243+0.022983714*c.GA)],
+ ['ratd','RA transverse diameter','mm', zGen(IDENT, c=>-13.82295693+1.295176616*c.GA-0.013030002*c.GA*c.GA, c=>-0.053744658+0.054552166*c.GA)],
+ ['rald','RA longitudinal diameter','mm', zGen(IDENT, c=>-10.69199669+1.043664826*c.GA-0.00962022*c.GA*c.GA, c=>-0.531596966+0.075070104*c.GA)],
+ ['raa','RA area','cm²', zGen(IDENT, c=>-1.778937681+0.108425061*c.GA, c=>-0.402172443+0.025489815*c.GA)],
+ ['lvbt','LV basal transverse diameter','mm', zGen(IDENT, c=>1.462689259+0.0022804*Math.pow(c.GA,3)-0.000559278*Math.pow(c.GA,3)*ln(c.GA), c=>-0.270055953+0.063137923*c.GA)],
+ ['lvmt','LV mid-transverse diameter','mm', zGen(IDENT, c=>-13.84612225+1.260434429*c.GA-0.013971851*c.GA*c.GA, c=>-0.146296793+0.063289207*c.GA)],
+ ['lvl','LV longitudinal diameter','mm', zGen(IDENT, c=>-57.294214+23.16725688*ln(c.GA), c=>0.037802329+0.094266443*c.GA)],
+ ['lva','LV area','cm²', zGen(LNT, c=>-5.29534926+0.323519102*c.GA-0.003994661*c.GA*c.GA, ()=>0.252098381519318)],
+ ['rvbt','RV basal transverse diameter','mm', zGen(IDENT, c=>1.56919942+0.002192692*Math.pow(c.GA,3)-0.000532379*Math.pow(c.GA,3)*ln(c.GA), c=>-0.668367591+0.080839836*c.GA)],
+ ['rvmt','RV mid-transverse diameter','mm', zGen(IDENT, c=>-14.41113899+1.279292585*c.GA-0.013661007*c.GA*c.GA, c=>0.002076007+0.057502992*c.GA)],
+ ['rvl','RV longitudinal diameter','mm', zGen(IDENT, c=>-17.20226698+1.719824302*c.GA-0.016824302*c.GA*c.GA, c=>-0.104201384+0.108354647*c.GA)],
+ ['rva','RV area','cm²', zGen(LNT, c=>-5.516744901+0.333883611*c.GA-0.004114917*c.GA*c.GA, ()=>0.253901273012161)]
+];
+
+/* ---------- BCN by EFW (kg=k, g=g) ---------- */
+const bcnEFW=[
+ ['bw','Left ventricle wall','mm', zGen(LNT, c=>0.856126567745213+0.0264368265578315*c.EFWkg+0.291295191995449*ln(c.EFWkg), ()=>0.191663533449173)],
+ ['rw','Right ventricle wall','mm', zGen(IDENT, c=>2.12778555996969+0.338057657320894*c.EFWkg+0.443786630478227*ln(c.EFWkg), c=>0.457552068915281+0.138802367931676*c.EFWkg)],
+ ['sw','Interventricular septum','mm', zGen(IDENT, c=>2.29199477196424+0.362699057415446*c.EFWkg+0.480290606908376*ln(c.EFWkg), c=>0.335920267466787+0.0848974292321263*c.EFWkg)],
+ ['ctd','Cardiac transverse diameter','mm', zGen(IDENT, c=>25.5532091307432+1.36311347302489*c.EFWkg+8.43445474034557*ln(c.EFWkg), c=>1.64620510177827+0.582542045170638*c.EFWkg)],
+ ['cld','Cardiac longitudinal diameter','mm', zGen(IDENT, c=>30.4177757233938+1.93116773408046*c.EFWkg+9.24457599000712*ln(c.EFWkg), c=>2.06353253410264+0.612370090154944*c.EFWkg)],
+ ['ca','Cardiac area','cm²', zGen(LNT, c=>2.03717793186775-0.11014705357026*c.EFWkg+0.891109755861968*ln(c.EFWkg), ()=>0.136782735586166)],
+ ['latd','LA transverse diameter','mm', zGen(IDENT, c=>9.23446133097233+0.929150846626831*c.EFWkg+2.69009818728123*ln(c.EFWkg), c=>0.932761495328265+0.337674427826441*c.EFWkg)],
+ ['lald','LA longitudinal diameter','mm', zGen(LNT, c=>2.41990566700099-0.0866665061158372*c.EFWkg+0.495760742258606*ln(c.EFWkg), ()=>0.15194733440876)],
+ ['laa','LA area','cm²', zGen(LNT, c=>0.165148434843546-0.143571264831233*c.EFWkg+0.93421995695016*ln(c.EFWkg), ()=>0.242159202694893)],
+ ['ratd','RA transverse diameter','mm', zGen(IDENT, c=>11.2151182121717+0.253541076931684*c.EFWkg+3.95202515939323*ln(c.EFWkg), c=>1.02397113044229+0.317504744603093*c.EFWkg)],
+ ['rald','RA longitudinal diameter','mm', zGen(IDENT, c=>9.89158234783234+0.415806710588087*c.EFWkg+3.34444478564991*ln(c.EFWkg), c=>0.890557607771667+0.452529545585022*c.EFWkg)],
+ ['raa','RA area','cm²', zGen(LNT, c=>1.24538464683694+0.0948826266971845*c.EFWkg-1.27013577793605*Math.pow(c.EFWkg,-0.5), ()=>0.234914243221283)],
+ ['lvbt','LV basal transverse diameter','mm', zGen(IDENT, c=>0.781498062159413-1.30278239375855*c.EFWkg+10.306551824556*Math.pow(c.EFWkg,0.5), c=>0.917523582218077+0.47508832638222*c.EFWkg)],
+ ['lvmt','LV mid-transverse diameter','mm', zGen(IDENT, c=>9.81627156125465-0.0528436109784661*c.EFWkg+3.66058514572421*ln(c.EFWkg), c=>1.00493354741857+0.381423123045154*c.EFWkg)],
+ ['lvl','LV longitudinal diameter','mm', zGen(IDENT, c=>17.2929141647451+1.28835173009198*c.EFWkg+5.02066215606947*ln(c.EFWkg), c=>1.72582075971683+0.576939403207324*c.EFWkg)],
+ ['lva','LV area','cm²', zGen(LNT, c=>-4.6423217916354+0.735411536936614*ln(c.EFWg), ()=>0.247051)],
+ ['rvbt','RV basal transverse diameter','mm', zGen(IDENT, c=>1.08804672924799-0.860219985832994*c.EFWkg+9.71859796475274*Math.pow(c.EFWkg,0.5), c=>0.917523582218077+0.47508832638222*c.EFWkg)],
+ ['rvmt','RV mid-transverse diameter','mm', zGen(IDENT, c=>9.97624286678881+0.016608366513216*c.EFWkg+3.87417979377753*ln(c.EFWkg), c=>1.58417919353601+0.506373378123051*ln(c.EFWkg))],
+ ['rvl','RV longitudinal diameter','mm', zGen(IDENT, c=>16.4379128228765+0.31296596501731*c.EFWkg+5.55390439652688*ln(c.EFWkg), c=>2.84164019550808+0.8778968625549*ln(c.EFWkg))],
+ ['rva','RV area','cm²', zGen(LNT, c=>-6.02856-0.000161*c.EFWg+0.96388*ln(c.EFWg), ()=>0.24296)]
+];
+let bcnScale='GA';
+const BCNGA_FN={}; bcnGA.forEach(it=>BCNGA_FN[it[0]]=it[3]);
+
+/* core vs advanced key sets */
+const schCoreOut=['aov','pv','aao','dao'], schCoreAv=['tv','mv'], schAdv=['mpa','ivc','rpa','lpa','duct'];
+const pasCore=['i3vt','duct'], pasAdv=['isag'];
+const schLabel=Object.fromEntries(schItems), pasLabel=Object.fromEntries(pasItems);
+
+/* ---------- interpretation notes (when |z|>=2) ---------- */
+const NOTE = {
+ aov:['small aortic valve — consider LVOTO / critical AS / hypoplastic left heart spectrum','large aortic valve — consider post-stenotic dilatation or outflow anomaly'],
+ mv:['small mitral valve — consider left-heart hypoplasia / mitral stenosis or atresia','large mitral valve — uncommon; reassess measurement'],
+ tv:['small tricuspid valve — consider RV hypoplasia / pulmonary atresia–IVS','large tricuspid valve — consider Ebstein / TR / RV volume load'],
+ pv:['small pulmonary valve — consider pulmonary stenosis / atresia / RVOTO','large pulmonary valve — consider post-stenotic or absent-pulmonary-valve dilatation'],
+ aao:['narrow ascending aorta — left-heart obstruction spectrum','dilated ascending aorta — consider AS / conotruncal anomaly'],
+ mpa:['narrow main pulmonary artery — RVOTO spectrum','dilated MPA — pulmonary stenosis / absent PV'],
+ i3vt:['small aortic isthmus — supports risk of coarctation / arch hypoplasia','large isthmus — reassess'],
+ isag:['small sagittal isthmus — supports coarctation risk','large isthmus — reassess'],
+ dao:['small descending aorta — left-heart obstruction','dilated descending aorta — reassess'],
+ lva:['small LV — left-heart hypoplasia spectrum','dilated LV — volume load / cardiomyopathy'],
+ rva:['small RV — RV hypoplasia spectrum','dilated RV — volume load / TR'],
+ ca:['small heart for gestation','cardiomegaly — volume load, anaemia, AV valve regurgitation, cardiomyopathy'],
+ ctr:['small heart relative to thorax','cardiomegaly (high cardiothoracic ratio)'],
+ facga:['reduced RV systolic function (low FAC)','high RV FAC — reassess'],
+ facefw:['reduced RV systolic function (low FAC)','high RV FAC — reassess'],
+ rvftf:['shortened RV filling — diastolic dysfunction / tachycardia','prolonged RV filling fraction'],
+ lvftf:['shortened LV filling — diastolic dysfunction / tachycardia','prolonged LV filling fraction'],
+ rvetf:['shortened RV ejection time','prolonged RV ejection time'],
+ lvetf:['shortened LV ejection time','prolonged LV ejection time'],
+ rvlvb:['RV:LV basal disproportion (low) — favours left-dominant / RV hypoplasia','RV:LV basal disproportion (high) — favours right dominance / coarctation spectrum'],
+ rvlvm:['RV:LV mid disproportion (low)','RV:LV mid disproportion (high) — right-dominant ventricles'],
+ sph:['more globular heart (low sphericity index)','more elongated heart (high sphericity index)'],
+ laca:['small LA relative to heart','enlarged LA — AV valve regurgitation / restrictive foramen'],
+ raca:['small RA relative to heart','enlarged RA — TR / volume load']
+};
+function noteFor(key,z){ const n=NOTE[key]; if(!n) return (z<0?'below':'above')+' the reference range for gestation'; return z<0?n[0]:n[1]; }
+
+/* ---------- registry of all live results for findings ---------- */
+const RESULTS = {}; // id -> {label, val, z, group}
+function setResult(id,label,group,val,z){ if(z==null||!isFinite(z)){ delete RESULTS[id]; } else { RESULTS[id]={label,group,val,z,key:id.split('::').pop()}; } }
+
+/* ---------- UI builders ---------- */
+function measRow(uid,label,unit,key){
+  return `<div class="mrow">
+    <div class="ml">${label} <span class="uu">${unit}</span></div>
+    <input type="number" step="0.01" inputmode="decimal" id="in_${uid}" data-key="${key}" data-label="${label.replace(/"/g,'')}" data-unit="${unit}" placeholder="${unit}">
+    <div class="zbox" id="z_${uid}"></div>
+  </div>`;
+}
+function scaleSeg(name,cur,opts){
+  return `<div class="seg">${opts.map(o=>`<button class="${o[0]===cur?'on':''}" onclick="${name}('${o[0]}')">${o[1]}</button>`).join('')}</div>`;
+}
+
+function buildSections(){
+  const S=$('sections');
+  let h='';
+  // CORE (default) section
+  h+=`<details class="sec" open><summary>Core measurements — 4-chamber, outflows &amp; arch <span class="cv" id="cv_core"></span></summary>
+   <div class="sec-body">
+     <div class="sec-note">The everyday parameters. Valves &amp; vessels in <b>cm</b> (Schneider); arch in <b>mm</b> (Pasquini). Reference scale: ${scaleSeg('setSch',schScale,[['GA','Gestational age'],['BPD','BPD'],['FL','Femur length']])} <span id="schScaleNote"></span> · open the advanced sections only if needed.</div>
+     <div class="group-label">Outflow valves &amp; great arteries</div>
+     <div id="coreOut"></div>
+     <div class="group-label">AV valves</div>
+     <div id="coreAv"></div>
+     <div class="group-label">Aortic arch — 3-vessel-trachea (mm)</div>
+     <div id="coreArch"></div>
+     <div class="group-label">Ventricular size — optional (mm, for LV:RV ratio)</div>
+     <div id="coreVent"></div>
+   </div></details>`;
+  // Advanced great vessels + arch
+  h+=`<details class="sec"><summary>More great vessels &amp; arch — Schneider / Pasquini <span class="cv" id="cv_sch"></span></summary>
+   <div class="sec-body">
+     <div class="sec-note">Additional vessels (cm) and the sagittal isthmus (mm). Same reference scale as the core valves.</div>
+     <div id="schRows"></div>
+     <div class="group-label">Aortic isthmus — sagittal (mm)</div>
+     <div id="pasRows"></div>
+   </div></details>`;
+  // BCN chambers
+  h+=`<details class="sec"><summary>Chambers &amp; walls — García-Otero 2020 <span class="cv" id="cv_bcn"></span></summary>
+   <div class="sec-body">
+     <div class="sec-note">Diameters/walls in <b>mm</b>, areas in <b>cm²</b>. Reference scale: ${scaleSeg('setBcn',bcnScale,[['GA','Gestational age'],['EFW','Fetal weight']])}
+       <span class="uu"> · use weight scale for growth restriction</span></div>
+     <div id="bcnRows"></div>
+   </div></details>`;
+  // Function: FAC
+  h+=`<details class="sec"><summary>RV function — fractional area change <span class="cv" id="cv_fac"></span></summary>
+   <div class="sec-body">
+     <div class="sec-note">Enter RV end-diastolic &amp; end-systolic area (4-chamber). FAC = (EDA−ESA)/EDA ×100. Z-scores by GA (Luewan 2011) and by EFW (Messing 2011).</div>
+     <div class="group-label">By gestational age</div>
+     ${measRow('facEDAga','RV end-diastolic area','cm²','facEDAga')}
+     ${measRow('facESAga','RV end-systolic area','cm²','facESAga')}
+     <div class="mrow"><div class="ml">RV FAC <span class="uu">% · computed</span></div><div id="fac_val_ga" style="font-weight:700">—</div><div class="zbox" id="z_facga"></div></div>
+     <div class="group-label">By estimated fetal weight</div>
+     ${measRow('facEDAef','RV end-diastolic area','cm²','facEDAef')}
+     ${measRow('facESAef','RV end-systolic area','cm²','facESAef')}
+     <div class="mrow"><div class="ml">RV FAC <span class="uu">% · computed</span></div><div id="fac_val_ef" style="font-weight:700">—</div><div class="zbox" id="z_facefw"></div></div>
+   </div></details>`;
+  // Function: FTF/ETF
+  h+=`<details class="sec"><summary>Time fractions — filling &amp; ejection <span class="cv" id="cv_tf"></span></summary>
+   <div class="sec-body">
+     <div class="sec-note">Enter average filling/ejection time and cycle length (ms) from Doppler. FTF=filling/cycle×100, ETF=ejection/cycle×100 (Carvalho 2017).</div>
+     <div class="group-label">Filling time fraction</div>
+     <div class="grid">
+       <div class="field"><label>RV filling time <span class="u">ms</span></label><input id="in_rvft" type="number" step="1" inputmode="decimal"></div>
+       <div class="field"><label>RV cycle length <span class="u">ms</span></label><input id="in_rvcy" type="number" step="1" inputmode="decimal"></div>
+       <div class="field"><label>LV filling time <span class="u">ms</span></label><input id="in_lvft" type="number" step="1" inputmode="decimal"></div>
+       <div class="field"><label>LV cycle length <span class="u">ms</span></label><input id="in_lvcy" type="number" step="1" inputmode="decimal"></div>
+     </div>
+     <div class="mrow"><div class="ml">RV FTF <span class="uu">%</span></div><div id="rvftf_v" style="font-weight:700">—</div><div class="zbox" id="z_rvftf"></div></div>
+     <div class="mrow"><div class="ml">LV FTF <span class="uu">%</span></div><div id="lvftf_v" style="font-weight:700">—</div><div class="zbox" id="z_lvftf"></div></div>
+     <div class="group-label">Ejection time fraction</div>
+     <div class="grid">
+       <div class="field"><label>RV ejection time <span class="u">ms</span></label><input id="in_rvet" type="number" step="1" inputmode="decimal"></div>
+       <div class="field"><label>RV cycle length <span class="u">ms</span></label><input id="in_rvecy" type="number" step="1" inputmode="decimal"></div>
+       <div class="field"><label>LV ejection time <span class="u">ms</span></label><input id="in_lvet" type="number" step="1" inputmode="decimal"></div>
+       <div class="field"><label>LV cycle length <span class="u">ms</span></label><input id="in_lvecy" type="number" step="1" inputmode="decimal"></div>
+     </div>
+     <div class="mrow"><div class="ml">RV ETF <span class="uu">%</span></div><div id="rvetf_v" style="font-weight:700">—</div><div class="zbox" id="z_rvetf"></div></div>
+     <div class="mrow"><div class="ml">LV ETF <span class="uu">%</span></div><div id="lvetf_v" style="font-weight:700">—</div><div class="zbox" id="z_lvetf"></div></div>
+   </div></details>`;
+  // Cardiac output
+  h+=`<details class="sec"><summary>Cardiac output <span class="cv" id="cv_co"></span></summary>
+   <div class="sec-body">
+     <div class="sec-note">SV = π/4 × D² × VTI; CO = SV × HR. Combined CO indexed to fetal weight. Reference 425–550 mL/min/kg (Mielke 2001).</div>
+     <div class="grid">
+       <div class="field"><label>RVOT diameter <span class="u">cm</span></label><input id="in_rvotd" type="number" step="0.01" inputmode="decimal"></div>
+       <div class="field"><label>RVOT VTI <span class="u">cm</span></label><input id="in_rvotv" type="number" step="0.01" inputmode="decimal"></div>
+       <div class="field"><label>LVOT diameter <span class="u">cm</span></label><input id="in_lvotd" type="number" step="0.01" inputmode="decimal"></div>
+       <div class="field"><label>LVOT VTI <span class="u">cm</span></label><input id="in_lvotv" type="number" step="0.01" inputmode="decimal"></div>
+     </div>
+     <div class="sec-note" style="margin-top:6px">Uses heart rate &amp; fetal weight from the biometry panel.</div>
+     <div id="coOut" class="sec-note"></div>
+   </div></details>`;
+  // DeVore ratios
+  h+=`<details class="sec"><summary>Ratios &amp; shape — DeVore <span class="cv" id="cv_dv"></span></summary>
+   <div class="sec-body">
+     <div class="sec-note">Cardiothoracic ratio, chamber-area ratios, sphericity &amp; RV:LV ratios (DeVore 2017–18). Areas in cm², diameters in cm.</div>
+     <div class="grid">
+       <div class="field"><label>Cardiac area <span class="u">cm²</span></label><input id="in_dvca" type="number" step="0.01" inputmode="decimal"></div>
+       <div class="field"><label>Thoracic area <span class="u">cm²</span></label><input id="in_dvta" type="number" step="0.01" inputmode="decimal"></div>
+       <div class="field"><label>Cardiac longitudinal diam <span class="u">cm</span></label><input id="in_dvcl" type="number" step="0.01" inputmode="decimal"></div>
+       <div class="field"><label>Cardiac transverse diam <span class="u">cm</span></label><input id="in_dvct" type="number" step="0.01" inputmode="decimal"></div>
+       <div class="field"><label>RV basal diam <span class="u">cm</span></label><input id="in_dvrvb" type="number" step="0.01" inputmode="decimal"></div>
+       <div class="field"><label>LV basal diam <span class="u">cm</span></label><input id="in_dvlvb" type="number" step="0.01" inputmode="decimal"></div>
+       <div class="field"><label>RV mid diam <span class="u">cm</span></label><input id="in_dvrvm" type="number" step="0.01" inputmode="decimal"></div>
+       <div class="field"><label>LV mid diam <span class="u">cm</span></label><input id="in_dvlvm" type="number" step="0.01" inputmode="decimal"></div>
+       <div class="field"><label>LA area <span class="u">cm²</span></label><input id="in_dvlaa" type="number" step="0.01" inputmode="decimal"></div>
+       <div class="field"><label>RA area <span class="u">cm²</span></label><input id="in_dvraa" type="number" step="0.01" inputmode="decimal"></div>
+     </div>
+     <div id="dvRows" style="margin-top:8px"></div>
+   </div></details>`;
+  S.innerHTML=h;
+  // fill core subgroups
+  $('coreOut').innerHTML = schCoreOut.map(k=>measRow('sch_'+k,schLabel[k],'cm','sch::'+k)).join('');
+  $('coreAv').innerHTML  = schCoreAv.map(k=>measRow('sch_'+k,schLabel[k],'cm','sch::'+k)).join('');
+  $('coreArch').innerHTML = pasCore.map(k=>measRow('pas_'+k,pasLabel[k],'mm','pas::'+k)).join('')
+     + `<div class="mrow"><div class="ml">Isthmus : duct (I/D) ratio <span class="uu">computed</span></div><div id="idr_v" style="font-weight:700">—</div><div class="zbox"></div></div>`;
+  $('coreVent').innerHTML =
+     `<div class="mrow"><div class="ml">LV minor — mid-transverse <span class="uu">mm</span></div><input type="number" step="0.01" inputmode="decimal" id="in_lvmin" placeholder="mm"><div class="zbox" id="z_lvmin"></div></div>`
+   + `<div class="mrow"><div class="ml">RV minor — mid-transverse <span class="uu">mm</span></div><input type="number" step="0.01" inputmode="decimal" id="in_rvmin" placeholder="mm"><div class="zbox" id="z_rvmin"></div></div>`
+   + `<div class="mrow"><div class="ml">LV : RV minor ratio <span class="uu">computed · left-heart concern if &lt; 0.9</span></div><div id="lvrv_v" style="font-weight:700">—</div><div class="zbox" id="z_lvrv"></div></div>`;
+  // advanced great vessels + sagittal isthmus
+  $('schRows').innerHTML = schAdv.map(k=>measRow('sch_'+k,schLabel[k],'cm','sch::'+k)).join('');
+  $('pasRows').innerHTML = pasAdv.map(k=>measRow('pas_'+k,pasLabel[k],'mm','pas::'+k)).join('');
+  renderBcnRows();
+  $('dvRows').innerHTML = [
+    ['ctr','Cardiothoracic ratio (CA/TA)'],['laca','LA / heart area'],['raca','RA / heart area'],
+    ['sph','Cardiac sphericity (long/transv)'],['rvlvb','RV / LV basal diameter'],['rvlvm','RV / LV mid diameter']
+  ].map(r=>`<div class="mrow"><div class="ml">${r[1]}</div><div id="dv_v_${r[0]}" style="font-weight:700">—</div><div class="zbox" id="z_dv_${r[0]}"></div></div>`).join('');
+  attachInputs();
+}
+function renderBcnRows(){
+  const list = bcnScale==='GA'?bcnGA:bcnEFW;
+  $('bcnRows').innerHTML = list.map(it=>measRow('bcn_'+it[0],it[1],it[2],'bcn::'+it[0])).join('');
+  attachInputs();
+  recompute();
+}
+function setSch(s){ schScale=s; document.querySelectorAll('#schRows').length; buildSegState(); recompute(); }
+function setPas(s){ pasScale=s; buildSegState(); recompute(); }
+function setBcn(s){ bcnScale=s; buildSegState(); renderBcnRows(); }
+function buildSegState(){ buildSections(); restoreInputs(); }
+
+/* preserve typed values across rebuilds */
+let SNAP={};
+function snapshot(){ document.querySelectorAll('input').forEach(i=>{ if(i.id) SNAP[i.id]=i.value; }); }
+function restoreInputs(){ document.querySelectorAll('input').forEach(i=>{ if(i.id&&SNAP[i.id]!=null) i.value=SNAP[i.id]; }); }
+
+function attachInputs(){
+  document.querySelectorAll('input').forEach(i=>{ if(!i._b){ i._b=1; i.addEventListener('input',()=>{ snapshot(); recompute(); }); }});
+}
+
+/* ---------- compute everything ---------- */
+function fmtZ(z){ return (z>=0?'+':'')+z.toFixed(2); }
+function classZ(z){ const a=Math.abs(z); return a>=2?'bad':(a>=1.5?'bord':'ok'); }
+function tagZ(z){ const a=Math.abs(z); return a>=2?'<span class="tag t-bad">OUT OF RANGE</span>':(a>=1.5?'<span class="tag t-bord">BORDERLINE</span>':'<span class="tag t-ok">WITHIN RANGE</span>'); }
+function paintZ(elId,z){ const el=$(elId); if(!el)return; if(z==null||!isFinite(z)){ el.className='zbox'; el.innerHTML=''; return;} const cl=classZ(z); el.className='zbox '+cl; el.innerHTML=`<span class="zval">Z ${fmtZ(z)}</span> · ${(normsdist(z)*100).toFixed(0)}c ${tagZ(z)}`; }
+
+function recompute(){
+  const c=ctx();
+  // GA echo
+  $('gaEcho').textContent = isFinite(c.GA)? `Decimal GA ${c.GA.toFixed(2)} weeks · EFW ${isFinite(c.EFWkg)?c.EFWkg.toFixed(3)+' kg':'—'}` : 'Enter gestational age to begin.';
+  for(const k in RESULTS) delete RESULTS[k];
+
+  // Schneider
+  const sc=SCH[schScale], xk=SCH_X[schScale];
+  $('schScaleNote').textContent = (schScale==='GA'&&!isFinite(c.GA))||(schScale==='BPD'&&!isFinite(c.BPD))||(schScale==='FL'&&!isFinite(c.FL))?' — enter the chosen biometry':'';
+  schItems.forEach(it=>{
+    const v=num('in_sch_'+it[0]); const [M,C,R]=sc[it[0]];
+    let z=null; const x=c[xk];
+    if(v>0&&x>0) z=(ln(v)-(M*ln(x)+C))/R;
+    paintZ('z_sch_'+it[0], z);
+    setResult('sch::'+it[0], it[1]+' (cm)', 'Valves & vessels', v, z);
+  });
+  // Pasquini (mm). FL scale uses FL in mm.
+  const pas = pasScale==='GA'?PAS_GA:PAS_FL;
+  pasItems.forEach(it=>{
+    const v=num('in_pas_'+it[0]); const [M,C,R]=pas[it[0]];
+    let z=null; const x = pasScale==='GA'? c.GA : (isFinite(c.FL)?c.FL*10:NaN);
+    if(v>0&&x>0) z=(ln(v)-(M*ln(x)+C))/R;
+    paintZ('z_pas_'+it[0], z);
+    setResult('pas::'+it[0], it[1]+' (mm)', 'Isthmus & duct', v, z);
+  });
+  // BCN
+  const list=bcnScale==='GA'?bcnGA:bcnEFW;
+  list.forEach(it=>{
+    const v=num('in_bcn_'+it[0]); let z=null;
+    if(isFinite(v)){ const r=it[3](v,c); if(r&&isFinite(r.z)) z=r.z; }
+    paintZ('z_bcn_'+it[0], z);
+    setResult('bcn::'+it[0], it[1]+' ('+it[2]+')', 'Chambers & walls', v, z);
+  });
+  // FAC by GA
+  (function(){
+    const eda=num('in_facEDAga'), esa=num('in_facESAga');
+    let fac=NaN,z=null;
+    if(eda>0&&esa>=0){ fac=(eda-esa)/eda*100; if(isFinite(c.GA)){ const E=51.4900542103663-1.11487606786*c.GA+0.0136637202546493*c.GA*c.GA; z=(fac-E)/8.579155802; } }
+    $('fac_val_ga').textContent = isFinite(fac)?fac.toFixed(1)+' %':'—';
+    paintZ('z_facga',z); setResult('facga','RV FAC % (by GA)','RV function',isFinite(fac)?fac:null,z);
+  })();
+  // FAC by EFW
+  (function(){
+    const eda=num('in_facEDAef'), esa=num('in_facESAef'); const g=c.EFWg;
+    let fac=NaN,z=null;
+    if(eda>0&&esa>=0){ fac=(eda-esa)/eda*100; if(g>0){ const E=36.4143017178579-0.00545999060758537*g+0.0000008654591*g*g; z=(fac-E)/8.48139867; } }
+    $('fac_val_ef').textContent = isFinite(fac)?fac.toFixed(1)+' %':'—';
+    paintZ('z_facefw',z); setResult('facefw','RV FAC % (by EFW)','RV function',isFinite(fac)?fac:null,z);
+  })();
+  // FTF
+  function ftf(ftId,cyId,vId,zId,key,label,expFn){
+    const f=num(ftId), cy=num(cyId); let val=NaN,z=null;
+    if(f>0&&cy>0){ val=f/cy*100; const HR=60000/cy; const E=expFn.E(HR,c); const S=expFn.S(HR,c); if(isFinite(E)&&isFinite(S)&&S!==0) z=(val-E)/S; }
+    $(vId).textContent=isFinite(val)?val.toFixed(1)+' %':'—'; paintZ(zId,z); setResult(key,label,'Time fractions',isFinite(val)?val:null,z);
+  }
+  ftf('in_rvft','in_rvcy','rvftf_v','z_rvftf','rvftf','RV FTF %',{E:HR=>18.7332759662306+2889.91651663146/HR,S:HR=>6.14809868332898-0.01826993*HR});
+  ftf('in_lvft','in_lvcy','lvftf_v','z_lvftf','lvftf','LV FTF %',{E:HR=>16.4299563228872+3617.92445040645/HR,S:HR=>6.43206887534064-0.0178035288151452*HR});
+  // ETF
+  function etf(etId,cyId,vId,zId,key,label,EF,SD){
+    const e=num(etId), cy=num(cyId); let val=NaN,z=null;
+    if(e>0&&cy>0){ val=e/cy*100; const HR=60000/cy; const E=EF(HR,c.GA); if(isFinite(E)&&isFinite(c.GA)) z=(val-E)/SD; }
+    $(vId).textContent=isFinite(val)?val.toFixed(1)+' %':'—'; paintZ(zId,z); setResult(key,label,'Time fractions',isFinite(val)?val:null,z);
+  }
+  etf('in_rvet','in_rvecy','rvetf_v','z_rvetf','rvetf','RV ETF %',(HR,GA)=>26.748934+0.124522*HR-0.080492*GA,2.6371);
+  etf('in_lvet','in_lvecy','lvetf_v','z_lvetf','lvetf','LV ETF %',(HR,GA)=>29.692919+0.108611*HR-0.139257*GA,2.365145);
+  // Cardiac output
+  (function(){
+    const rd=num('in_rvotd'),rv=num('in_rvotv'),ld=num('in_lvotd'),lv=num('in_lvotv'),HR=c.HR;
+    function sv(d,v){ return (d>0&&v>0)?(Math.PI/4)*d*d*v:NaN; }
+    const svR=sv(rd,rv), svL=sv(ld,lv);
+    let co=0,any=false;
+    if(isFinite(svR)&&HR>0){co+=svR*HR;any=true;}
+    if(isFinite(svL)&&HR>0){co+=svL*HR;any=true;}
+    let out='';
+    if(any){ out=`Combined CO ${co.toFixed(0)} mL/min`; if(isFinite(c.EFWkg)&&c.EFWkg>0){ const idx=co/c.EFWkg; const flag=idx<425?' — below reference':(idx>550?' — above reference':' — within 425–550'); out+=` · indexed ${idx.toFixed(0)} mL/min/kg<b>${flag}</b>`; } else out+=' · enter EFW & HR to index'; }
+    else out='Enter outflow diameter, VTI and heart rate.';
+    $('coOut').innerHTML=out;
+  })();
+  // DeVore ratios
+  function dv(key,vId,zId,label,ratio,t,E,S){
+    let val=NaN,z=null;
+    if(isFinite(ratio)){ val=ratio; const tr=t(ratio); const e=E(c.GA), s=S(c.GA); if(isFinite(tr)&&isFinite(e)&&isFinite(s)&&s!==0&&isFinite(c.GA)) z=(tr-e)/s; }
+    $(vId).textContent=isFinite(val)?val.toFixed(3):'—'; paintZ(zId,z); setResult(key,label,'Ratios & shape',isFinite(val)?val:null,z);
+  }
+  const ca=num('in_dvca'),ta=num('in_dvta'),cl=num('in_dvcl'),ct=num('in_dvct'),
+        rvb=num('in_dvrvb'),lvb=num('in_dvlvb'),rvm=num('in_dvrvm'),lvm=num('in_dvlvm'),
+        laa=num('in_dvlaa'),raa=num('in_dvraa');
+  dv('ctr','dv_v_ctr','z_dv_ctr','Cardiothoracic ratio',(ca>0&&ta>0)?ca/ta:NaN,IDENT,GA=>0.0218234531638563+0.0132424164402212*GA-0.000170489*GA*GA,GA=>0.000584193807423579*GA+0.0191096898080152);
+  dv('laca','dv_v_laca','z_dv_laca','LA / heart area',(laa>0&&ca>0)?laa/ca:NaN,LNT,()=>-1.915712,()=>0.251307);
+  dv('raca','dv_v_raca','z_dv_raca','RA / heart area',(raa>0&&ca>0)?raa/ca:NaN,SQRTT,()=>0.390891,()=>0.047321);
+  dv('sph','dv_v_sph','z_dv_sph','Cardiac sphericity',(cl>0&&ct>0)?cl/ct:NaN,LNT,GA=>-0.00236224503005051*GA+0.255057410303303,()=>0.10022312);
+  dv('rvlvb','dv_v_rvlvb','z_dv_rvlvb','RV/LV basal',(rvb>0&&lvb>0)?rvb/lvb:NaN,LNT,GA=>0.00198602365847468*GA-0.0380005952830765,()=>0.11921652);
+  dv('rvlvm','dv_v_rvlvm','z_dv_rvlvm','RV/LV mid',(rvm>0&&lvm>0)?rvm/lvm:NaN,LNT,GA=>0.0029058086758513*GA-0.067568872086084,()=>0.151192276408318);
+
+  computeCoA(c);
+  updateCounts(); renderFindings();
+}
+
+/* ---------- left-heart / coarctation screen ---------- */
+function computeCoA(c){
+  const z = k => RESULTS[k] ? RESULTS[k].z : null;
+  const lvmin=num('in_lvmin'), rvmin=num('in_rvmin');
+  let zLv=null, zRv=null;
+  if(isFinite(lvmin)){ const r=BCNGA_FN['lvmt'](lvmin,c); if(r&&isFinite(r.z)) zLv=r.z; }
+  if(isFinite(rvmin)){ const r=BCNGA_FN['rvmt'](rvmin,c); if(r&&isFinite(r.z)) zRv=r.z; }
+  paintZ('z_lvmin',zLv); paintZ('z_rvmin',zRv);
+  setResult('lvmin','LV minor (mm)','Core', isFinite(lvmin)?lvmin:null, zLv);
+  setResult('rvmin','RV minor (mm)','Core', isFinite(rvmin)?rvmin:null, zRv);
+  // LV:RV ratio
+  let lvrv=NaN;
+  if(isFinite(lvmin)&&isFinite(rvmin)&&rvmin>0) lvrv=lvmin/rvmin;
+  const lvrvV=$('lvrv_v'); if(lvrvV) lvrvV.textContent=isFinite(lvrv)?lvrv.toFixed(2):'—';
+  const lvrvZ=$('z_lvrv');
+  if(lvrvZ){ if(isFinite(lvrv)){ const low=lvrv<0.9; lvrvZ.className='zbox '+(low?'bad':'ok');
+      lvrvZ.innerHTML = low?'<span class="zval">'+lvrv.toFixed(2)+'</span> <span class="tag t-bad">LV SMALL</span>'
+                            :'<span class="zval">'+lvrv.toFixed(2)+'</span> <span class="tag t-ok">OK</span>'; }
+    else { lvrvZ.className='zbox'; lvrvZ.innerHTML=''; } }
+  // I:D ratio
+  const isth=num('in_pas_i3vt'), duct=num('in_pas_duct');
+  let idr=NaN; if(isFinite(isth)&&isFinite(duct)&&duct>0) idr=isth/duct;
+  const idV=$('idr_v'); if(idV) idV.textContent=isFinite(idr)?idr.toFixed(2):'—';
+  // triggers
+  const reasons=[];
+  const chk=(zz,name)=>{ if(zz!=null&&zz<-2) reasons.push(name); };
+  chk(z('sch::aov'),'aortic valve');
+  chk(z('sch::mv'),'mitral valve');
+  chk(z('sch::aao'),'ascending aorta');
+  chk(z('pas::i3vt'),'aortic isthmus');
+  chk(zLv,'LV minor dimension');
+  if(isFinite(lvrv)&&lvrv<0.9) reasons.push('LV:RV ratio < 0.9');
+  const archEntered = isFinite(isth)||isFinite(duct)||isFinite(num('in_pas_isag'));
+  const card=$('coaCard');
+  if(reasons.length){
+    card.style.display='block'; card.style.borderColor='#f0bcbc'; card.style.background='#fbe4e4';
+    card.innerHTML = `<h2 style="color:#c33a3a">Left-heart / coarctation alert</h2>
+      <p style="font-size:13.5px;margin:0 0 8px">This calculator shows <b>smaller left-sided structures</b>. Below the normal range for gestation: <b>${reasons.join(', ')}</b>.</p>
+      <p style="font-size:13.5px;margin:0 0 12px">Small left-heart and aortic-arch structures are associated with an <b>increased possibility of postnatal coarctation of the aorta (CoA)</b>. This screen does not quantify that probability. To estimate the actual risk, enter the additional predictors in the dedicated CoA model.</p>
+      <a class="btn primary" href="fetal-coa-calculator.html" target="_blank" rel="noopener">Open the CoA predictive calculator →</a>`;
+  } else if(archEntered){
+    card.style.display='block'; card.style.borderColor='#f0dcae'; card.style.background='#fcf3df';
+    card.innerHTML = `<h2 style="color:#b07400">Aortic arch parameters entered</h2>
+      <p style="font-size:13.5px;margin:0 0 12px">The isthmus / ductus measurements are within range here, but these are the parameters associated with aortic-arch anomaly. To estimate the probability of coarctation with a validated predictive model, use the CoA calculator.</p>
+      <a class="btn primary" href="fetal-coa-calculator.html" target="_blank" rel="noopener">Open the CoA predictive calculator →</a>`;
+  } else { card.style.display='none'; card.innerHTML=''; }
+}
+
+function updateCounts(){
+  const groups={'Valves & vessels':'cv_core','Isthmus & duct':'cv_core','Core':'cv_core','Chambers & walls':'cv_bcn','RV function':'cv_fac','Time fractions':'cv_tf','Ratios & shape':'cv_dv'};
+  const tally={};
+  Object.values(RESULTS).forEach(r=>{ const a=Math.abs(r.z); if(a>=1.5){ tally[r.group]=(tally[r.group]||0)+1; } });
+  for(const g in groups){ const el=$(groups[g]); if(el) el.textContent = tally[g]?`${tally[g]} flagged`:''; }
+  const co=$('cv_co'); if(co) co.textContent='';
+}
+
+function renderFindings(){
+  const arr=Object.entries(RESULTS).filter(([id,r])=>isFinite(r.z)&&Math.abs(r.z)>=1.5)
+    .map(([id,r])=>r).sort((a,b)=>Math.abs(b.z)-Math.abs(a.z));
+  const L=$('findingsList');
+  if(!arr.length){ L.innerHTML='<div class="empty">No parameters are outside the reference range. Borderline and abnormal results will be highlighted here as you enter measurements.</div>'; return; }
+  L.innerHTML=arr.map(r=>{
+    const sev=Math.abs(r.z)>=2?'bad':'bord';
+    return `<div class="fitem"><div class="dot ${sev}"></div>
+      <div><div class="fl">${r.label}</div><div class="fi">${noteFor(r.key,r.z)}</div></div>
+      <div class="fz" style="color:${sev==='bad'?'var(--bad)':'var(--bord)'}">Z ${fmtZ(r.z)}<br><span style="font-weight:500;color:var(--muted)">${(normsdist(r.z)*100).toFixed(0)} c</span></div></div>`;
+  }).join('');
+}
+
+/* ---------- references ---------- */
+const REFS=[
+ 'Schneider C, McCrindle BW, Carvalho JS, Hornberger LK, McCarthy KP, Daubeney PEF. Development of Z-scores for fetal cardiac dimensions from echocardiography. Ultrasound Obstet Gynecol 2005; 26: 599–605.',
+ 'Pasquini L, Mellander M, Seale A, Matsui H, Roughton M, Ho SY, Gardiner HM. Z-scores of the fetal aortic isthmus and duct. Ultrasound Obstet Gynecol 2007; 29: 628–633.',
+ 'García-Otero L, Gómez O, Rodriguez-López M, Torres X, Soveral I, Sepúlveda-Martínez Á, Guirado L, Valenzuela-Alcaraz B, López M, Martínez JM, Gratacós E, Crispi F. Nomograms of Fetal Cardiac Dimensions at 18–41 Weeks of Gestation. Fetal Diagn Ther 2020; 47(5): 387–398. doi:10.1159/000494838 (PMID 30612128).',
+ 'Luewan S, Tongprasert F, Srisupundit K, Tongsong T. Fetal cardiac dimensions at 14–40 weeks (cardio-STIC-M). J Ultrasound Med 2011; 30: 943–948.',
+ 'Messing B, et al. Fetal right ventricular fractional area change by 4D ultrasound. Ultrasound Obstet Gynecol 2011; 38: 528–535.',
+ 'Carvalho JS, et al. Filling and ejection time fractions; Heart 2002; 88: 387–391 and updated Z-scores, Ultrasound Obstet Gynecol 2017.',
+ 'Mielke G, Benda N. Cardiac output and central distribution of blood flow in the human fetus. Circulation 2001; 103: 1662–1668.',
+ 'DeVore GR. Cardiothoracic ratio, sphericity index and chamber-to-cardiac area ratios. Echocardiography 2017; 34: 1812–1822 and Z-score reference values, 2018.'
+];
+$('refsList').innerHTML=REFS.map(r=>`<li>${r}</li>`).join('');
+
+/* ---------- print ---------- */
+function generatePrint(){
+  const c=ctx();
+  const name=$('pname').value.trim(), mrn=$('pmrn').value.trim();
+  const now=new Date();
+  const dateStr=now.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+  const arr=Object.values(RESULTS).filter(r=>r.val!=null&&isFinite(r.val));
+  // group ordering
+  const order=['Valves & vessels','Isthmus & duct','Chambers & walls','RV function','Time fractions','Ratios & shape'];
+  let rows='';
+  order.forEach(g=>{
+    const items=arr.filter(r=>r.group===g);
+    if(!items.length)return;
+    rows+=`<tr><td colspan="4" class="pgl">${g}</td></tr>`;
+    items.forEach(r=>{
+      const a=Math.abs(r.z); const cls=a>=2?'pbad':(a>=1.5?'pbord':'');
+      const flag=a>=2?'Out of range':(a>=1.5?'Borderline':'Within range');
+      rows+=`<tr><td>${r.label}</td><td class="r">${r.val.toFixed(2)}</td><td class="r ${cls}">${isFinite(r.z)?fmtZ(r.z):'—'}</td><td class="${cls}">${isFinite(r.z)?flag:''}</td></tr>`;
+    });
+  });
+  if(!rows) rows='<tr><td colspan="4">No measurements entered.</td></tr>';
+  const flagged=arr.filter(r=>isFinite(r.z)&&Math.abs(r.z)>=1.5).sort((a,b)=>Math.abs(b.z)-Math.abs(a.z));
+  let findHtml = flagged.length? '<ul>'+flagged.map(r=>`<li class="${Math.abs(r.z)>=2?'pbad':'pbord'}">${r.label}: Z ${fmtZ(r.z)} — ${noteFor(r.key,r.z)}</li>`).join('')+'</ul>'
+    : '<p>All entered parameters are within the reference range (|Z| &lt; 1.5).</p>';
+  $('printArea').innerHTML=`
+    <div class="ph">
+      <div><h2>Fetal Echocardiography — Z-Score Report</h2>
+        <div>fetal-echo.org</div></div>
+      <div style="text-align:right">
+        <div><b>Name:</b> ${name||'—'}</div>
+        <div><b>ID/MRN:</b> ${mrn||'—'}</div>
+        <div><b>Date:</b> ${dateStr}</div>
+      </div>
+    </div>
+    <div><b>Gestational age:</b> ${isFinite(c.GA)?c.GA.toFixed(1)+' weeks':'—'} &nbsp; <b>EFW:</b> ${isFinite(c.EFWg)?c.EFWg+' g':'—'} &nbsp; <b>BPD:</b> ${isFinite(c.BPD)?c.BPD+' cm':'—'} &nbsp; <b>FL:</b> ${isFinite(c.FL)?c.FL+' cm':'—'}</div>
+    <table><thead><tr><th>Parameter</th><th class="r">Measured</th><th class="r">Z-score</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="pgl">Flagged findings &amp; interpretation</div>
+    ${findHtml}
+    <p style="font-size:10px;color:#555;margin-top:14px">Z = (observed − expected)/SD. |Z| ≥ 2 lies outside the 95% reference range. Decision-support only; interpret with image quality, serial data and clinical context. Sources: Schneider 2005, Pasquini 2007, García-Otero 2020 (Fetal Diagn Ther), Luewan 2011, Messing 2011, Carvalho 2017, Mielke 2001, DeVore 2017–18.</p>
+    <p style="font-size:9.5px;color:#777">Patient identifiers shown here were entered locally for this printout and are not stored in any database.</p>`;
+  window.print();
+}
+
+function resetAll(){ document.querySelectorAll('input').forEach(i=>i.value=''); SNAP={}; recompute(); }
+
+/* init */
+buildSections();
+recompute();
+
+/* QR code — generated locally, no external API */
+window.addEventListener('load', function(){
+  var el=document.getElementById('_qrzscore');
+  if(el && typeof QRCode!=='undefined'){
+    new QRCode(el,{text:'https://fetal-echo.org/',width:72,height:72,correctLevel:QRCode.CorrectLevel.L});
+  }
+});
+
+</script>
+</body>
+</html>

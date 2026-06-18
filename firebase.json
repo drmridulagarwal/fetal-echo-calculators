@@ -1,0 +1,43 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "DEPLOY.md",
+      "firebase-debug.log"
+    ],
+    "headers": [
+      {
+        "source": "**/*.html",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=3600" },
+          { "key": "X-Content-Type-Options", "value": "nosniff" },
+          { "key": "X-Frame-Options", "value": "ALLOWALL" }
+        ]
+      },
+      {
+        "source": "sw.js",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache" },
+          { "key": "Service-Worker-Allowed", "value": "/" }
+        ]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/coa",
+        "destination": "/coa.html"
+      },
+      {
+        "source": "/zscore",
+        "destination": "/zscore.html"
+      },
+      {
+        "source": "/pediatric",
+        "destination": "/pediatric-echo-zscore-calculator.html"
+      }
+    ]
+  }
+}

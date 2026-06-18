@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fetal Coarctation Risk Tool — fetal-echo.org</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<style>
+  :root{
+    --bg:#f6f8fb; --card:#ffffff; --ink:#1d2733; --muted:#5b6b7c; --line:#e5ebf2;
+    --brand:#15607a; --brand-soft:#e8f1f5; --accent:#0f8a6d;
+    --low:#2f9e6b; --lowbg:#e8f6ee; --mod:#d99100; --modbg:#fcf3df;
+    --high:#d8642f; --highbg:#fbeadf; --vhigh:#c33a3a; --vhighbg:#fbe4e4;
+    --radius:14px; --shadow:0 1px 3px rgba(20,40,60,.06),0 6px 24px rgba(20,40,60,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:22px 16px 60px}
+  header.app{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+  .logo{flex:0 0 auto;width:42px;height:42px;border-radius:10px;background:var(--brand);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px}
+  h1{font-size:20px;margin:0;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:13px;margin:2px 0 0}
+  .disclaimer{margin:14px 0 18px;padding:10px 13px;background:#fff7e8;border:1px solid #f0dcae;
+    border-radius:10px;font-size:12.5px;color:#7a5c12}
+  .disclaimer b{color:#5e470c}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+  .card h2{font-size:14px;margin:0 0 2px;letter-spacing:.02em;text-transform:uppercase;color:var(--brand)}
+  .card .hint{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+  @media(max-width:620px){.grid{grid-template-columns:1fr}}
+  .field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:4px}
+  .field .u{color:var(--muted);font-weight:400}
+  .field input,.field select{width:100%;padding:9px 10px;border:1px solid var(--line);
+    border-radius:9px;font-size:14px;background:#fcfdfe;color:var(--ink);transition:border .15s,box-shadow .15s}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+  .field .z{font-size:12px;margin-top:4px;min-height:16px;font-variant-numeric:tabular-nums}
+  .z.ok{color:var(--accent)} .z.bad{color:var(--vhigh);font-weight:600} .z.na{color:var(--muted)}
+  .toggle-adv{display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px dashed var(--line);
+    background:#fff;color:var(--brand);font-weight:600;font-size:13px;padding:10px 14px;border-radius:10px;width:100%;
+    justify-content:center;transition:background .15s}
+  .toggle-adv:hover{background:var(--brand-soft)}
+  .adv{display:none} .adv.show{display:block}
+  .section-label{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);margin:18px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+  .section-label:first-child{margin-top:0}
+  /* Results */
+  .result-band{border-radius:var(--radius);padding:18px 18px 16px;margin-bottom:14px;border:1px solid var(--line)}
+  .rb-low{background:var(--lowbg);border-color:#bfe6cf} .rb-mod{background:var(--modbg);border-color:#f0dcae}
+  .rb-high{background:var(--highbg);border-color:#f0c6a8} .rb-vhigh{background:var(--vhighbg);border-color:#f0bcbc}
+  .rb-na{background:#f2f5f8}
+  .band-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .band-name{font-size:19px;font-weight:700;margin:0}
+  .band-index{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .meter{height:9px;border-radius:6px;background:#e7edf3;margin:12px 0 8px;overflow:hidden}
+  .meter > i{display:block;height:100%;border-radius:6px;transition:width .3s ease}
+  .band-ctx{font-size:13px;margin:6px 0 0}
+  .feat-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:620px){.feat-row{grid-template-columns:1fr}}
+  .feat{border:1px solid var(--line);border-radius:11px;padding:12px 13px;background:#fff}
+  .feat h3{margin:0 0 6px;font-size:13px}
+  .chip{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:20px;margin:2px 4px 2px 0;
+    background:#eef2f6;color:var(--muted)}
+  .chip.on{background:var(--vhighbg);color:var(--vhigh);font-weight:600}
+  .drivers{margin:4px 0 0;padding:0;list-style:none;font-size:12.5px}
+  .drivers li{padding:5px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}
+  .drivers li:first-child{border-top:none}
+  .drivers .src{color:var(--muted);font-size:11px}
+  .rec{font-size:13.5px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:13px 15px;margin-top:4px}
+  .rec b{color:var(--brand)}
+  details.more{margin-top:10px;font-size:13px}
+  details.more summary{cursor:pointer;color:var(--brand);font-weight:600}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);font-size:13px;font-weight:600;
+    padding:9px 14px;border-radius:9px;cursor:pointer}
+  .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn:hover{filter:brightness(.98)}
+  .refs{font-size:11.5px;color:var(--muted)}
+  .refs a{color:var(--brand);text-decoration:none} .refs a:hover{text-decoration:underline}
+  .refs li{margin-bottom:5px}
+  footer{font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px}
+  .small{font-size:11.5px;color:var(--muted)}
+  @media print{.noprint{display:none!important}}
+  .pill{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:2px 7px;border-radius:5px;
+    background:var(--brand-soft);color:var(--brand);vertical-align:middle;margin-left:6px}
+  .home-btn{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;
+    color:var(--brand);text-decoration:none;background:var(--brand-soft);border-radius:7px;
+    padding:4px 10px;margin-bottom:10px;width:fit-content}
+  .home-btn:hover{background:#d5e6ee}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="home-btn noprint" href="index.html">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    All calculators
+  </a>
+
+  <header class="app noprint">
+    <div class="logo">FE</div>
+    <div style="flex:1">
+      <h1>Fetal Coarctation Risk Tool <span class="pill">v2.0</span></h1>
+      <p class="sub">Left-heart obstruction spectrum · evidence-anchored risk stratification · fetal-echo.org</p>
+    </div>
+    <div class="noprint" style="flex:0 0 auto;text-align:center;margin-left:10px">
+      <div id="_qrcoa" style="border-radius:6px;border:1px solid var(--line);width:72px;height:72px;overflow:hidden;background:#fff;display:block"></div>
+      <p style="font-size:9px;color:var(--muted);margin:3px 0 0">fetal-echo.org</p>
+    </div>
+  </header>
+
+  <div class="disclaimer noprint">
+    <b>Statistical simulation of published research data — not a replacement for clinical judgement.</b>
+    This tool aggregates published fetal predictors of coarctation (CoA) into a transparent risk index.
+    It models the predictability reported in peer-reviewed literature and does not output a validated calibrated
+    probability. Every clinical decision requires independent expert fetal-cardiology assessment.
+  </div>
+
+  <!-- ============ BASIC INPUTS ============ -->
+  <div class="card">
+    <h2>Step 1 · Core measurements</h2>
+    <p class="hint">Start with the views you can obtain on most scans. The risk estimate updates live.
+      All Z-scores use gestational age only — no femur length needed.</p>
+
+    <div class="grid">
+      <div class="field">
+        <label>Gestational age <span class="u">decimal weeks · e.g. 26.5</span></label>
+        <input id="ga" type="number" step="0.1" min="14" max="40" inputmode="decimal" placeholder="weeks">
+        <div class="z na" id="ga_z">18–35 wks optimal</div>
+      </div>
+      <div class="field">
+        <label>Mitral valve annulus <span class="u">mm · 4CV end-diastole</span></label>
+        <input id="mv" type="number" step="0.1" min="0" inputmode="decimal" placeholder="mm">
+        <div class="z na" id="mv_z">—</div>
+      </div>
+      <div class="field">
+        <label>Tricuspid valve annulus <span class="u">mm · 4CV end-diastole</span></label>
+        <input id="tv" type="number" step="0.1" min="0" inputmode="decimal" placeholder="mm">
+        <div class="z na" id="tv_z">—</div>
+      </div>
+      <div class="field">
+        <label>Aortic valve annulus <span class="u">mm · LVOT end-systole</span></label>
+        <input id="aov" type="number" step="0.1" min="0" inputmode="decimal" placeholder="mm">
+        <div class="z na" id="aov_z">—</div>
+      </div>
+      <div class="field">
+        <label>Pulmonary valve annulus <span class="u">mm · end-systole</span></label>
+        <input id="pv" type="number" step="0.1" min="0" inputmode="decimal" placeholder="mm">
+        <div class="z na" id="pv_z">—</div>
+      </div>
+      <div class="field">
+        <label>Ascending aorta <span class="u">mm · above sinotubular jn</span></label>
+        <input id="aao" type="number" step="0.1" min="0" inputmode="decimal" placeholder="mm">
+        <div class="z na" id="aao_z">—</div>
+      </div>
+      <div class="field">
+        <label>Aortic isthmus — 3VT view <span class="u">mm · widest systolic</span></label>
+        <input id="aoi3" type="number" step="0.1" min="0" inputmode="decimal" placeholder="mm">
+        <div class="z na" id="aoi3_z">—</div>
+      </div>
+      <div class="field">
+        <label>LCA–LSA distance <span class="u">mm · L-carotid to L-subclavian · for CSAI</span></label>
+        <input id="taa" type="number" step="0.1" min="0" inputmode="decimal" placeholder="mm">
+        <div class="z na" id="taa_z">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ADVANCED TOGGLE ============ -->
+  <div class="card" style="padding:12px">
+    <div class="toggle-adv" id="advToggle">▸ Add advanced parameters (arch detail, Doppler, strain, structural) — refines the estimate</div>
+  </div>
+
+  <!-- ============ ADVANCED INPUTS ============ -->
+  <div class="adv" id="advPanel">
+    <div class="card">
+      <h2>Step 2 · Advanced parameters</h2>
+      <p class="hint">Optional. These add high-specificity confirmatory signs and help separate CoA from
+        HLHS and interrupted arch (IAA). Leave blank what you don't have.</p>
+
+      <div class="section-label">Arch detail &amp; ratios</div>
+      <div class="grid">
+        <div class="field">
+          <label>Aortic isthmus — sagittal <span class="u">mm</span></label>
+          <input id="aois" type="number" step="0.1" min="0" inputmode="decimal" placeholder="mm">
+          <div class="z na" id="aois_z">—</div>
+        </div>
+        <div class="field">
+          <label>Ductus arteriosus <span class="u">mm · 3VT, aortic end</span></label>
+          <input id="da" type="number" step="0.1" min="0" inputmode="decimal" placeholder="mm">
+          <div class="z na" id="da_z">—</div>
+        </div>
+        <div class="field">
+          <label>Descending aorta <span class="u">mm · below ductal insertion</span></label>
+          <input id="dao" type="number" step="0.1" min="0" inputmode="decimal" placeholder="mm">
+          <div class="z na" id="dao_z">For DA index</div>
+        </div>
+        <div class="field">
+          <label>Arch at L-subclavian (LSA) <span class="u">mm · for CSAI</span></label>
+          <input id="lca" type="number" step="0.1" min="0" inputmode="decimal" placeholder="mm">
+          <div class="z na" id="csai_z">CSAI uses this ÷ LCA–LSA dist</div>
+        </div>
+      </div>
+      <div class="z na" id="aoida_z" style="margin-top:6px;font-size:12px">I/D ratio (Isthmus/Ductus) — enter isthmus and ductus above (threshold &lt; 0.74 · Pasquini 2007)</div>
+
+      <div class="section-label">Ventricular dimensions <span style="font-weight:400;text-transform:none;font-size:11px">· mm · García-Otero 2020 · individual Z-scores + LV/RV ratio for HLHS grading</span></div>
+      <div class="grid">
+        <div class="field">
+          <label>LV mid-transverse width <span class="u">mm · 4CV</span></label>
+          <input id="lved" type="number" step="0.1" min="0" inputmode="decimal" placeholder="mm">
+          <div class="z na" id="lved_z">—</div>
+        </div>
+        <div class="field">
+          <label>RV mid-transverse width <span class="u">mm · 4CV</span></label>
+          <input id="rved" type="number" step="0.1" min="0" inputmode="decimal" placeholder="mm">
+          <div class="z na" id="rved_z">—</div>
+        </div>
+        <div class="field">
+          <label>LV longitudinal length <span class="u">mm · apex to mitral plane</span></label>
+          <input id="lvlo" type="number" step="0.1" min="0" inputmode="decimal" placeholder="mm">
+          <div class="z na" id="lvlo_z">—</div>
+        </div>
+        <div class="field">
+          <label>RV longitudinal length <span class="u">mm · apex to tricuspid plane</span></label>
+          <input id="rvlo" type="number" step="0.1" min="0" inputmode="decimal" placeholder="mm">
+          <div class="z na" id="rvlo_z">—</div>
+        </div>
+      </div>
+      <div class="z na" id="lvrv_z" style="margin-top:6px;font-size:12px">LV/RV width ratio — enter both LV and RV width above</div>
+
+      <div class="section-label">Doppler &amp; flow</div>
+      <div class="grid">
+        <div class="field">
+          <label>Aortic isthmus flow</label>
+          <select id="isth">
+            <option value="">— not assessed —</option>
+            <option value="0">Antegrade (normal)</option>
+            <option value="1">Bidirectional / diastolic reversal</option>
+            <option value="2">Systolic reversal</option>
+          </select>
+          <div class="z na">PW proximal to ductal insertion</div>
+        </div>
+        <div class="field">
+          <label>Foramen ovale flow</label>
+          <select id="fo">
+            <option value="">— not assessed —</option>
+            <option value="0">Right → left (normal)</option>
+            <option value="0.5">Bidirectional</option>
+            <option value="1">Left → right (reversed)</option>
+          </select>
+          <div class="z na">Key HLHS differentiator</div>
+        </div>
+        <div class="field">
+          <label>Transverse arch flow</label>
+          <select id="arch">
+            <option value="">— not assessed —</option>
+            <option value="0">Antegrade (normal)</option>
+            <option value="1">Retrograde systolic</option>
+            <option value="2">Absent</option>
+          </select>
+          <div class="z na">Retrograde/absent → severe obstruction or HLHS/IAA</div>
+        </div>
+        <div class="field">
+          <label>LV global longitudinal strain <span class="u">% · negative, e.g. −15</span></label>
+          <input id="gls" type="number" step="0.1" max="0" inputmode="decimal" placeholder="%">
+          <div class="z na" id="gls_z">Speckle tracking. Less negative = worse</div>
+        </div>
+      </div>
+
+      <div class="section-label">Structural / binary</div>
+      <div class="grid">
+        <div class="field">
+          <label>Ventricular septal defect</label>
+          <select id="vsd"><option value="0">No / not seen</option><option value="1">Yes</option></select>
+        </div>
+        <div class="field">
+          <label>Arch continuity</label>
+          <select id="cont">
+            <option value="0">Continuous</option>
+            <option value="1">Possible discontinuity</option>
+            <option value="2">Absent / interrupted</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Persistent left SVC</label>
+          <select id="plsvc"><option value="0">No</option><option value="1">Yes</option></select>
+        </div>
+        <div class="field">
+          <label>Thymus</label>
+          <select id="thy"><option value="0">Normal</option><option value="1">Hypoplastic / absent</option></select>
+        </div>
+        <div class="field">
+          <label>Bicuspid aortic valve</label>
+          <select id="bav"><option value="0">No / not seen</option><option value="ind">Indeterminate</option><option value="1">Confirmed</option></select>
+        </div>
+        <div class="field">
+          <label>Redundant / aneurysmal FO flap</label>
+          <select id="fomemb"><option value="0">No</option><option value="1">Yes (false-positive source)</option></select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RESULTS ============ -->
+  <div class="card" id="results">
+    <h2>Result · Coarctation risk</h2>
+    <p class="hint" id="coverage">Enter gestational age and at least one measurement to begin.</p>
+
+    <div class="result-band rb-na" id="band">
+      <div class="band-top">
+        <p class="band-name" id="bandName">Awaiting input</p>
+        <span class="band-index" id="bandIndex"></span>
+      </div>
+      <div class="meter"><i id="meterFill" style="width:0%;background:#c6d0da"></i></div>
+      <p class="band-ctx" id="bandCtx"></p>
+    </div>
+
+    <!-- Risk band legend -->
+    <details style="margin-top:10px;font-size:12.5px;color:var(--muted)">
+      <summary style="cursor:pointer;font-weight:600;color:var(--brand);font-size:12.5px">What do the risk bands mean?</summary>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="min-width:130px;font-weight:600;color:var(--low)">LOW risk</span>
+          <span>Few or no positive predictors. Most fetuses with isolated arch asymmetry at this level do not develop CoA — routine follow-up is appropriate.</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="min-width:130px;font-weight:600;color:var(--mod)">LOW–INTERMEDIATE</span>
+          <span>Some predictors positive. Arch asymmetry alone has a high false-positive rate; serial assessment and trend over gestation is more informative than a single measurement.</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="min-width:130px;font-weight:600;color:var(--high)">INTERMEDIATE–HIGH</span>
+          <span>Several concordant predictors. Published cohorts report ≈40–75% confirmed CoA at this level, especially when signs appear ≤ 28 weeks. Dedicated fetal cardiology review recommended.</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="min-width:130px;font-weight:600;color:var(--vhigh)">HIGH risk</span>
+          <span>Multiple high-specificity signs positive. Strongly suggestive of evolving left-heart obstruction. Multidisciplinary planning for delivery setting and early neonatal assessment is warranted.</span>
+        </div>
+      </div>
+    </details>
+
+    <div class="feat-row">
+      <div class="feat">
+        <h3>What's driving this estimate</h3>
+        <ul class="drivers" id="drivers"><li><span>No positive predictors yet</span></li></ul>
+      </div>
+      <div class="feat">
+        <h3>Differentiation flags</h3>
+        <div style="margin-bottom:8px"><span class="small">HLHS features</span><br><span id="hlhsChips"></span></div>
+        <div><span class="small">Interrupted arch (IAA) features</span><br><span id="iaaChips"></span></div>
+      </div>
+    </div>
+
+    <!-- Risk factor explanations -->
+    <details style="margin-top:10px;font-size:12.5px;color:var(--muted)" id="rfExplWrap">
+      <summary style="cursor:pointer;font-weight:600;color:var(--brand);font-size:12.5px">What do these risk factors mean?</summary>
+      <div id="rfExpl" style="margin-top:8px;display:flex;flex-direction:column;gap:7px;font-size:12.5px"></div>
+    </details>
+
+    <div class="rec" id="rec" style="margin-top:12px">Recommendation will appear here.</div>
+
+    <details class="more" id="specificWrap" style="display:none">
+      <summary>Show specific guidance &amp; caveats</summary>
+      <div id="specific" style="margin-top:8px"></div>
+    </details>
+
+    <div class="btns" style="margin-top:14px">
+      <a class="btn noprint" href="index.html" style="text-decoration:none">← All Calculators</a>
+      <button class="btn primary" id="copyBtn">Copy text report</button>
+      <button class="btn" id="printBtn">Print / Save PDF</button>
+      <button class="btn" id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+  <!-- ============ EVIDENCE ============ -->
+  <div class="card">
+    <h2>Evidence base</h2>
+    <p class="hint">Every predictor below was checked against its source. Performance figures are the authors'
+      own; several derive from small single-centre cohorts (note the <i>n</i>) and should be read as indicative,
+      not definitive.</p>
+    <ol class="refs">
+      <li>Gómez-Montes E, et al. Prediction of coarctation of the aorta in the second half of pregnancy.
+        <i>Ultrasound Obstet Gynecol</i> 2013;41(3):298–305. Multiparametric score (GA ≤28wk, Z-AscAo ≤−1.5,
+        PV/AV ≥1.6, Z-AOI[3VT] ≤−2); n=85.
+        <a href="https://doi.org/10.1002/uog.11228" target="_blank" rel="noopener">DOI</a></li>
+      <li>Gómez-Montes E, et al. Gestational age-specific scoring systems for the prediction of coarctation.
+        <i>Prenat Diagn</i> 2014;34(12):1198–206. Early ≤28wk AUC 0.98; late >28wk AUC 0.84; n=115.
+        <a href="https://doi.org/10.1002/pd.4452" target="_blank" rel="noopener">DOI</a></li>
+      <li>Liu J, et al. Incremental value of myocardial deformation in predicting postnatal CoA.
+        <i>J Am Soc Echocardiogr</i> 2022;35(12):1298–1310. Model GA + AOI-Z + LV strain; C-stat 0.945; n=122+48.
+        <a href="https://doi.org/10.1016/j.echo.2022.07.010" target="_blank" rel="noopener">DOI</a></li>
+      <li>Fujisaki T, et al. Novel echocardiographic measurements to improve prenatal CoA diagnosis.
+        <i>Sci Rep</i> 2023;13:4912. Their "DA index" (arch-at-subclavian ÷ carotid–subclavian distance) ≥1.28 →
+        AUC 0.94, 85%/94%, n=30. <i>Not implemented here</i> — it needs specific neck-vessel geometry; the related
+        carotid–subclavian signal is captured by Fricke's CSAI.
+        <a href="https://doi.org/10.1038/s41598-023-31749-8" target="_blank" rel="noopener">DOI</a></li>
+      <li>Fricke K, et al. Fetal echocardiographic dimension indices: predictors of postnatal coarctation.
+        <i>Pediatr Cardiol</i> 2020;42(3):517–525. CSAI &lt;0.78 → 92%/97%; I/D×MV/TV &lt;0.37 → 100%/95%; n=65.
+        <a href="https://doi.org/10.1007/s00246-020-02509-6" target="_blank" rel="noopener">DOI</a></li>
+      <li>Pasquini L, et al. Z-scores of the fetal aortic isthmus and duct.
+        <i>Ultrasound Obstet Gynecol</i> 2007 (PMID 17476706). Isthmus &amp; duct nomograms used here.
+        <a href="https://pubmed.ncbi.nlm.nih.gov/17476706/" target="_blank" rel="noopener">PubMed</a></li>
+      <li>van Oostrum NHM, et al. Fetal myocardial deformation (2D-STE): reference values, 124 fetuses.
+        <i>Ultrasound Obstet Gynecol</i> 2022;59(5):651–659. LV-GLS nomogram.
+        <a href="https://doi.org/10.1002/uog.24781" target="_blank" rel="noopener">DOI</a></li>
+      <li>Vigneswaran TV, et al. Reference ranges for fetal cardiac outflow tract dimensions (13–36 wks).
+        <i>Circ Cardiovasc Imaging</i> 2018. AoV / PV / transverse-arch nomograms.
+        <span class="small">(widely cited; confirm DOI at source)</span></li>
+      <li>Krishnan A, et al. Fetal cardiac Z-score nomograms, 2016. Mitral, tricuspid, ventricular-length nomograms.
+        <span class="small">(confirm DOI at source)</span></li>
+      <li>García-Otero L, et al. Nomograms of Fetal Cardiac Dimensions at 18–41 Weeks of Gestation.
+        <i>Fetal Diagn Ther</i> 2020;47(5):387–398. Ventricular width (mid-transverse) and length (longitudinal)
+        Z-scores used in HLHS grading panel.
+        <a href="https://doi.org/10.1159/000494838" target="_blank" rel="noopener">DOI</a></li>
+    </ol>
+    <p class="small">Ascending-aorta and main-pulmonary-artery Z-scores use a linear approximation derived from
+      published normal curves, not a single primary nomogram — interpret those two with extra caution.
+      The earlier "Villalain 2024" citation has been removed: it could not be verified.</p>
+  </div>
+
+  <footer>fetal-echo.org · Fetal Coarctation Risk Tool v2.0</footer>
+
+</div>
+
+<script>
+/* ============================================================
+   Z-SCORE NOMOGRAMS  (verified coefficients)
+   ============================================================ */
+const num = v => { const n = parseFloat(v); return isFinite(n) ? n : null; };
+
+function zSchneider(mm, ga, M, C, R){
+  // Schneider 2016 log-linear model (same reference as Fetal Z-Score calculator)
+  // obs in cm internally; inputs in mm (converted here)
+  if(mm==null||ga==null||mm<=0||ga<=0) return null;
+  const cm = mm/10;
+  return (Math.log(cm) - (M*Math.log(ga) + C)) / R;
+}
+function zLinear(mm, ga, ma,mb, sa,sb){
+  if(mm==null||ga==null) return null;
+  return (mm - (ma+mb*ga)) / (sa+sb*ga);
+}
+function zPasquini(mm, ga, M, C, R){
+  // Pasquini 2007: ln(mm) = M*ln(GA) + C; R = residual SD
+  // Coefficients identical to Fetal Z-Score & Function Calculator (PAS_GA)
+  if(mm==null||ga==null||mm<=0||ga<=0) return null;
+  return (Math.log(mm) - (M*Math.log(ga) + C)) / R;
+}
+
+const NOM = {
+  // Schneider 2016 (Fetal Diagn Ther) — consistent with Fetal Z-Score & Function Calculator
+  mv:  (mm,ga)=>zSchneider(mm,ga,1.173,-4.084,0.1315),
+  tv:  (mm,ga)=>zSchneider(mm,ga,1.395,-4.766,0.1394),
+  aov: (mm,ga)=>zSchneider(mm,ga,1.263,-5.019,0.1282),
+  pv:  (mm,ga)=>zSchneider(mm,ga,1.352,-5.114,0.1208),
+  aao: (mm,ga)=>zSchneider(mm,ga,1.261,-4.886,0.133),
+  taa: (mm,ga)=>zLinear(mm,ga,-1.152,0.2438,0.44,0.0164),
+  aoi3:(mm,ga)=>zPasquini(mm,ga,1.223608,-2.822,0.16424),   // PAS_GA i3vt — Pasquini 2007
+  aois:(mm,ga)=>zPasquini(mm,ga,1.109503,-2.489632,0.18183), // PAS_GA isag — Pasquini 2007
+  da:  (mm,ga)=>zPasquini(mm,ga,1.396496,-3.359462,0.17569), // PAS_GA duct — Pasquini 2007
+  gls: (pct,ga)=>{ if(pct==null||ga==null) return null; return (pct-(-26.73+0.2024*ga))/2.1; },
+  // Ventricular dimensions — García-Otero 2020 (Fetal Diagn Ther, doi:10.1159/000494838)
+  lvmt:(mm,ga)=>{ if(mm==null||ga==null||mm<=0) return null; const E=-13.84612225+1.260434429*ga-0.013971851*ga*ga; const S=-0.146296793+0.063289207*ga; return S>0?(mm-E)/S:null; },
+  rvmt:(mm,ga)=>{ if(mm==null||ga==null||mm<=0) return null; const E=-14.41113899+1.279292585*ga-0.013661007*ga*ga; const S=0.002076007+0.057502992*ga; return S>0?(mm-E)/S:null; },
+  lvlo:(mm,ga)=>{ if(mm==null||ga==null||mm<=0||ga<=0) return null; const E=-57.294214+23.16725688*Math.log(ga); const S=0.037802329+0.094266443*ga; return S>0?(mm-E)/S:null; },
+  rvlo:(mm,ga)=>{ if(mm==null||ga==null||mm<=0||ga<=0) return null; const E=-17.20226698+1.719824302*ga-0.016824302*ga*ga; const S=-0.104201384+0.108354647*ga; return S>0?(mm-E)/S:null; }
+};
+
+/* ============================================================
+   RISK ENGINE  — transparent weighted aggregation of
+   PUBLISHED predictors. NOT a calibrated probability.
+   Each rule: {test, points, label, src}
+   ============================================================ */
+function fmtZ(z){ return (z>=0?'+':'') + z.toFixed(2); }
+
+function compute(){
+  const ga = num(val('ga'));
+  const m = {
+    mv:num(val('mv')), tv:num(val('tv')), aov:num(val('aov')), pv:num(val('pv')),
+    aao:num(val('aao')), aoi3:num(val('aoi3')), taa:num(val('taa')),
+    aois:num(val('aois')), da:num(val('da')), dao:num(val('dao')), lca:num(val('lca')),
+    lved:num(val('lved')), rved:num(val('rved')),
+    lvlo:num(val('lvlo')), rvlo:num(val('rvlo')), gls:num(val('gls'))
+  };
+  const sel = {
+    isth:val('isth'), fo:val('fo'), arch:val('arch'),
+    vsd:val('vsd'), cont:val('cont'), plsvc:val('plsvc'), thy:val('thy'),
+    bav:val('bav'), fomemb:val('fomemb')
+  };
+
+  // Z-scores
+  const Z = {};
+  for(const k of ['mv','tv','aov','pv','aao','taa','aoi3','aois','da']) Z[k]= ga!=null ? NOM[k](m[k],ga) : null;
+  const Zgls = (ga!=null) ? NOM.gls(m.gls,ga) : null;
+  // Ventricular dimensions (García-Otero 2020)
+  Z.lvmt = ga!=null ? NOM.lvmt(m.lved,ga) : null;
+  Z.rvmt = ga!=null ? NOM.rvmt(m.rved,ga) : null;
+  Z.lvlo = ga!=null ? NOM.lvlo(m.lvlo,ga) : null;
+  Z.rvlo = ga!=null ? NOM.rvlo(m.rvlo,ga) : null;
+
+  // Ratios
+  const pvav  = (m.pv!=null && m.aov!=null && m.aov>0) ? m.pv/m.aov : null;
+  const mvtv  = (m.mv!=null && m.tv!=null && m.tv>0) ? m.mv/m.tv : null;
+  const lvrv  = (m.lved!=null && m.rved!=null && m.rved>0) ? m.lved/m.rved : null;
+  const aoiForRatio = (Z.aois!=null? m.aois : (m.aoi3!=null? m.aoi3 : null));
+  const aoida = (aoiForRatio!=null && m.da!=null && m.da>0) ? aoiForRatio/m.da : null;
+  const daIndex = (m.dao!=null && aoiForRatio!=null && m.dao>0) ? (m.dao - aoiForRatio)/m.dao : null;
+  const csai  = (m.lca!=null && m.taa!=null && m.taa>0) ? m.lca/m.taa : null;
+  const idMvtv= (aoida!=null && mvtv!=null) ? aoida*mvtv : null;
+
+  // ---- CoA predictor rules ----
+  const rules = [];
+  const add = (cond, applicable, points, label, src) => {
+    if(!applicable) return;
+    rules.push({hit:!!cond, points, label, src});
+  };
+  // Primary — robust, verified predictors (raw ratios + well-calibrated Z nomograms only)
+  add(Z.aoi3!=null && Z.aoi3<=-2, Z.aoi3!=null, 3, 'Aortic isthmus (3VT) Z ≤ −2', 'Pasquini 2007 / Gómez-Montes 2013');
+  add(pvav!=null   && pvav>=1.6,   pvav!=null,  2, 'PV/AV ratio ≥ 1.6', 'Gómez-Montes 2013');
+  add(aoida!=null  && aoida<0.74,  aoida!=null, 2, 'I/D ratio (Isthmus/Ductus) < 0.74', 'Pasquini 2007');
+  add(mvtv!=null   && mvtv<0.80,   mvtv!=null,  1, 'MV/TV ratio < 0.80 (R-dominance)', 'Fricke 2020');
+  add(ga!=null     && ga<=28,      ga!=null,    1, 'Presented ≤ 28 wks', 'Gómez-Montes 2013');
+  // Advanced, high-specificity confirmatory (all raw indices — calibration-robust)
+  add(csai!=null    && csai<0.78,     csai!=null,    3, 'CSAI < 0.78', 'Fricke 2020');
+  add(idMvtv!=null  && idMvtv<0.37,   idMvtv!=null,  3, 'I/D × MV/TV < 0.37', 'Fricke 2020');
+  add(Z.aois!=null  && Z.aois<=-2,    Z.aois!=null,  2, 'Aortic isthmus (sagittal) Z ≤ −2', 'Pasquini 2007');
+  add(sel.isth==='2', sel.isth!=='', 2, 'Isthmus systolic flow reversal', 'Chen 2024 (tier)');
+  add(Zgls!=null && Zgls>0, Zgls!=null, 1.5, 'Reduced LV strain (Z > 0)', 'Liu 2022 (OR 1.79)');
+  add(lvrv!=null && lvrv<0.75 && lvrv>=0.6, lvrv!=null, 1, 'LV/RV 0.60–0.75 (borderline)', 'Quartermain 2009');
+
+  const got = rules.filter(r=>r.hit);
+  const points = got.reduce((s,r)=>s+r.points,0);
+  const applicableMax = rules.reduce((s,r)=>s+r.points,0);
+
+  // Coverage: how many of the core fields are present
+  const coreKeys = ['mv','tv','aov','pv','aao','aoi3','taa'];
+  const coreFilled = coreKeys.filter(k=>m[k]!=null).length;
+
+  // ---- Band logic ----
+  // index scaled 0..100 against a clinically meaningful reference ceiling (12 pts)
+  const CEIL = 12;
+  const index = Math.min(100, Math.round(points / CEIL * 100));
+
+  let band='na', name='Insufficient data', cls='rb-na', color='#c6d0da', ctx='';
+  if(ga==null || coreFilled===0){
+    band='na';
+  } else if(points<=1){
+    band='low'; name='LOW risk'; cls='rb-low'; color='var(--low)';
+    ctx='Few or no published CoA predictors are positive. In asymmetry cohorts the majority of such fetuses do not develop CoA.';
+  } else if(points<=4){
+    band='mod'; name='LOW–INTERMEDIATE'; cls='rb-mod'; color='var(--mod)';
+    ctx='Some predictors positive. Cardiac asymmetry alone has a high false-positive rate — trend matters more than a single value.';
+  } else if(points<=7){
+    band='high'; name='INTERMEDIATE–HIGH'; cls='rb-high'; color='var(--high)';
+    ctx='Several concordant predictors. In comparable published cohorts a substantial share (≈40–75%) were confirmed CoA, especially if presenting ≤28 wks.';
+  } else {
+    band='vhigh'; name='HIGH risk'; cls='rb-vhigh'; color='var(--vhigh)';
+    ctx='Multiple high-specificity signs positive. Strongly suggestive of evolving left-heart obstruction; confirmation and delivery planning warranted.';
+  }
+
+  // ---- HLHS / IAA feature flags (described, not scored as probability) ----
+  const hlhs = [];
+  if(lvrv!=null && lvrv<0.6) hlhs.push('LV/RV width ratio < 0.6');
+  if(Z.lvmt!=null && Z.lvmt<=-2) hlhs.push('LV width Z ≤ −2 ('+fmtZ(Z.lvmt)+')');
+  if(Z.lvlo!=null && Z.lvlo<=-2) hlhs.push('LV length Z ≤ −2 ('+fmtZ(Z.lvlo)+')');
+  if(Z.rvmt!=null && Z.rvmt>=2) hlhs.push('RV width Z ≥ +2 ('+fmtZ(Z.rvmt)+') — RV enlargement');
+  if(sel.fo==='1') hlhs.push('FO reversed L→R');
+  if(sel.arch==='1'||sel.arch==='2') hlhs.push('Arch flow retrograde/absent');
+  if(pvav!=null && pvav>=2.5) hlhs.push('Severe LVOT hypoplasia (PV/AV ≥ 2.5)');
+  if(Z.mv!=null && Z.mv<=-3) hlhs.push('Severe MV hypoplasia (Z ≤ −3)');
+
+  const iaa = [];
+  if(sel.cont==='2') iaa.push('Arch interrupted');
+  else if(sel.cont==='1') iaa.push('Possible arch discontinuity');
+  if(sel.vsd==='1') iaa.push('VSD');
+  if(sel.thy==='1') iaa.push('Thymic hypoplasia (22q11?)');
+  if(sel.arch==='2') iaa.push('Absent arch flow');
+
+  return {ga, Z, Zgls, pvav, mvtv, lvrv, aoida, daIndex, csai, idMvtv,
+          rules, got, points, applicableMax, index, band, name, cls, color, ctx,
+          hlhs, iaa, coreFilled, sel};
+}
+
+/* ============================================================
+   QUALITATIVE SCORE HELPERS
+   Avoids displaying un-validated exact point totals openly.
+   ============================================================ */
+function qp(pts){ return pts>=3?'+++':pts>=2?'++':'+'; }           // per-predictor
+function qualScore(pts){ return pts>=8?'++++':pts>=5?'+++':pts>=2?'++':pts>0?'+':'—'; } // total
+
+/* ============================================================
+   DOM helpers + live render
+   ============================================================ */
+function val(id){ return document.getElementById(id).value.trim(); }
+
+function setZ(id, z, rule){
+  const el = document.getElementById(id);
+  if(!el) return;
+  if(z==null){ el.className='z na'; el.textContent='—'; return; }
+  const bad = rule(z);
+  el.className = 'z ' + (bad?'bad':'ok');
+  el.textContent = 'Z ' + fmtZ(z) + (bad?'  ⚠':'');
+}
+function setValHint(id, text){
+  const el = document.getElementById(id); if(!el) return;
+  el.className='z na'; el.textContent=text;
+}
+
+/* ---- anonymous usage count — risk BAND + date only; no patient data, no identifiers ----
+   Disabled until you paste your Google Apps Script /exec URL below. Fires once per session. */
+const LOG_ENDPOINT = '';   // <-- paste endpoint URL here to enable
+let __logged = false;
+function logUsage(band){
+  if(!LOG_ENDPOINT || __logged || band==='na') return;
+  __logged = true;
+  try{
+    const payload = JSON.stringify({ b: band, d: new Date().toISOString().slice(0,10) });
+    if(navigator.sendBeacon) navigator.sendBeacon(LOG_ENDPOINT, payload);
+    else fetch(LOG_ENDPOINT, {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:payload});
+  }catch(e){}
+}
+
+function render(){
+  const r = compute();
+
+  // per-field Z labels — verified, well-calibrated nomograms show a Z-score
+  setZ('mv_z',   r.Z.mv,   z=>z<-2);
+  setZ('tv_z',   r.Z.tv,   z=>z<-2);
+  setZ('aoi3_z', r.Z.aoi3, z=>z<=-2);
+  setZ('aois_z', r.Z.aois, z=>z<=-2);
+  setZ('da_z',   r.Z.da,   z=>z<-2);
+  setZ('gls_z',  r.Zgls,   z=>z>0);
+  setZ('lved_z', r.Z.lvmt, z=>z<=-2);
+  setZ('rved_z', r.Z.rvmt, z=>z<=-2);
+  setZ('lvlo_z', r.Z.lvlo, z=>z<=-2);
+  setZ('rvlo_z', r.Z.rvlo, z=>z<=-2);
+  // linear nomograms under calibration review — echo value, no Z asserted; scored via ratios
+  setZ('aov_z', r.Z.aov, z=>z<=-2);
+  setZ('pv_z',  r.Z.pv,  z=>z<=-2);
+  if(r.pvav!=null){ const el=document.getElementById('pv_z'); if(el) el.title='PV/AV ratio = '+r.pvav.toFixed(2); }
+  setZ('aao_z', r.Z.aao, z=>z<=-2);
+  setValHint('taa_z', r.csai!=null ? ('used in CSAI = '+r.csai.toFixed(2)) : 'used in CSAI / arch ratios');
+
+  // GA note
+  const gaEl = document.getElementById('ga_z');
+  if(r.ga==null){ gaEl.className='z na'; gaEl.textContent='18–35 wks optimal'; }
+  else { const okR=(r.ga>=18&&r.ga<=35); gaEl.className='z '+(okR?'ok':'bad');
+    gaEl.textContent = okR ? (r.ga<=28?'≤28 wks — higher pre-test risk':'optimal window') : 'outside 18–35 wk optimal'; }
+
+  // derived ratio hints
+  setRatioHint('csai_z', r.csai, '0.78', r.csai!=null && r.csai<0.78);
+  setRatioHint('lvrv_z', r.lvrv, '0.60', r.lvrv!=null && r.lvrv<0.75);
+  setRatioHint('aoida_z', r.aoida, '0.74', r.aoida!=null && r.aoida<0.74);
+  setValHint('dao_z', 'recorded (for trend) — not scored');
+
+  // Band card
+  const band=document.getElementById('band');
+  band.className='result-band '+r.cls;
+  document.getElementById('bandName').textContent=r.name;
+  document.getElementById('meterFill').style.width=r.index+'%';
+  document.getElementById('meterFill').style.background=r.color;
+  document.getElementById('bandCtx').textContent=r.ctx;
+  document.getElementById('bandIndex').textContent =
+     (r.band==='na')?'' : ('Score: '+qualScore(r.points)+' · index '+r.index+'/100 · '+r.coreFilled+'/7 core fields');
+
+  // coverage line
+  const cov=document.getElementById('coverage');
+  if(r.ga==null) cov.textContent='Enter gestational age and at least one measurement to begin.';
+  else if(r.coreFilled<3) cov.textContent='Estimate shown — add more core measurements for a more reliable result.';
+  else cov.textContent='Live estimate. The index is a transparent sum of positive published predictors, not a probability.';
+
+  // drivers
+  const dv=document.getElementById('drivers');
+  if(r.got.length===0){ dv.innerHTML='<li><span>No positive predictors yet</span></li>'; }
+  else {
+    dv.innerHTML = r.got.sort((a,b)=>b.points-a.points).map(g=>
+      `<li><span>${g.label}</span><span class="src">${qp(g.points)} · ${g.src}</span></li>`).join('');
+  }
+
+  // Risk factor explanations for displayed predictors
+  window.__lastRules = r.rules;  // expose for expand panel
+
+  // HLHS / IAA chips
+  document.getElementById('hlhsChips').innerHTML =
+     r.hlhs.length ? r.hlhs.map(c=>`<span class="chip on">${c}</span>`).join('')
+                   : '<span class="chip">none flagged</span>';
+  document.getElementById('iaaChips').innerHTML =
+     r.iaa.length ? r.iaa.map(c=>`<span class="chip on">${c}</span>`).join('')
+                  : '<span class="chip">none flagged</span>';
+
+  // recommendation
+  renderRec(r);
+  renderRFExpl(r);
+  window.__lastResult = r;
+
+  // anonymous usage count once a meaningful result exists (band only)
+  if(r.coreFilled>=3) logUsage(r.band);
+}
+
+
+const RF_EXPLAIN = {
+  'I/D ratio (Isthmus/Ductus) < 0.74':
+    'The ratio of the aortic isthmus to ductus arteriosus diameter. Normally both vessels are similar in size at term. An I/D ratio below 0.74 indicates the isthmus is disproportionately small relative to the ductus — a key sign of arch narrowing (Pasquini 2007).',
+  'PV/AV ratio ≥ 1.6':
+    'The ratio of the pulmonary valve to aortic valve annulus diameter. In a normal fetus both valves are similar in size. A PV/AV ratio ≥ 1.6 reflects significant left-outflow underdevelopment and right-heart dominance, characteristic of the coarctation spectrum (Gómez-Montes 2013).',
+  'Aortic isthmus (3VT) Z ≤ −2':
+    'The aortic isthmus in the 3-vessel-trachea view is the narrowest segment of the aortic arch. A Z-score ≤ −2 means it is more than 2 standard deviations below the mean for gestational age — the hallmark of arch hypoplasia. This is one of the strongest individual predictors of postnatal CoA (Gómez-Montes 2013, Pasquini 2007).',
+  'MV/TV ratio < 0.80 (R-dominance)':
+    'The ratio of mitral to tricuspid valve annulus diameter. A ratio below 0.80 indicates that the right atrioventricular valve is significantly larger than the left, reflecting right-heart dominance and left-heart underfilling — a pattern strongly associated with the coarctation and HLHS spectrum (Fricke 2020).',
+  'Presented ≤ 28 wks':
+    'Gestational age at presentation. Left-heart disproportion detected at or before 28 weeks carries a higher pre-test probability of true coarctation. In published cohorts, early-presentation fetuses had an AUC of 0.98 for confirmed CoA vs 0.84 for late presentation (Gómez-Montes 2014).',
+  'CSAI < 0.78':
+    'The Coarctation Segment Arch Index: arch diameter at the left subclavian artery divided by the left carotid-to-subclavian distance. CSAI < 0.78 has 92% sensitivity and 97% specificity for CoA in postnatal outcome studies. It reflects the proportion of the arch that is narrowed relative to the normal branching segment (Fricke 2020).',
+  'I/D × MV/TV < 0.37':
+    'A composite index combining the I/D ratio and the MV/TV ratio. This product captures concordant left-sided hypoplasia at both the arch and the valve level. A value below 0.37 achieved 100% sensitivity and 95% specificity for postnatal CoA in Fricke 2020 — the highest performance of any single predictor in that study.',
+  'Aortic isthmus (sagittal) Z ≤ −2':
+    'The aortic isthmus measured in the sagittal plane. Confirming isthmus hypoplasia in a second orthogonal view increases diagnostic confidence and reduces measurement error from a single angle (Pasquini 2007).',
+  'Isthmus systolic flow reversal':
+    'On pulsed-wave Doppler at the isthmus (proximal to the ductal insertion), normal flow is antegrade throughout the cardiac cycle. Systolic reversal indicates that the left heart cannot overcome the resistance of a severely narrowed isthmus — a late, high-specificity finding for significant CoA.',
+  'Reduced LV strain (Z > 0)':
+    'LV global longitudinal strain (GLS) measures myocardial deformation. In a normal fetus GLS is strongly negative (typically around −27%). A Z-score above 0 means the measured GLS is less negative than expected — indicating the LV myocardium is working harder and deforming less, consistent with functional compromise from outflow obstruction (Liu 2022, OR 1.79 per unit).',
+  'LV/RV 0.60–0.75 (borderline)':
+    'The ratio of LV to RV mid-transverse width. A ratio in the 0.60–0.75 range indicates borderline right-heart dominance. Values below 0.6 are more concerning for significant left-heart underdevelopment approaching the HLHS spectrum.'
+};
+
+function renderRFExpl(r){
+  const wrap = document.getElementById('rfExplWrap');
+  const el = document.getElementById('rfExpl');
+  if(!wrap||!el) return;
+  // Only show for predictors that are currently positive
+  const positive = (r.got||[]).map(g=>g.label);
+  const all = (r.rules||[]).filter(rl=>RF_EXPLAIN[rl.label]);
+  if(!all.length){ wrap.style.display='none'; return; }
+  wrap.style.display='';
+  el.innerHTML = all.map(rl=>{
+    const isHit = positive.includes(rl.label);
+    const dotColor = isHit ? 'var(--vhigh)' : 'var(--muted)';
+    return `<div style="border:1px solid var(--line);border-radius:9px;padding:9px 12px;background:#fff">
+      <div style="font-weight:700;color:${isHit?'var(--vhigh)':'var(--ink)'};font-size:12.5px;margin-bottom:3px">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${dotColor};margin-right:6px;vertical-align:middle"></span>
+        ${rl.label} <span style="color:var(--muted);font-weight:400;font-size:11px">· ${rl.src}</span>
+        ${isHit?'<span style="color:var(--vhigh);font-size:11px;font-weight:700;margin-left:6px">▲ POSITIVE</span>':''}
+      </div>
+      <div style="color:var(--muted);font-size:12px;line-height:1.5">${RF_EXPLAIN[rl.label]||''}</div>
+    </div>`;
+  }).join('');
+}
+function setRatioHint(id, v, cut, bad){
+  const el=document.getElementById(id); if(!el) return;
+  if(v==null){
+    el.className='z na';
+    if(id==='csai_z') el.textContent='CSAI uses this ÷ LCA–LSA dist';
+    else if(id==='aoida_z') el.textContent='I/D ratio (Isthmus/Ductus) — enter isthmus and ductus above (threshold < 0.74 · Pasquini 2007)';
+    else el.textContent='—';
+    return;
+  }
+  el.className='z '+(bad?'bad':'ok');
+  const name = id==='csai_z'?'CSAI ':id==='aoida_z'?'I/D ':'LV/RV ';
+  el.textContent = name + v.toFixed(2) + (bad?('  ⚠ <'+cut):'');
+}
+
+function renderRec(r){
+  const rec=document.getElementById('rec');
+  const sw=document.getElementById('specificWrap');
+  const sp=document.getElementById('specific');
+  if(r.band==='na'){ rec.innerHTML='Recommendation will appear here.'; sw.style.display='none'; return; }
+
+  let head, body;
+  if(r.band==='low'){
+    head='<b>Low risk — routine pathway.</b> ';
+    body='Continue routine obstetric care. If any arch asymmetry persists on a growth scan, a repeat fetal echocardiogram at 32–34 weeks is recommended to confirm resolution and exclude late-emerging obstruction.';
+  } else if(r.band==='mod'){
+    head='<b>Low–intermediate — monitor the trend.</b> ';
+    body='Repeat fetal echocardiography in 4 weeks (or at 32–34 weeks if currently later). Cardiac asymmetry frequently resolves; serial imaging and interval change are the most useful signal. Ongoing surveillance is needed to detect any progression of left-heart obstruction.';
+  } else if(r.band==='high'){
+    head='<b>Intermediate–high — fetal cardiology review.</b> ';
+    body='Refer for/continue fetal-cardiology assessment. Serial echocardiography every 3–4 weeks is recommended to monitor disease progression. Complete the parameter set, and plan delivery where neonatal cardiac surgical support is available.';
+  } else {
+    head='<b>High risk — tertiary planning.</b> ';
+    body='Fetal-cardiology assessment and delivery at a centre with neonatal cardiac surgical capability. Serial echocardiography is strongly recommended to monitor progression of left-heart obstruction and guide timing of delivery. Counsel parents about the spectrum from CoA through HLHS/IAA depending on the differentiation flags.';
+  }
+  // GA modifier
+  let gaNote='';
+  if(r.ga!=null){
+    if(r.ga<24) gaNote=' At this early GA, arch asymmetry is a weak discriminator — weight the ventricular/valve disproportion signs and re-image at 28–32 weeks.';
+    else if(r.ga>=34) gaNote=' At this late GA, the DA index, AOI/DA ratio and isthmus flow carry the most weight.';
+  }
+  rec.innerHTML = head + body + gaNote;
+
+  // specific guidance
+  const items=[];
+  if(r.hlhs.length>=2) items.push('<b>HLHS caution:</b> several left-heart hypoplasia / reversed-flow signs are positive. Assess LV apex-forming status, MV inflow and FO direction carefully — management and counselling differ markedly from isolated CoA.');
+  if(r.iaa.length>=2) items.push('<b>IAA caution:</b> VSD + arch discontinuity ± thymic hypoplasia raise interrupted aortic arch (consider 22q11 microdeletion testing). Confirm arch continuity in sagittal and 3VT planes with colour.');
+  if(r.sel.fomemb==='1') items.push('<b>False-positive source:</b> a redundant/aneurysmal FO flap can mimic left-heart underfilling — interpret ventricular disproportion cautiously.');
+  if(r.sel.bav==='1') items.push('<b>Bicuspid aortic valve confirmed:</b> CoA risk interpretation is less specific in the presence of BAV.');
+  if(r.coreFilled<4) items.push('<b>Limited coverage:</b> fewer than four core measurements entered — the estimate is provisional. Aim to complete isthmus (3VT), ascending aorta, both AV/PV annuli and the transverse arch.');
+  items.push('<b>Serial fetal echocardiography is essential</b> to monitor for progression of left-heart obstruction. Single measurements carry inherent technique variability — interval change over 3–4 weeks is the most clinically meaningful signal, and a stable or improving picture is reassuring even when individual values appear borderline.');
+  if(items.length){ sp.innerHTML='<ul style="margin:0;padding-left:18px">'+items.map(i=>'<li style="margin-bottom:7px">'+i+'</li>').join('')+'</ul>'; sw.style.display='block'; }
+  else sw.style.display='none';
+}
+
+/* ---- text report ---- */
+function buildReport(){
+  const r=window.__lastResult; if(!r||r.band==='na') return 'No result yet.';
+  const L=[];
+  L.push('FETAL COARCTATION RISK TOOL — fetal-echo.org (prediction aid, not a diagnosis)');
+  L.push('GA: '+(r.ga??'—')+' wks   |   Core fields: '+r.coreFilled+'/7');
+  L.push('');
+  L.push('RISK: '+r.name+'   (score: '+qualScore(r.points)+' · index '+r.index+'/100)');
+  L.push(r.ctx);
+  L.push('');
+  L.push('Positive predictors:');
+  if(r.got.length) r.got.forEach(g=>L.push('  • '+g.label+'  ('+qp(g.points)+', '+g.src+')'));
+  else L.push('  • none');
+  L.push('');
+  L.push('HLHS features: '+(r.hlhs.length?r.hlhs.join(', '):'none flagged'));
+  L.push('IAA features:  '+(r.iaa.length?r.iaa.join(', '):'none flagged'));
+  L.push('');
+  L.push('Recommendation: '+document.getElementById('rec').textContent);
+  L.push('');
+  L.push('NOTE: transparent aggregation of published predictors; not a validated calibrated probability. Independent expert assessment required.');
+  return L.join('\n');
+}
+
+/* ---- wire up ---- */
+document.getElementById('advToggle').addEventListener('click', function(){
+  const p=document.getElementById('advPanel'); p.classList.toggle('show');
+  this.textContent = p.classList.contains('show')
+    ? '▾ Hide advanced parameters' : '▸ Add advanced parameters (arch detail, Doppler, strain, structural) — refines the estimate';
+});
+document.getElementById('copyBtn').addEventListener('click', ()=>{
+  navigator.clipboard.writeText(buildReport()).then(()=>{
+    const b=document.getElementById('copyBtn'); const t=b.textContent; b.textContent='Copied ✓'; setTimeout(()=>b.textContent=t,1500);
+  });
+});
+document.getElementById('printBtn').addEventListener('click', ()=>window.print());
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  document.querySelectorAll('input').forEach(i=>i.value='');
+  document.querySelectorAll('select').forEach(s=>s.selectedIndex=0);
+  render();
+});
+document.querySelectorAll('input,select').forEach(el=>{
+  el.addEventListener('input', render); el.addEventListener('change', render);
+});
+render();
+
+/* QR code — generated locally, no external API */
+window.addEventListener('load', function(){
+  var el=document.getElementById('_qrcoa');
+  if(el && typeof QRCode!=='undefined'){
+    new QRCode(el,{text:'https://fetal-echo.org/',width:72,height:72,correctLevel:QRCode.CorrectLevel.L});
+  }
+});
+
+</script>
+</body>
+</html>
