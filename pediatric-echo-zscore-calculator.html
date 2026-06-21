@@ -250,10 +250,10 @@ footer{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px}
     <div class="der-row"><div class="dl">LA:Ao ratio</div><div class="dv" id="d_laao">—</div></div>
     <!-- De Simone / RWT rows — shown only when age > 8 years -->
     <div class="der-row" id="row_lwt_title" style="display:none;border-top:2px solid var(--brand-soft);margin-top:6px">
-      <div class="dl" style="color:var(--brand);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em">Age &gt; 8 y — De Simone indexed LV mass &amp; geometry</div><div class="dv"></div>
+      <div class="dl" style="color:var(--brand);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em">Age 8–18 y — Khoury LV geometry · De Simone indexing</div><div class="dv"></div>
     </div>
-    <div class="der-row" id="row_lvmi_ht" style="display:none"><div class="dl">LVMI by height<sup>2.7</sup> <span style="font-size:11px">g/m<sup>2.7</sup> · De Simone (LVH &gt; 51)</span></div><div class="dv" id="d_lvmi_ht">—</div></div>
-    <div class="der-row" id="row_rwt" style="display:none"><div class="dl">RWT — Relative wall thickness <span style="font-size:11px">= 2×LVPWd/LVIDd · (conc ≥ 0.42)</span></div><div class="dv" id="d_rwt">—</div></div>
+    <div class="der-row" id="row_lvmi_ht" style="display:none"><div class="dl">LVMI by height<sup>2.7</sup> <span style="font-size:11px">g/m<sup>2.7</sup> · Khoury 95th%ile threshold · ⚠ De Simone alert ≥ 51</span></div><div class="dv" id="d_lvmi_ht">—</div></div>
+    <div class="der-row" id="row_rwt" style="display:none"><div class="dl">RWT — Relative wall thickness <span style="font-size:11px">= 2×LVPWd/LVIDd · paediatric concentric ≥ 0.38</span></div><div class="dv" id="d_rwt">—</div></div>
     <div class="der-row" id="row_lvgeom" style="display:none"><div class="dl">LV Geometry</div><div class="dv" id="d_lvgeom">—</div></div>
   </div>
 </details>
@@ -797,56 +797,77 @@ function updateGrowthPanel() {
 }
 
 /* ================================================================
-   DE SIMONE HEIGHT-INDEXED LV MASS + RWT (age > 8 years)
-   Devereux formula: LVM = 0.8×(1.04×(LVIDd+IVSd+LVPWd)³ − LVIDd³) + 0.6
-   De Simone 1992 JACC indexing: LVM/height(m)^2.7
-   LVH threshold: > 51 g/m^2.7 (widely applied cut-off)
-   RWT = 2×LVPWd/LVIDd · Concentric geometry: RWT ≥ 0.42
-   Geometry classification (Ganau 1992):
-     Normal:              LVMI ≤51 AND RWT <0.42
-     Concentric remodel: LVMI ≤51 AND RWT ≥0.42
-     Eccentric LVH:      LVMI >51 AND RWT <0.42
-     Concentric LVH:     LVMI >51 AND RWT ≥0.42
-   Ref: De Simone G et al. JACC 1992;20:1251-60
-        Devereux RB et al. Am J Cardiol 1986;57:450-8
+   PEDIATRIC LV GEOMETRY — KHOURY (age 8–18 years)
+   LVMI = LVM / height(m)^2.7   (De Simone 1992 indexing method)
+   LVMI threshold: Khoury 95th percentile (age- and sex-specific)
+     Age 8–9:  girls 95th = 77.5265 − 15.8939×age + 5.2322×age^1.5 − 0.4671×age²
+               boys 95th  = girls 95th + 2.738
+     Age 9–18: boys 45.0 g/m²·⁷ · girls 40.0 g/m²·⁷
+   RWT = 2×LVPWd/LVIDd · Pediatric concentric threshold: ≥ 0.38
+   Geometry (Khoury / Daniels):
+     Normal geometry:        LVMI ≤ threshold AND RWT < 0.38
+     Concentric remodelling: LVMI ≤ threshold AND RWT ≥ 0.38
+     Eccentric hypertrophy:  LVMI > threshold AND RWT < 0.38
+     Concentric hypertrophy: LVMI > threshold AND RWT ≥ 0.38
+   De Simone override alert: LVMI ≥ 51 → CRITICAL regardless of paediatric class
+   Refs: Khoury PR et al. J Am Soc Echocardiogr 2009;22:606–616
+         De Simone G et al. JACC 1992;20:1251–60
+         Devereux RB et al. Am J Cardiol 1986;57:450–8
    ================================================================ */
 function updateDeSimone(lvm, ht, lvpwd, lvedd) {
   const ageY = getAgeYears();
   const ids = ['row_lwt_title','row_lvmi_ht','row_rwt','row_lvgeom'];
-  if (!isFinite(ageY) || ageY <= 8 || !isFinite(lvm) || !isFinite(ht) || ht <= 0) {
+  if (!isFinite(ageY) || ageY < 8 || ageY > 18 || !isFinite(lvm) || !isFinite(ht) || ht <= 0) {
     ids.forEach(id => { const el=$(id); if(el) el.style.display='none'; });
     return;
   }
   ids.forEach(id => { const el=$(id); if(el) el.style.display=''; });
 
-  const htM  = ht / 100;
-  const lvmiHt = lvm / Math.pow(htM, 2.7);
-  const hasLVH  = lvmiHt > 51;
-  const el_lvmi = $('d_lvmi_ht');
-  if (el_lvmi) {
-    el_lvmi.textContent = lvmiHt.toFixed(1) + ' g/m²·⁷';
-    el_lvmi.style.color = hasLVH ? 'var(--bad)' : 'var(--ok)';
+  // Khoury 95th percentile LVMI threshold (age- & sex-specific)
+  const sex = ($('psex') ? $('psex').value : '') || '';
+  const isMale = sex === 'M';
+  let lvmiThresh;
+  if (ageY < 9) {
+    const g95 = 77.5265 - (15.8939 * ageY) + (5.2322 * Math.pow(ageY, 1.5)) - (0.4671 * ageY * ageY);
+    lvmiThresh = isMale ? g95 + 2.738 : g95;
+    if (!sex) lvmiThresh = g95 + 2.738; // use male (higher) if sex not entered — conservative
+  } else {
+    lvmiThresh = (sex === 'F') ? 40.0 : 45.0; // default to male if not entered
   }
 
-  // RWT
+  const htM    = ht / 100;
+  const lvmiHt = lvm / Math.pow(htM, 2.7);
+  const isLvmiElev   = lvmiHt > lvmiThresh;
+  const deSimoneAlert = lvmiHt >= 51;
+
+  const el_lvmi = $('d_lvmi_ht');
+  if (el_lvmi) {
+    let txt = lvmiHt.toFixed(1) + ' g/m²·⁷  [Khoury 95th: ' + lvmiThresh.toFixed(1) + ']';
+    if (deSimoneAlert) txt += '  ⚠ CRITICAL ≥ 51';
+    el_lvmi.textContent = txt;
+    el_lvmi.style.color = deSimoneAlert ? 'var(--bad)' : isLvmiElev ? 'var(--bord)' : 'var(--ok)';
+  }
+
+  // RWT (paediatric threshold 0.38)
   const el_rwt = $('d_rwt');
   if (!isFinite(lvpwd) || !isFinite(lvedd) || lvedd <= 0) {
     if (el_rwt) { el_rwt.textContent = '— (enter LVPWd & LVIDd)'; el_rwt.style.color = 'var(--muted)'; }
     const el_g = $('d_lvgeom'); if (el_g) { el_g.textContent = '—'; el_g.style.color = ''; }
     return;
   }
-  const rwt  = 2 * lvpwd / lvedd;
-  const isConcGeom = rwt >= 0.42;
+  const rwt       = 2 * lvpwd / lvedd;
+  const isConcGeom = rwt >= 0.38;
   if (el_rwt) {
-    el_rwt.textContent = rwt.toFixed(2) + (isConcGeom ? ' (concentric ≥ 0.42)' : ' (eccentric < 0.42)');
+    el_rwt.textContent = rwt.toFixed(2) + (isConcGeom ? ' ≥ 0.38 — concentric' : ' < 0.38 — eccentric');
     el_rwt.style.color = isConcGeom ? 'var(--bord)' : 'var(--ok)';
   }
 
   let geomTxt, geomColor;
-  if (hasLVH  && isConcGeom)  { geomTxt = 'Concentric LVH';       geomColor = 'var(--bad)'; }
-  else if (hasLVH && !isConcGeom) { geomTxt = 'Eccentric LVH';    geomColor = 'var(--bad)'; }
-  else if (!hasLVH && isConcGeom) { geomTxt = 'Concentric remodelling'; geomColor = 'var(--bord)'; }
-  else                            { geomTxt = 'Normal geometry';    geomColor = 'var(--ok)'; }
+  if      (isLvmiElev  && isConcGeom)  { geomTxt = 'Concentric Hypertrophy';  geomColor = 'var(--bad)'; }
+  else if (isLvmiElev  && !isConcGeom) { geomTxt = 'Eccentric Hypertrophy';   geomColor = 'var(--bad)'; }
+  else if (!isLvmiElev && isConcGeom)  { geomTxt = 'Concentric Remodelling';  geomColor = 'var(--bord)'; }
+  else                                  { geomTxt = 'Normal Geometry';          geomColor = 'var(--ok)'; }
+  if (deSimoneAlert) { geomTxt += ' · CRITICAL: LVMI ≥ 51 g/m²·⁷'; geomColor = 'var(--bad)'; }
 
   const el_g = $('d_lvgeom');
   if (el_g) { el_g.textContent = geomTxt; el_g.style.color = geomColor; }
@@ -1305,17 +1326,33 @@ function generatePrint() {
     const lvm = 0.8*(1.04*(Math.pow((lvedd+ivsd+lvpwd)/10,3)-Math.pow(lvedd/10,3)))+0.6;
     derivedHtml += `<tr><td>LV Mass (Devereux)</td><td class="r">${lvm.toFixed(1)}</td><td>g</td><td></td></tr>`;
     if (isFinite(bsaD)) derivedHtml += `<tr><td>LV Mass Index (DuBois)</td><td class="r">${(lvm/bsaD).toFixed(1)}</td><td>g/m²</td><td></td></tr>`;
-    if (hasAge && ageY > 8 && isFinite(ht) && ht > 0) {
+    if (hasAge && isFinite(ageY) && ageY >= 8 && ageY <= 18 && isFinite(ht) && ht > 0) {
       const lvmiHt = lvm / Math.pow(ht/100, 2.7);
-      const rwt    = (isFinite(lvpwd) && lvedd > 0) ? 2*lvpwd/lvedd : NaN;
+      // Khoury 95th percentile threshold
+      const pSex = $('psex') ? $('psex').value : '';
+      const pMale = pSex === 'M';
+      let lvmiThresh;
+      if (ageY < 9) {
+        const g95 = 77.5265 - (15.8939*ageY) + (5.2322*Math.pow(ageY,1.5)) - (0.4671*ageY*ageY);
+        lvmiThresh = (pSex === 'F') ? g95 : g95 + 2.738;
+      } else {
+        lvmiThresh = (pSex === 'F') ? 40.0 : 45.0;
+      }
+      const isLvmiElev   = lvmiHt > lvmiThresh;
+      const deSimoneAlert = lvmiHt >= 51;
+      const rwt = (isFinite(lvpwd) && lvedd > 0) ? 2*lvpwd/lvedd : NaN;
+      const isConcGeom = isFinite(rwt) && rwt >= 0.38;
       let geom = '—';
       if (isFinite(rwt)) {
-        const hasLVH = lvmiHt > 51, conc = rwt >= 0.42;
-        geom = hasLVH && conc ? 'Concentric LVH' : hasLVH ? 'Eccentric LVH' : conc ? 'Concentric remodelling' : 'Normal geometry';
+        geom = isLvmiElev && isConcGeom ? 'Concentric Hypertrophy'
+             : isLvmiElev               ? 'Eccentric Hypertrophy'
+             : isConcGeom               ? 'Concentric Remodelling'
+             : 'Normal Geometry';
+        if (deSimoneAlert) geom += ' · CRITICAL: LVMI ≥ 51';
       }
-      derivedHtml += `<tr><td>LVMI height²·⁷ (De Simone)</td><td class="r">${lvmiHt.toFixed(1)}</td><td>g/m²·⁷</td><td class="${lvmiHt>51?'pbad':''}">LVH > 51</td></tr>`;
-      if (isFinite(rwt)) derivedHtml += `<tr><td>RWT (2×LVPWd/LVIDd)</td><td class="r">${rwt.toFixed(2)}</td><td></td><td class="${rwt>=0.42?'pbord':''}">Conc ≥ 0.42</td></tr>`;
-      derivedHtml += `<tr><td>LV Geometry</td><td colspan="3" class="${geom.includes('LVH')?'pbad':geom.includes('remodel')?'pbord':''}">${geom}</td></tr>`;
+      derivedHtml += `<tr><td>LVMI height²·⁷ (De Simone)</td><td class="r">${lvmiHt.toFixed(1)}</td><td>g/m²·⁷</td><td class="${deSimoneAlert?'pbad':isLvmiElev?'pbord':''}">Khoury 95th: ${lvmiThresh.toFixed(1)}${deSimoneAlert?' ⚠ ≥51':''}</td></tr>`;
+      if (isFinite(rwt)) derivedHtml += `<tr><td>RWT (2×LVPWd/LVIDd)</td><td class="r">${rwt.toFixed(2)}</td><td></td><td class="${isConcGeom?'pbord':''}">Paed concentric ≥ 0.38</td></tr>`;
+      derivedHtml += `<tr><td>LV Geometry (Khoury)</td><td colspan="3" class="${geom.includes('CRITICAL')||geom.includes('Hypertrophy')?'pbad':geom.includes('Remodel')?'pbord':''}">${geom}</td></tr>`;
     }
   }
   if (isFinite(ao) && isFinite(la) && ao > 0) {
