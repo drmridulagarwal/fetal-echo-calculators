@@ -448,7 +448,7 @@ function buildSections(){
   $('coreOut').innerHTML = schCoreOut.map(k=>measRow('sch_'+k,schLabel[k],'mm','sch::'+k)).join('');
   $('coreAv').innerHTML  = schCoreAv.map(k=>measRow('sch_'+k,schLabel[k],'mm','sch::'+k)).join('');
   $('coreArch').innerHTML = pasCore.map(k=>measRow('pas_'+k,pasLabel[k],'mm','pas::'+k)).join('')
-     + `<div class="mrow"><div class="ml">Isthmus : duct (I/D) ratio <span class="uu">computed</span></div><div id="idr_v" style="font-weight:700">—</div><div class="zbox"></div></div>`;
+     + `<div class="mrow"><div class="ml">Isthmus : duct (I/D) ratio <span class="uu">computed · CoA risk if &lt; 0.73</span></div><div id="idr_v" style="font-weight:700">—</div><div class="zbox" id="z_idr"></div></div>`;
   $('coreVent').innerHTML =
      `<div class="mrow"><div class="ml">LV minor — mid-transverse <span class="uu">mm</span></div><input type="number" step="0.01" inputmode="decimal" id="in_lvmin" placeholder="mm"><div class="zbox" id="z_lvmin"></div></div>`
    + `<div class="mrow"><div class="ml">RV minor — mid-transverse <span class="uu">mm</span></div><input type="number" step="0.01" inputmode="decimal" id="in_rvmin" placeholder="mm"><div class="zbox" id="z_rvmin"></div></div>`
@@ -609,7 +609,21 @@ function computeCoA(c){
   // I:D ratio
   const isth=num('in_pas_i3vt'), duct=num('in_pas_duct');
   let idr=NaN; if(isFinite(isth)&&isFinite(duct)&&duct>0) idr=isth/duct;
-  const idV=$('idr_v'); if(idV) idV.textContent=isFinite(idr)?idr.toFixed(2):'—';
+  const idV=$('idr_v');
+  if(idV){
+    idV.textContent = isFinite(idr) ? idr.toFixed(2) : '—';
+    idV.style.color = (isFinite(idr) && idr < 0.73) ? 'var(--bad)' : '';
+  }
+  const zIdr=$('z_idr');
+  if(zIdr){
+    if(isFinite(idr) && idr < 0.73){
+      zIdr.className='zbox bad';
+      zIdr.innerHTML='<span class="zval">'+idr.toFixed(2)+'</span> <span class="tag t-bad">CoA RISK</span>';
+    } else if(isFinite(idr)){
+      zIdr.className='zbox ok';
+      zIdr.innerHTML='<span class="zval">'+idr.toFixed(2)+'</span> <span class="tag t-ok">OK</span>';
+    } else { zIdr.className='zbox'; zIdr.innerHTML=''; }
+  }
   // triggers
   const reasons=[];
   const chk=(zz,name)=>{ if(zz!=null&&zz<-2) reasons.push(name); };
@@ -619,6 +633,7 @@ function computeCoA(c){
   chk(z('pas::i3vt'),'aortic isthmus');
   chk(zLv,'LV minor dimension');
   if(isFinite(lvrv)&&lvrv<0.9) reasons.push('LV:RV ratio < 0.9');
+  if(isFinite(idr)&&idr<0.73) reasons.push('I:D ratio < 0.73 (narrow isthmus relative to ductus)');
   const archEntered = isFinite(isth)||isFinite(duct)||isFinite(num('in_pas_isag'));
   const card=$('coaCard');
   if(reasons.length){
