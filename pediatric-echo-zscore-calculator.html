@@ -108,27 +108,34 @@ footer{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px}
 /* ===== PRINT ===== */
 #printArea{display:none}
 @media print{
-  body{background:#fff}
-  .wrap{max-width:100%;padding:0}
-  .noprint{display:none !important}
-  #printArea{display:block;font-size:12px;color:#000}
-  #printArea h2{font-size:15px;margin:0 0 2px}
-  #printArea .ph{display:flex;justify-content:space-between;border-bottom:2px solid #15607a;
-    padding-bottom:8px;margin-bottom:10px}
-  #printArea .ph-l div{font-size:12px;margin:1px 0}
-  #printArea .ph-r{text-align:right;font-size:11.5px}
-  #printArea .ph-r div{margin:1px 0}
-  #printArea table{width:100%;border-collapse:collapse;margin:8px 0 14px}
-  #printArea th,#printArea td{border:1px solid #cfd8e0;padding:4px 7px;font-size:11px;text-align:left}
+  body{background:#fff;margin:0}
+  .wrap{max-width:100%;padding:4px 10px}
+  /* Hide everything in wrap, then show only the printArea */
+  .wrap>*{display:none!important}
+  #printArea{display:block!important;font-size:12px;color:#000}
+  /* Header row: left=title+patient info, right=growth charts */
+  #printArea .ph{display:flex;justify-content:space-between;align-items:flex-start;
+    border-bottom:2px solid #15607a;padding-bottom:8px;margin-bottom:10px;gap:16px}
+  #printArea .ph-l{flex:1 1 auto}
+  #printArea .ph-l h2{font-size:14px;margin:0 0 4px;color:#15607a}
+  #printArea .ph-l .ph-info{font-size:11px;line-height:1.6}
+  #printArea .ph-r{flex:0 0 auto;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+  #printArea .ph-r svg{display:block;width:200px;height:100px}
+  #printArea .ph-r .gc-lbl{font-size:9px;color:#5b6b7c;text-align:right;margin-top:-3px}
+  /* Measurements table */
+  #printArea table{width:100%;border-collapse:collapse;margin:6px 0 12px}
+  #printArea th,#printArea td{border:1px solid #cfd8e0;padding:3px 6px;font-size:10.5px;text-align:left}
   #printArea th{background:#eef5f8;font-weight:700}
   #printArea td.r{text-align:right;font-variant-numeric:tabular-nums}
   #printArea .pbad{color:#c33a3a;font-weight:700}
   #printArea .pbord{color:#b07400;font-weight:700}
-  #printArea .pgl{font-weight:700;color:#15607a;font-size:11.5px;background:#f0f6f9;padding:5px 7px}
-  #printArea .pnote{font-size:9.5px;color:#666}
-  #printArea .kawa-txt{font-size:9.5px;color:#1565c0;display:block}
+  #printArea .pgl{font-weight:700;color:#15607a;font-size:10.5px;background:#f0f6f9;padding:4px 6px}
+  #printArea .pnote{font-size:9px;color:#666;margin:3px 0}
+  #printArea .kawa-txt{font-size:9px;color:#1565c0;display:block}
   #printArea .kawa-txt.med{color:#e65100}
   #printArea .kawa-txt.giant{color:#c33a3a;font-weight:700}
+  #printArea .pr-footer{display:flex;align-items:center;gap:12px;margin-top:10px;
+    border-top:1px solid #e5ebf2;padding-top:8px}
 }
 </style>
 </head>
@@ -152,9 +159,22 @@ footer{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px}
   <b>Clinical decision-support only — not a diagnostic tool.</b> Z-scores are calculated from published regression equations and are valid only within the patient weight/BSA range of each reference. Verify all measurements against the original publication before clinical application. For use by qualified clinicians only.
 </div>
 
-<!-- ===== OCR SCAN BAR ===== -->    <div class="field"><label>ID / MRN <span class="u">optional · printout only</span></label><input id="pmrn" type="text" placeholder="—"></div>
-    <div class="field"><label>Date of birth <span class="u">optional</span></label><input id="pdob" type="date"></div>
-    <div class="field"><label>Study date</label><input id="pdate" type="date"></div>
+<!-- ===== PATIENT CARD ===== -->
+<div class="card noprint">
+  <h2>Patient Information</h2>
+  <p class="hint">Name and ID are optional — used only to label the printout. Weight and height drive BSA and all Z-score calculations.</p>
+  <div class="grid">
+    <div class="field"><label>Patient name <span class="u">optional · printout only</span></label><input id="pname" type="text" placeholder="—"></div>
+    <div class="field"><label>ID / MRN <span class="u">optional · printout only</span></label><input id="pmrn" type="text" placeholder="—"></div>
+    <div class="field"><label>Date of birth <span class="u">optional</span></label><input id="pdob" type="date" oninput="recalc()"></div>
+    <div class="field"><label>Study date</label><input id="pdate" type="date" oninput="recalc()"></div>
+    <div class="field"><label>Sex <span class="u">for growth chart &amp; norms</span></label>
+      <select id="psex" oninput="recalc()">
+        <option value="">— not specified —</option>
+        <option value="M">Male</option>
+        <option value="F">Female</option>
+      </select>
+    </div>
   </div>
   <div class="group-label" style="margin-top:14px">Biometric inputs</div>
   <div class="grid3">
@@ -163,6 +183,33 @@ footer{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px}
     <div class="field"><label>Heart rate <span class="u">bpm · for report</span></label><input id="hr" type="number" step="1" min="0" inputmode="numeric" placeholder="bpm"></div>
   </div>
   <div class="bsa-bar" id="bsaBar"></div>
+  <!-- Growth chart panel — shown when age + weight/height are available -->
+  <div id="growthPanel" style="display:none;margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:12px;background:#f8fafc">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <div>
+        <div id="ageDisplay" style="font-size:13.5px;font-weight:700;color:var(--brand)"></div>
+        <div id="bmiDisplay" style="font-size:11.5px;color:var(--muted);margin-top:2px"></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button id="gc_wt_btn" onclick="gcShow('wt')" style="font-size:11.5px;padding:5px 10px;border:1px solid var(--brand);border-radius:7px;background:var(--brand);color:#fff;cursor:pointer;font-weight:600">Weight</button>
+        <button id="gc_ht_btn" onclick="gcShow('ht')" style="font-size:11.5px;padding:5px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--muted);cursor:pointer;font-weight:600">Height</button>
+      </div>
+    </div>
+    <svg id="growthChart" viewBox="0 0 320 160" style="width:100%;max-width:420px;margin-top:8px;display:block"></svg>
+    <div style="font-size:10px;color:var(--muted);margin-top:3px">WHO 2007 reference · 5th / 50th / 95th centile · ● = patient</div>
+  </div>
+</div>
+
+<!-- ===== UNIT TOGGLE ===== -->
+<div class="card noprint" style="padding:10px 18px">
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span style="font-size:12.5px;font-weight:600;color:var(--ink)">Measurement units:</span>
+    <div class="seg">
+      <button id="unit_mm" class="on" onclick="setUnit('mm')">mm</button>
+      <button id="unit_cm" onclick="setUnit('cm')">cm</button>
+    </div>
+    <span id="unitNote" style="font-size:11px;color:var(--muted)">Enter all echo measurements in mm</span>
+  </div>
 </div>
 
 <!-- ===== SECTION 1: M-MODE (KAMPMANN 2000) ===== -->
@@ -201,6 +248,13 @@ footer{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px}
     <div class="der-row"><div class="dl">LV Mass — Devereux formula <span style="font-size:11px">grams</span></div><div class="dv" id="d_lvm">—</div></div>
     <div class="der-row"><div class="dl">LV Mass Index <span style="font-size:11px">g/m² (DuBois BSA)</span></div><div class="dv" id="d_lvmi">—</div></div>
     <div class="der-row"><div class="dl">LA:Ao ratio</div><div class="dv" id="d_laao">—</div></div>
+    <!-- De Simone / RWT rows — shown only when age > 8 years -->
+    <div class="der-row" id="row_lwt_title" style="display:none;border-top:2px solid var(--brand-soft);margin-top:6px">
+      <div class="dl" style="color:var(--brand);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em">Age &gt; 8 y — De Simone indexed LV mass &amp; geometry</div><div class="dv"></div>
+    </div>
+    <div class="der-row" id="row_lvmi_ht" style="display:none"><div class="dl">LVMI by height<sup>2.7</sup> <span style="font-size:11px">g/m<sup>2.7</sup> · De Simone (LVH &gt; 51)</span></div><div class="dv" id="d_lvmi_ht">—</div></div>
+    <div class="der-row" id="row_rwt" style="display:none"><div class="dl">RWT — Relative wall thickness <span style="font-size:11px">= 2×LVPWd/LVIDd · (conc ≥ 0.42)</span></div><div class="dv" id="d_rwt">—</div></div>
+    <div class="der-row" id="row_lvgeom" style="display:none"><div class="dl">LV Geometry</div><div class="dv" id="d_lvgeom">—</div></div>
   </div>
 </details>
 
@@ -550,6 +604,254 @@ function montrealZ(val, key, bsaH) {
   return sd > 0 ? (val - mean) / sd : null;
 }
 
+/* ================================================================
+   AGE CALCULATION
+   ================================================================ */
+function getAgeYears() {
+  const dobVal = $('pdob').value, studyVal = $('pdate').value || new Date().toISOString().slice(0,10);
+  if (!dobVal) return NaN;
+  const dob = new Date(dobVal + 'T12:00:00'), study = new Date(studyVal + 'T12:00:00');
+  const ms = study - dob;
+  return ms > 0 ? ms / (365.25 * 24 * 60 * 60 * 1000) : NaN;
+}
+function fmtAge(y) {
+  if (!isFinite(y) || y < 0) return null;
+  if (y < 2) { const m = Math.round(y * 12); return m + ' month' + (m !== 1 ? 's' : ''); }
+  const yr = Math.floor(y), mo = Math.round((y - yr) * 12);
+  return yr + ' yr' + (yr !== 1 ? 's' : '') + (mo > 0 ? ' ' + mo + ' mo' : '');
+}
+
+/* ================================================================
+   WHO 2007 GROWTH REFERENCE  (5th / 50th / 95th centile)
+   Boys and Girls · Age 2–18 years (yearly steps)
+   Source: WHO Reference 2007 (http://www.who.int/growthref)
+   ================================================================ */
+const GC_AGES = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18];
+const WHO = {
+  M: {
+    wt: {
+      p5:  [9.7,11.3,12.7,14.1,15.9,17.7,19.5,21.5,23.7,26.6,30.7,36.0,41.7,46.3,49.5,51.8,53.6],
+      p50: [12.2,14.3,16.3,18.3,20.5,22.9,25.3,28.1,31.2,35.0,39.7,45.8,52.5,58.6,63.4,67.0,69.9],
+      p95: [15.3,18.0,20.5,23.1,26.1,29.9,34.0,38.8,44.5,51.3,58.2,65.9,72.9,78.9,83.5,87.3,90.7]
+    },
+    ht: {
+      p5:  [82.0,88.0,94.5,100.7,106.5,111.8,116.9,121.9,126.7,131.4,136.2,141.8,148.3,154.6,158.8,161.0,162.0],
+      p50: [87.8,96.1,103.3,109.9,116.0,121.7,127.3,132.6,137.8,143.0,148.8,155.5,163.2,170.1,174.9,177.4,178.5],
+      p95: [93.9,103.5,112.0,119.2,125.6,131.7,137.7,143.3,148.8,154.6,161.4,169.1,177.8,184.9,189.7,192.6,193.8]
+    }
+  },
+  F: {
+    wt: {
+      p5:  [9.8,11.3,12.7,14.0,15.5,17.0,18.8,20.9,23.4,26.5,30.0,34.2,37.7,40.0,41.4,42.1,42.6],
+      p50: [12.1,14.2,16.1,18.2,20.5,22.9,25.7,29.0,32.9,37.2,41.5,45.3,48.2,50.1,51.5,52.3,52.9],
+      p95: [15.0,18.0,20.5,23.3,26.8,30.9,35.6,41.0,47.2,53.4,59.2,64.4,68.4,70.7,72.1,73.1,73.9]
+    },
+    ht: {
+      p5:  [81.7,88.0,94.1,99.0,104.7,109.9,114.6,119.0,123.0,127.2,131.8,136.7,140.7,143.1,143.8,144.0,144.2],
+      p50: [87.1,95.7,103.0,108.4,114.6,120.4,125.8,130.9,136.0,141.3,147.1,152.6,156.5,158.8,159.7,160.0,160.3],
+      p95: [92.7,103.1,111.8,117.7,124.5,130.9,137.0,142.8,148.8,155.4,162.2,168.4,172.3,174.5,175.6,176.0,176.4]
+    }
+  }
+};
+
+/* Interpolate centile value at a given age */
+function gcInterp(arr, ageY) {
+  const i = GC_AGES.findIndex(a => a >= ageY);
+  if (i === 0) return arr[0];
+  if (i < 0)   return arr[arr.length - 1];
+  const lo = GC_AGES[i-1], hi = GC_AGES[i], frac = (ageY - lo) / (hi - lo);
+  return arr[i-1] + frac * (arr[i] - arr[i-1]);
+}
+
+/* Draw growth chart SVG */
+let gcMode = 'wt'; // 'wt' or 'ht'
+function gcShow(mode) {
+  gcMode = mode;
+  $('gc_wt_btn').style.cssText = mode === 'wt'
+    ? 'font-size:11.5px;padding:5px 10px;border:1px solid var(--brand);border-radius:7px;background:var(--brand);color:#fff;cursor:pointer;font-weight:600'
+    : 'font-size:11.5px;padding:5px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--muted);cursor:pointer;font-weight:600';
+  $('gc_ht_btn').style.cssText = mode === 'ht'
+    ? 'font-size:11.5px;padding:5px 10px;border:1px solid var(--brand);border-radius:7px;background:var(--brand);color:#fff;cursor:pointer;font-weight:600'
+    : 'font-size:11.5px;padding:5px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--muted);cursor:pointer;font-weight:600';
+  drawGrowthChart();
+}
+
+function drawGrowthChart() {
+  const svg = $('growthChart'); if (!svg) return;
+  const ageY  = getAgeYears();
+  const wt    = parseFloat($('wt').value);
+  const ht    = parseFloat($('ht').value);
+  const sex   = $('psex').value || 'M'; // default to male if not specified
+  const ref   = WHO[sex === 'F' ? 'F' : 'M'][gcMode];
+  const patV  = gcMode === 'wt' ? wt : ht;
+
+  // Chart geometry
+  const L=38, R=10, T=10, B=24, W=320, H=160;
+  const plotW = W - L - R, plotH = H - T - B;
+  const ageMin = 2, ageMax = 18;
+  const vals95 = GC_AGES.map((_,i) => ref.p95[i]);
+  const vals5  = GC_AGES.map((_,i) => ref.p5[i]);
+  const yMin = Math.min(...vals5) * 0.95;
+  const yMax = Math.max(...vals95) * 1.05;
+
+  const xScale = a => L + (a - ageMin) / (ageMax - ageMin) * plotW;
+  const yScale = v => T + plotH - (v - yMin) / (yMax - yMin) * plotH;
+
+  const polyline = (arr) => GC_AGES.map((a,i) => `${xScale(a).toFixed(1)},${yScale(arr[i]).toFixed(1)}`).join(' ');
+
+  // Y-axis label
+  const unit = gcMode === 'wt' ? 'kg' : 'cm';
+  const title = gcMode === 'wt' ? 'Weight-for-age' : 'Height-for-age';
+
+  // Patient centile badge
+  let centileTxt = '';
+  if (isFinite(ageY) && isFinite(patV)) {
+    const p5v  = gcInterp(ref.p5, ageY);
+    const p50v = gcInterp(ref.p50, ageY);
+    const p95v = gcInterp(ref.p95, ageY);
+    if (patV < p5v)        centileTxt = '< 5th centile';
+    else if (patV > p95v)  centileTxt = '> 95th centile';
+    else if (patV < p50v)  centileTxt = '5th–50th centile';
+    else                   centileTxt = '50th–95th centile';
+  }
+
+  // Axis ticks (y)
+  const yTicks = 4;
+  let yTickLines = '';
+  for (let i = 0; i <= yTicks; i++) {
+    const v = yMin + (yMax - yMin) * i / yTicks;
+    const y = yScale(v);
+    yTickLines += `<line x1="${L}" y1="${y.toFixed(1)}" x2="${W-R}" y2="${y.toFixed(1)}" stroke="#e5ebf2" stroke-width="0.5"/>`;
+    yTickLines += `<text x="${(L-3).toFixed(1)}" y="${y.toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="7" fill="#8a9aaa">${Math.round(v)}</text>`;
+  }
+  // x ticks
+  let xTickLines = '';
+  [2,4,6,8,10,12,14,16,18].forEach(a => {
+    const x = xScale(a);
+    xTickLines += `<line x1="${x.toFixed(1)}" y1="${T}" x2="${x.toFixed(1)}" y2="${(T+plotH).toFixed(1)}" stroke="#e5ebf2" stroke-width="0.5"/>`;
+    xTickLines += `<text x="${x.toFixed(1)}" y="${(H-B+12).toFixed(1)}" text-anchor="middle" font-size="7" fill="#8a9aaa">${a}</text>`;
+  });
+
+  // Patient dot
+  let patDot = '';
+  if (isFinite(ageY) && isFinite(patV) && ageY >= 2 && ageY <= 18) {
+    const px = xScale(ageY), py = yScale(patV);
+    const dotColor = patV < gcInterp(ref.p5, ageY) || patV > gcInterp(ref.p95, ageY) ? '#c33a3a' : '#15607a';
+    patDot = `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="4" fill="${dotColor}" stroke="#fff" stroke-width="1.5"/>`;
+  }
+
+  svg.innerHTML = `
+<rect x="0" y="0" width="${W}" height="${H}" fill="#f8fafc" rx="6"/>
+<rect x="${L}" y="${T}" width="${plotW}" height="${plotH}" fill="#fff" stroke="#e5ebf2" stroke-width="0.8"/>
+${yTickLines}${xTickLines}
+<text x="${(W/2).toFixed(1)}" y="${(H-3).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="#5b6b7c">Age (years)</text>
+<text x="${(L-28).toFixed(1)}" y="${(T+plotH/2).toFixed(1)}" text-anchor="middle" font-size="7" fill="#5b6b7c" transform="rotate(-90,${(L-28).toFixed(1)},${(T+plotH/2).toFixed(1)})">${unit}</text>
+<polyline points="${polyline(ref.p95)}" fill="none" stroke="#f0c6a8" stroke-width="1.2" stroke-dasharray="3,2"/>
+<polyline points="${polyline(ref.p50)}" fill="none" stroke="#9fd8b5" stroke-width="1.8"/>
+<polyline points="${polyline(ref.p5)}"  fill="none" stroke="#f0c6a8" stroke-width="1.2" stroke-dasharray="3,2"/>
+<text x="${(L+4).toFixed(1)}" y="${(yScale(ref.p95[0])-3).toFixed(1)}" font-size="6.5" fill="#d99100">95th</text>
+<text x="${(L+4).toFixed(1)}" y="${(yScale(ref.p50[0])-3).toFixed(1)}" font-size="6.5" fill="#2f9e6b">50th</text>
+<text x="${(L+4).toFixed(1)}" y="${(yScale(ref.p5[0])+8).toFixed(1)}"  font-size="6.5" fill="#d99100">5th</text>
+${patDot}
+${centileTxt ? `<text x="${(W-R-2).toFixed(1)}" y="${(T+8).toFixed(1)}" text-anchor="end" font-size="7.5" fill="#15607a" font-weight="bold">${centileTxt}</text>` : ''}
+<text x="${(L+4).toFixed(1)}" y="${(T+8).toFixed(1)}" font-size="7" fill="#5b6b7c">${title}</text>`;
+}
+
+function updateGrowthPanel() {
+  const ageY = getAgeYears();
+  const wt   = parseFloat($('wt').value);
+  const ht   = parseFloat($('ht').value);
+  const hasAge  = isFinite(ageY) && ageY > 0 && ageY <= 18;
+  const hasWt   = isFinite(wt);
+  const hasHt   = isFinite(ht);
+  const isInfant = isFinite(ageY) && ageY > 0 && ageY < 2;
+  const panel = $('growthPanel');
+  // Show/hide infant note
+  let infantNote = $('gcInfantNote');
+  if (!infantNote) {
+    infantNote = document.createElement('div');
+    infantNote.id = 'gcInfantNote';
+    infantNote.style.cssText = 'font-size:11.5px;color:#b08000;margin-top:6px;padding:6px 10px;background:#fffbe6;border-radius:6px;border:1px solid #ffe58f';
+    panel.appendChild(infantNote);
+  }
+  infantNote.style.display = isInfant ? 'block' : 'none';
+  if (isInfant) {
+    const mo = Math.round(ageY * 12);
+    infantNote.textContent = `Age ${mo} month${mo !== 1 ? 's' : ''}: WHO chart below covers 2–18 years. For infants, use WHO Child Growth Standards (0–24 months) separately.`;
+  }
+  if (hasAge && (hasWt || hasHt)) {
+    panel.style.display = 'block';
+    $('ageDisplay').textContent = 'Age: ' + (fmtAge(ageY) || '—') + (($('psex').value) ? ' · ' + ($('psex').value === 'M' ? 'Male' : 'Female') : '');
+    let bmi = '';
+    if (hasWt && hasHt && ht > 0) { const b = wt / Math.pow(ht/100, 2); bmi = 'BMI: ' + b.toFixed(1) + ' kg/m²'; }
+    if (hasWt) bmi += (bmi?' · ':'') + 'Wt: ' + wt.toFixed(1) + ' kg';
+    if (hasHt) bmi += (bmi?' · ':'') + 'Ht: ' + ht.toFixed(0) + ' cm';
+    $('bmiDisplay').textContent = bmi;
+    // Auto-select appropriate tab based on what's entered
+    if (!hasWt && hasHt) gcMode = 'ht';
+    if (hasWt && !hasHt) gcMode = 'wt';
+    gcShow(gcMode);
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+/* ================================================================
+   DE SIMONE HEIGHT-INDEXED LV MASS + RWT (age > 8 years)
+   Devereux formula: LVM = 0.8×(1.04×(LVIDd+IVSd+LVPWd)³ − LVIDd³) + 0.6
+   De Simone 1992 JACC indexing: LVM/height(m)^2.7
+   LVH threshold: > 51 g/m^2.7 (widely applied cut-off)
+   RWT = 2×LVPWd/LVIDd · Concentric geometry: RWT ≥ 0.42
+   Geometry classification (Ganau 1992):
+     Normal:              LVMI ≤51 AND RWT <0.42
+     Concentric remodel: LVMI ≤51 AND RWT ≥0.42
+     Eccentric LVH:      LVMI >51 AND RWT <0.42
+     Concentric LVH:     LVMI >51 AND RWT ≥0.42
+   Ref: De Simone G et al. JACC 1992;20:1251-60
+        Devereux RB et al. Am J Cardiol 1986;57:450-8
+   ================================================================ */
+function updateDeSimone(lvm, ht, lvpwd, lvedd) {
+  const ageY = getAgeYears();
+  const ids = ['row_lwt_title','row_lvmi_ht','row_rwt','row_lvgeom'];
+  if (!isFinite(ageY) || ageY <= 8 || !isFinite(lvm) || !isFinite(ht) || ht <= 0) {
+    ids.forEach(id => { const el=$(id); if(el) el.style.display='none'; });
+    return;
+  }
+  ids.forEach(id => { const el=$(id); if(el) el.style.display=''; });
+
+  const htM  = ht / 100;
+  const lvmiHt = lvm / Math.pow(htM, 2.7);
+  const hasLVH  = lvmiHt > 51;
+  const el_lvmi = $('d_lvmi_ht');
+  if (el_lvmi) {
+    el_lvmi.textContent = lvmiHt.toFixed(1) + ' g/m²·⁷';
+    el_lvmi.style.color = hasLVH ? 'var(--bad)' : 'var(--ok)';
+  }
+
+  // RWT
+  const el_rwt = $('d_rwt');
+  if (!isFinite(lvpwd) || !isFinite(lvedd) || lvedd <= 0) {
+    if (el_rwt) { el_rwt.textContent = '— (enter LVPWd & LVIDd)'; el_rwt.style.color = 'var(--muted)'; }
+    const el_g = $('d_lvgeom'); if (el_g) { el_g.textContent = '—'; el_g.style.color = ''; }
+    return;
+  }
+  const rwt  = 2 * lvpwd / lvedd;
+  const isConcGeom = rwt >= 0.42;
+  if (el_rwt) {
+    el_rwt.textContent = rwt.toFixed(2) + (isConcGeom ? ' (concentric ≥ 0.42)' : ' (eccentric < 0.42)');
+    el_rwt.style.color = isConcGeom ? 'var(--bord)' : 'var(--ok)';
+  }
+
+  let geomTxt, geomColor;
+  if (hasLVH  && isConcGeom)  { geomTxt = 'Concentric LVH';       geomColor = 'var(--bad)'; }
+  else if (hasLVH && !isConcGeom) { geomTxt = 'Eccentric LVH';    geomColor = 'var(--bad)'; }
+  else if (!hasLVH && isConcGeom) { geomTxt = 'Concentric remodelling'; geomColor = 'var(--bord)'; }
+  else                            { geomTxt = 'Normal geometry';    geomColor = 'var(--ok)'; }
+
+  const el_g = $('d_lvgeom');
+  if (el_g) { el_g.textContent = geomTxt; el_g.style.color = geomColor; }
+}
+
 /* ── coronary reference toggle ── */
 let corRef = 'boston';
 function setCorRef(r) {
@@ -625,6 +927,29 @@ function renderRange(elId, val, unit, normalLow, borderLow, higherBetter) {
 
 /* ── global results store (for findings panel + print) ── */
 const RESULTS = {};
+
+/* ── Unit conversion (mm / cm toggle) ── */
+let globalUnit = 'mm';
+function setUnit(u) {
+  globalUnit = u;
+  $('unit_mm').className = u === 'mm' ? 'on' : '';
+  $('unit_cm').className = u === 'cm' ? 'on' : '';
+  $('unitNote').textContent = u === 'mm'
+    ? 'Enter all echo measurements in mm'
+    : 'Enter in cm — converted to mm automatically for z-scores';
+  // Update placeholders on all mm fields
+  document.querySelectorAll('[data-unit="mm"]').forEach(el => {
+    el.placeholder = u === 'cm' ? 'cm' : 'mm';
+  });
+  recalc();
+}
+/* mmv: reads input, applies cm→mm conversion only for data-unit="mm" fields */
+function mmv(id) {
+  const v = numId(id);
+  if (!isFinite(v) || globalUnit !== 'cm') return v;
+  const el = $(id);
+  return (el && el.dataset.unit === 'mm') ? v * 10 : v;
+}
 function setResult(key, label, unit, sec, val, z, kawa, note) {
   if (!isFinite(val)) { delete RESULTS[key]; return; }
   RESULTS[key] = { label, unit, sec, val, z: isFinite(z) ? z : null, kawa: kawa || null, note: note || null };
@@ -651,7 +976,7 @@ function recalc() {
   [['lvedd','LVIDd'],['lvesd','LVIDs'],['ivsd','IVSd'],['lvpwd','LVPWd'],
    ['ivss','IVSs'],['lvpws','LVPWs'],['ao','Aortic root (Ao)'],['la','LA diameter']
   ].forEach(([k, lbl]) => {
-    const v = numId('in_' + k);
+    const v = mmv('in_' + k);
     if (!isFinite(v)) { clearZ('z_' + k); clrResult(k); return; }
     if (!isFinite(bsaD)) {
       const el = $('z_' + k);
@@ -674,9 +999,9 @@ function recalc() {
   });
 
   /* Derived LV */
-  const lvedd = numId('in_lvedd'), lvesd = numId('in_lvesd');
-  const ivsd  = numId('in_ivsd'),  lvpwd = numId('in_lvpwd');
-  const ao    = numId('in_ao'),    la    = numId('in_la');
+  const lvedd = mmv('in_lvedd'), lvesd = mmv('in_lvesd');
+  const ivsd  = mmv('in_ivsd'),  lvpwd = mmv('in_lvpwd');
+  const ao    = mmv('in_ao'),    la    = mmv('in_la');
 
   if (isFinite(lvedd) && isFinite(lvesd) && lvedd > 0) {
     const fs = (lvedd - lvesd) / lvedd * 100;
@@ -684,12 +1009,17 @@ function recalc() {
     $('d_fs').style.color = fs >= 28 ? 'var(--ok)' : 'var(--bad)';
   } else { $('d_fs').textContent = '—'; $('d_fs').style.color = ''; }
 
+  let lvm_g = NaN;
   if (isFinite(lvedd) && isFinite(ivsd) && isFinite(lvpwd)) {
     const ledd = lvedd / 10, isd = ivsd / 10, pwd = lvpwd / 10; // mm → cm
-    const lvm = 0.8 * (1.04 * (Math.pow(ledd + isd + pwd, 3) - Math.pow(ledd, 3))) + 0.6;
-    $('d_lvm').textContent = lvm.toFixed(1) + ' g';
-    $('d_lvmi').textContent = isFinite(bsaD) ? (lvm / bsaD).toFixed(1) + ' g/m²' : '— (enter wt & ht)';
+    lvm_g = 0.8 * (1.04 * (Math.pow(ledd + isd + pwd, 3) - Math.pow(ledd, 3))) + 0.6;
+    $('d_lvm').textContent = lvm_g.toFixed(1) + ' g';
+    $('d_lvmi').textContent = isFinite(bsaD) ? (lvm_g / bsaD).toFixed(1) + ' g/m²' : '— (enter wt & ht)';
   } else { $('d_lvm').textContent = '—'; $('d_lvmi').textContent = '—'; }
+  // De Simone height-indexed LVMI + RWT + geometry (shown only when age > 8 y)
+  updateDeSimone(lvm_g, ht, lvpwd, lvedd);
+  // Growth chart panel (shown when DOB + weight or height is entered)
+  updateGrowthPanel();
 
   if (isFinite(ao) && isFinite(la) && ao > 0) {
     $('d_laao').textContent = (la / ao).toFixed(2);
@@ -698,7 +1028,7 @@ function recalc() {
   /* ── Coronaries ── */
   /* LMCA, LAD, RCA */
   [['lmca','LMCA'],['lad','LAD'],['rca','RCA']].forEach(([k, lbl]) => {
-    const v = numId('in_' + k);
+    const v = mmv('in_' + k);
     if (!isFinite(v) || !isFinite(bsaH)) { clearZ('z_' + k); clrResult(k); return; }
     const z = corRef === 'boston' ? bostonZ(v, k, bsaH) : montrealZ(v, k, bsaH);
     const kw = kawasaki(z);
@@ -707,7 +1037,7 @@ function recalc() {
   });
 
   /* LCx — always Dallaire 2011 (circ); McCrindle does not include LCx */
-  const lcxV = numId('in_lcx');
+  const lcxV = mmv('in_lcx');
   if (isFinite(lcxV) && isFinite(bsaH)) {
     const zLcx = montrealZ(lcxV, 'circ', bsaH);
     const kw = kawasaki(zLcx);
@@ -726,7 +1056,7 @@ function recalc() {
    ['tarch','Transverse arch'],['isth','Aortic isthmus'],['dao','Descending aorta'],
    ['pvan','Pulmonary valve annulus'],['rvot','RVOT'],['lvot','LVOT']
   ].forEach(([k, lbl]) => {
-    const v = numId('in_' + k);
+    const v = mmv('in_' + k);
     if (!isFinite(v)) { clearZ('z_' + k); clrResult(k); return; }
     const z = isFinite(bsaH) ? cantinottiZ(v, k, bsaH) : null;
     if (z === null) renderPending('z_' + k); else renderZ('z_' + k, z, null);
@@ -735,7 +1065,7 @@ function recalc() {
 
   /* ── Functional ── */
   /* TAPSE — age-adjusted z-score pending; guide thresholds only */
-  const tapseV = numId('in_tapse');
+  const tapseV = mmv('in_tapse');
   if (isFinite(tapseV)) {
     const cls = tapseV >= 15 ? 'ok' : tapseV >= 10 ? 'bord' : 'bad';
     const tCls = 't-' + cls;
@@ -822,12 +1152,74 @@ function resetAll() {
   document.querySelectorAll('input[type="number"]').forEach(i => { i.value = ''; });
   document.querySelectorAll('.zbox').forEach(el => { el.className = 'zbox'; el.innerHTML = ''; });
   Object.keys(RESULTS).forEach(k => delete RESULTS[k]);
-  ['d_fs','d_lvm','d_lvmi','d_laao'].forEach(id => {
+  ['d_fs','d_lvm','d_lvmi','d_laao','d_lvmi_ht','d_rwt','d_lvgeom'].forEach(id => {
     const el = $(id); if (el) { el.textContent = '—'; el.style.color = ''; }
   });
+  ['row_lwt_title','row_lvmi_ht','row_rwt','row_lvgeom'].forEach(id => {
+    const el = $(id); if (el) el.style.display = 'none';
+  });
   $('bsaBar').style.display = 'none';
+  $('growthPanel').style.display = 'none';
   $('printArea').innerHTML = '';
   renderFindings();
+}
+
+/* ================================================================
+   PRINT — growth chart SVG builder (static, for print report)
+   ================================================================ */
+function buildPrintGrowthSvg(mode, sex, ageY, patVal) {
+  const ref   = WHO[sex === 'F' ? 'F' : 'M'][mode];
+  const unit  = mode === 'wt' ? 'kg' : 'cm';
+  const title = mode === 'wt' ? 'Weight-for-age' : 'Height-for-age';
+  // SVG dimensions (200×100 viewBox, scaled by CSS)
+  const L=32, R=6, T=8, B=18, W=200, H=100;
+  const plotW = W - L - R, plotH = H - T - B;
+  const ageMin = 2, ageMax = 18;
+  const yMin = Math.min(...ref.p5)  * 0.95;
+  const yMax = Math.max(...ref.p95) * 1.05;
+  const xS = a => L + (a - ageMin) / (ageMax - ageMin) * plotW;
+  const yS = v => T + plotH - (v - yMin) / (yMax - yMin) * plotH;
+  const pts = arr => GC_AGES.map((a,i) => `${xS(a).toFixed(1)},${yS(arr[i]).toFixed(1)}`).join(' ');
+
+  // y-axis ticks
+  let yTx = '', xTx = '';
+  for (let i = 0; i <= 3; i++) {
+    const v = yMin + (yMax - yMin) * i / 3;
+    const y = yS(v);
+    yTx += `<line x1="${L}" y1="${y.toFixed(1)}" x2="${W-R}" y2="${y.toFixed(1)}" stroke="#e5ebf2" stroke-width="0.5"/>`;
+    yTx += `<text x="${(L-2).toFixed(1)}" y="${y.toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="5.5" fill="#8a9aaa">${Math.round(v)}</text>`;
+  }
+  [2,6,10,14,18].forEach(a => {
+    const x = xS(a);
+    xTx += `<line x1="${x.toFixed(1)}" y1="${T}" x2="${x.toFixed(1)}" y2="${(T+plotH).toFixed(1)}" stroke="#e5ebf2" stroke-width="0.5"/>`;
+    xTx += `<text x="${x.toFixed(1)}" y="${(H-B+11).toFixed(1)}" text-anchor="middle" font-size="5.5" fill="#8a9aaa">${a}</text>`;
+  });
+
+  // Patient dot
+  let dot = '';
+  if (isFinite(ageY) && isFinite(patVal) && ageY >= 2 && ageY <= 18) {
+    const px = xS(ageY), py = yS(patVal);
+    const p5v  = gcInterp(ref.p5, ageY);
+    const p95v = gcInterp(ref.p95, ageY);
+    const col  = (patVal < p5v || patVal > p95v) ? '#c33a3a' : '#15607a';
+    dot = `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="3" fill="${col}" stroke="#fff" stroke-width="1"/>`;
+  }
+
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+<rect x="0" y="0" width="${W}" height="${H}" fill="#f8fafc" rx="4"/>
+<rect x="${L}" y="${T}" width="${plotW}" height="${plotH}" fill="#fff" stroke="#e5ebf2" stroke-width="0.6"/>
+${yTx}${xTx}
+<text x="${(L+plotW/2).toFixed(1)}" y="${(H-2).toFixed(1)}" text-anchor="middle" font-size="5.5" fill="#5b6b7c">Age (yr)</text>
+<text x="${(L-22).toFixed(1)}" y="${(T+plotH/2).toFixed(1)}" text-anchor="middle" font-size="5" fill="#5b6b7c" transform="rotate(-90,${(L-22).toFixed(1)},${(T+plotH/2).toFixed(1)})">${unit}</text>
+<polyline points="${pts(ref.p95)}" fill="none" stroke="#f0c6a8" stroke-width="0.9" stroke-dasharray="2,1.5"/>
+<polyline points="${pts(ref.p50)}" fill="none" stroke="#9fd8b5" stroke-width="1.3"/>
+<polyline points="${pts(ref.p5)}"  fill="none" stroke="#f0c6a8" stroke-width="0.9" stroke-dasharray="2,1.5"/>
+<text x="${(L+2).toFixed(1)}" y="${(yS(ref.p95[0])-2).toFixed(1)}" font-size="5" fill="#d99100">95th</text>
+<text x="${(L+2).toFixed(1)}" y="${(yS(ref.p50[0])-2).toFixed(1)}" font-size="5" fill="#2f9e6b">50th</text>
+<text x="${(L+2).toFixed(1)}" y="${(yS(ref.p5[0])+6).toFixed(1)}"  font-size="5" fill="#d99100">5th</text>
+${dot}
+<text x="${(W-R-1).toFixed(1)}" y="${(T+6).toFixed(1)}" text-anchor="end" font-size="5.5" fill="#15607a" font-weight="bold">${title} · WHO 2007</text>
+</svg>`;
 }
 
 /* ================================================================
@@ -837,15 +1229,46 @@ function generatePrint() {
   const name = $('pname').value.trim();
   const mrn  = $('pmrn').value.trim();
   const dob  = $('pdob').value;
+  const sex  = $('psex').value || 'M';
   const wt   = numId('wt'), ht = numId('ht'), hr = numId('hr');
   const bsaD = (wt > 0 && ht > 0) ? bsaDuBois(wt, ht)  : NaN;
   const bsaH = (wt > 0 && ht > 0) ? bsaHaycock(wt, ht) : NaN;
+  const ageY = getAgeYears();
 
-  const studyVal  = $('pdate').value || new Date().toISOString().slice(0,10);
-  const studyFmt  = new Date(studyVal + 'T12:00:00').toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
-  const dobFmt    = dob ? new Date(dob + 'T12:00:00').toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}) : '—';
+  const studyVal = $('pdate').value || new Date().toISOString().slice(0,10);
+  const studyFmt = new Date(studyVal + 'T12:00:00').toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+  const dobFmt   = dob ? new Date(dob + 'T12:00:00').toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}) : '—';
+  const ageFmt   = fmtAge(ageY) || '—';
 
-  /* Collect only entered measurements, grouped by section */
+  /* ── Growth chart SVGs (right column) ── */
+  const hasAge = isFinite(ageY) && ageY >= 2 && ageY <= 18;
+  /* Growth charts: always include in report when wt or ht are entered.
+     Patient dot appears only when age 2–18 years is calculable. */
+  let gcHtml = '';
+  if (isFinite(wt)) {
+    gcHtml += buildPrintGrowthSvg('wt', sex, ageY, wt);
+    gcHtml += '<div class="gc-lbl">Weight (kg) · WHO 2007 · 5th / 50th / 95th centile'
+      + (hasAge ? ' · ● patient' : ' · DOB needed for patient dot') + '</div>';
+  }
+  if (isFinite(ht)) {
+    gcHtml += buildPrintGrowthSvg('ht', sex, ageY, ht);
+    gcHtml += '<div class="gc-lbl">Height (cm) · WHO 2007 · 5th / 50th / 95th centile'
+      + (hasAge ? ' · ● patient' : ' · DOB needed for patient dot') + '</div>';
+  }
+
+  /* ── Patient info block ── */
+  const infoLines = [
+    name ? `<b>Name:</b> ${name}` : '',
+    mrn  ? `<b>ID/MRN:</b> ${mrn}` : '',
+    dob  ? `<b>DOB:</b> ${dobFmt}` : '',
+    `<b>Study date:</b> ${studyFmt}`,
+    hasAge ? `<b>Age:</b> ${ageFmt} · ${sex === 'F' ? 'Female' : sex === 'M' ? 'Male' : 'Sex not specified'}` : '',
+    isFinite(wt) ? `<b>Weight:</b> ${wt} kg${isFinite(ht) ? ' &nbsp;·&nbsp; <b>Height:</b> '+ht+' cm' : ''}` : '',
+    isFinite(bsaD) ? `<b>BSA:</b> ${bsaD.toFixed(3)} m² (DuBois) · ${bsaH.toFixed(3)} m² (Haycock)` : '',
+    isFinite(hr) ? `<b>HR:</b> ${hr} bpm` : '',
+  ].filter(Boolean).map(l => `<div>${l}</div>`).join('');
+
+  /* ── Measurements table ── */
   const ORDER = ['M-mode','Coronaries','2D Structures','Function'];
   const bySection = {};
   ORDER.forEach(s => bySection[s] = []);
@@ -853,112 +1276,97 @@ function generatePrint() {
     if (isFinite(r.val) && bySection[r.sec]) bySection[r.sec].push(r);
   });
 
-  /* Also pick up any entered functional values with no z-score */
   let tableHtml = '';
   ORDER.forEach(sec => {
     const items = bySection[sec];
-    if (!items || !items.length) return; // skip empty sections entirely
+    if (!items || !items.length) return;
     tableHtml += `<tr><td colspan="4" class="pgl">${sec}</td></tr>`;
     items.forEach(r => {
       const a = (r.z !== null && isFinite(r.z)) ? Math.abs(r.z) : null;
       const zTxt = a !== null ? fmtZ(r.z) : '—';
       const zCss = a !== null ? (a >= 2 ? 'pbad' : a >= 1.5 ? 'pbord' : '') : '';
       const kawaHtml = r.kawa && r.kawa.txt
-        ? `<br><span class="kawa-txt ${r.kawa.cls === 'k3' ? 'giant' : r.kawa.cls === 'k2' ? 'med' : ''}">${r.kawa.txt}</span>`
-        : '';
+        ? `<br><span class="kawa-txt ${r.kawa.cls==='k3'?'giant':r.kawa.cls==='k2'?'med':''}">${r.kawa.txt}</span>` : '';
       const noteHtml = r.note ? `<br><span class="kawa-txt">${r.note}</span>` : '';
-      tableHtml += `<tr>
-        <td>${r.label}</td>
-        <td class="r">${r.val.toFixed(2)}</td>
-        <td>${r.unit}</td>
-        <td class="r ${zCss}">${zTxt}${kawaHtml}${noteHtml}</td>
-      </tr>`;
+      tableHtml += `<tr><td>${r.label}</td><td class="r">${r.val.toFixed(2)}</td><td>${r.unit}</td><td class="r ${zCss}">${zTxt}${kawaHtml}${noteHtml}</td></tr>`;
     });
   });
 
-  /* Derived values — only if source measurements were entered */
-  const lvedd = numId('in_lvedd'), lvesd = numId('in_lvesd');
-  const ivsd  = numId('in_ivsd'),  lvpwd = numId('in_lvpwd');
-  const ao    = numId('in_ao'),    la    = numId('in_la');
+  /* ── Derived ── */
+  const lvedd = mmv('in_lvedd'), lvesd = mmv('in_lvesd');
+  const ivsd  = mmv('in_ivsd'),  lvpwd = mmv('in_lvpwd');
+  const ao    = mmv('in_ao'),    la    = mmv('in_la');
   let derivedHtml = '';
   if (isFinite(lvedd) && isFinite(lvesd) && lvedd > 0) {
     const fs = (lvedd - lvesd) / lvedd * 100;
-    derivedHtml += `<tr><td>FS%</td><td class="r">${fs.toFixed(1)}</td><td>%</td><td class="${fs < 28 ? 'pbad' : ''}">Normal ≥ 28%</td></tr>`;
+    derivedHtml += `<tr><td>FS%</td><td class="r">${fs.toFixed(1)}</td><td>%</td><td class="${fs<28?'pbad':''}">Normal ≥ 28%</td></tr>`;
   }
   if (isFinite(lvedd) && isFinite(ivsd) && isFinite(lvpwd)) {
-    const lvm = 0.8 * (1.04 * (Math.pow((lvedd+ivsd+lvpwd)/10, 3) - Math.pow(lvedd/10, 3))) + 0.6;
+    const lvm = 0.8*(1.04*(Math.pow((lvedd+ivsd+lvpwd)/10,3)-Math.pow(lvedd/10,3)))+0.6;
     derivedHtml += `<tr><td>LV Mass (Devereux)</td><td class="r">${lvm.toFixed(1)}</td><td>g</td><td></td></tr>`;
-    if (isFinite(bsaD)) {
-      derivedHtml += `<tr><td>LV Mass Index</td><td class="r">${(lvm/bsaD).toFixed(1)}</td><td>g/m²</td><td></td></tr>`;
+    if (isFinite(bsaD)) derivedHtml += `<tr><td>LV Mass Index (DuBois)</td><td class="r">${(lvm/bsaD).toFixed(1)}</td><td>g/m²</td><td></td></tr>`;
+    if (hasAge && ageY > 8 && isFinite(ht) && ht > 0) {
+      const lvmiHt = lvm / Math.pow(ht/100, 2.7);
+      const rwt    = (isFinite(lvpwd) && lvedd > 0) ? 2*lvpwd/lvedd : NaN;
+      let geom = '—';
+      if (isFinite(rwt)) {
+        const hasLVH = lvmiHt > 51, conc = rwt >= 0.42;
+        geom = hasLVH && conc ? 'Concentric LVH' : hasLVH ? 'Eccentric LVH' : conc ? 'Concentric remodelling' : 'Normal geometry';
+      }
+      derivedHtml += `<tr><td>LVMI height²·⁷ (De Simone)</td><td class="r">${lvmiHt.toFixed(1)}</td><td>g/m²·⁷</td><td class="${lvmiHt>51?'pbad':''}">LVH > 51</td></tr>`;
+      if (isFinite(rwt)) derivedHtml += `<tr><td>RWT (2×LVPWd/LVIDd)</td><td class="r">${rwt.toFixed(2)}</td><td></td><td class="${rwt>=0.42?'pbord':''}">Conc ≥ 0.42</td></tr>`;
+      derivedHtml += `<tr><td>LV Geometry</td><td colspan="3" class="${geom.includes('LVH')?'pbad':geom.includes('remodel')?'pbord':''}">${geom}</td></tr>`;
     }
   }
   if (isFinite(ao) && isFinite(la) && ao > 0) {
     derivedHtml += `<tr><td>LA:Ao ratio</td><td class="r">${(la/ao).toFixed(2)}</td><td></td><td></td></tr>`;
   }
-  if (derivedHtml) {
-    tableHtml += `<tr><td colspan="4" class="pgl">Derived values</td></tr>${derivedHtml}`;
-  }
+  if (derivedHtml) tableHtml += `<tr><td colspan="4" class="pgl">Derived values</td></tr>${derivedHtml}`;
+  if (!tableHtml) tableHtml = '<tr><td colspan="4" style="color:#888;font-style:italic">No measurements entered.</td></tr>';
 
-  if (!tableHtml) {
-    tableHtml = '<tr><td colspan="4" style="color:#888;font-style:italic">No measurements entered.</td></tr>';
-  }
-
-  /* Flagged summary */
+  /* ── Flagged summary ── */
   const flagged = Object.values(RESULTS)
     .filter(r => r.z !== null && isFinite(r.z) && Math.abs(r.z) >= 1.5)
     .sort((a,b) => Math.abs(b.z) - Math.abs(a.z));
   const flagHtml = flagged.length
-    ? '<ul style="margin:4px 0 0;padding-left:16px">' +
-      flagged.map(r => {
-        const a = Math.abs(r.z);
-        const kw = r.kawa && r.kawa.txt ? ` · ${r.kawa.txt}` : '';
-        return `<li class="${a>=2?'pbad':'pbord'}">${r.label}: Z ${fmtZ(r.z)}${kw}</li>`;
-      }).join('') + '</ul>'
-    : '<p style="margin:4px 0;font-style:italic">All entered parameters with available z-scores are within the reference range.</p>';
+    ? '<ul style="margin:4px 0 0;padding-left:16px">'
+      + flagged.map(r => {
+          const a = Math.abs(r.z);
+          const kw = r.kawa && r.kawa.txt ? ` · ${r.kawa.txt}` : '';
+          return `<li class="${a>=2?'pbad':'pbord'}">${r.label}: Z ${fmtZ(r.z)}${kw}</li>`;
+        }).join('') + '</ul>'
+    : '<p style="margin:4px 0;font-style:italic;font-size:11px">All entered parameters with available z-scores are within the reference range.</p>';
 
   const refLine = corRef === 'boston'
-    ? 'Coronary z-scores: McCrindle 2007 (Boston); LCx: Dallaire 2011 (Montreal). M-mode: Kampmann 2000. 2D: Cantinotti 2014 (pending).'
-    : 'Coronary z-scores: Dallaire 2011 (Montreal). M-mode: Kampmann 2000. 2D: Cantinotti 2014 (pending).';
+    ? 'Coronary z-scores: McCrindle 2007 (Boston); LCx: Dallaire 2011 (Montreal). M-mode: Kampmann 2000.'
+    : 'Coronary z-scores: Dallaire 2011 (Montreal). M-mode: Kampmann 2000.';
 
   $('printArea').innerHTML = `
-    <div class="ph">
-      <div class="ph-l">
-        <h2>Pediatric Echocardiography — Measurements &amp; Z-Scores</h2>
-      </div>
-      <div class="ph-r">
-        ${name ? `<div><b>Name:</b> ${name}</div>` : ''}
-        ${mrn  ? `<div><b>ID/MRN:</b> ${mrn}</div>` : ''}
-        ${dob  ? `<div><b>DOB:</b> ${dobFmt}</div>` : ''}
-        <div><b>Study date:</b> ${studyFmt}</div>
-        ${isFinite(wt) ? `<div><b>Weight:</b> ${wt} kg &nbsp;· Height: ${isFinite(ht) ? ht + ' cm' : '—'}</div>` : ''}
-        ${isFinite(bsaD) ? `<div><b>BSA:</b> ${bsaD.toFixed(3)} m² (DuBois) · ${bsaH.toFixed(3)} m² (Haycock)</div>` : ''}
-        ${isFinite(hr) ? `<div><b>HR:</b> ${hr} bpm</div>` : ''}
-      </div>
-    </div>
+<div class="ph">
+  <div class="ph-l">
+    <h2>Pediatric Echocardiography — Measurements &amp; Z-Scores</h2>
+    <div class="ph-info">${infoLines}</div>
+  </div>
+  ${gcHtml ? `<div class="ph-r">${gcHtml}</div>` : ''}
+</div>
 
-    <table>
-      <thead>
-        <tr><th>Parameter</th><th>Value</th><th>Unit</th><th>Z-score</th></tr>
-      </thead>
-      <tbody>${tableHtml}</tbody>
-    </table>
+<table>
+  <thead><tr><th>Parameter</th><th class="r">Value</th><th>Unit</th><th>Z-score / Note</th></tr></thead>
+  <tbody>${tableHtml}</tbody>
+</table>
 
-    <div class="pgl" style="margin-top:10px">Flagged parameters (|Z| ≥ 1.5)</div>
-    ${flagHtml}
+<div class="pgl" style="margin-top:8px">Flagged parameters (|Z| ≥ 1.5)</div>
+${flagHtml}
 
-    <p class="pnote" style="margin-top:14px">${refLine}</p>
-    <p class="pnote">Clinical decision-support only. Not a diagnostic tool. Verify all measurements against original publications before clinical use.</p>
-    <div style="display:flex;align-items:center;gap:14px;margin-top:12px;border-top:1px solid #e5ebf2;padding-top:10px">
-      ${window._qrDataUrl ? `<img src="${window._qrDataUrl}" width="60" height="60" style="border:1px solid #e5ebf2;border-radius:4px" alt="QR code">` : ''}
-      <div style="font-size:9px;color:#5b6b7c;line-height:1.6">
-        <b style="color:#15607a;font-size:10px">fetal-echo.org</b><br>
-        Pediatric Echo Z-Score Calculator<br>
-        fetal-echo.org/pediatric-echo-zscore-calculator/
-      </div>
-    </div>
-  `;
+<div class="pr-footer">
+  ${window._qrDataUrl ? `<img src="${window._qrDataUrl}" width="52" height="52" style="border:1px solid #e5ebf2;border-radius:3px" alt="QR">` : ''}
+  <div>
+    <p class="pnote">${refLine}</p>
+    <p class="pnote">Clinical decision-support only — not a diagnostic tool. Verify measurements against original publications before clinical use. &nbsp;·&nbsp; <b>fetal-echo.org</b></p>
+  </div>
+</div>`;
 
-  window.print();
+  setTimeout(() => window.print(), 300); // allow DOM to render before print dialog
 }
 
 /* ── Initialise ── */
@@ -966,7 +1374,6 @@ document.addEventListener('DOMContentLoaded', () => {
   $('pdate').value = new Date().toISOString().slice(0,10);
   renderFindings();
 });
-
 
 /* ── QR code ── */
 (function() {

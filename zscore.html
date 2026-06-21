@@ -351,7 +351,7 @@ function buildSections(){
   // CORE (default) section
   h+=`<details class="sec" open><summary>Core measurements — 4-chamber, outflows &amp; arch <span class="cv" id="cv_core"></span></summary>
    <div class="sec-body">
-     <div class="sec-note">The everyday parameters. Valves &amp; vessels in <b>cm</b> (Schneider); arch in <b>mm</b> (Pasquini). Reference scale: ${scaleSeg('setSch',schScale,[['GA','Gestational age'],['BPD','BPD'],['FL','Femur length']])} <span id="schScaleNote"></span> · open the advanced sections only if needed.</div>
+     <div class="sec-note">The everyday parameters. Valves &amp; vessels in <b>mm</b> (Schneider); arch in <b>mm</b> (Pasquini). Reference scale: ${scaleSeg('setSch',schScale,[['GA','Gestational age'],['BPD','BPD'],['FL','Femur length']])} <span id="schScaleNote"></span> · open the advanced sections only if needed.</div>
      <div class="group-label">Outflow valves &amp; great arteries</div>
      <div id="coreOut"></div>
      <div class="group-label">AV valves</div>
@@ -364,7 +364,7 @@ function buildSections(){
   // Advanced great vessels + arch
   h+=`<details class="sec"><summary>More great vessels &amp; arch — Schneider / Pasquini <span class="cv" id="cv_sch"></span></summary>
    <div class="sec-body">
-     <div class="sec-note">Additional vessels (cm) and the sagittal isthmus (mm). Same reference scale as the core valves.</div>
+     <div class="sec-note">Additional vessels (mm) and the sagittal isthmus (mm). Same reference scale as the core valves.</div>
      <div id="schRows"></div>
      <div class="group-label">Aortic isthmus — sagittal (mm)</div>
      <div id="pasRows"></div>
@@ -415,12 +415,12 @@ function buildSections(){
   // Cardiac output
   h+=`<details class="sec"><summary>Cardiac output <span class="cv" id="cv_co"></span></summary>
    <div class="sec-body">
-     <div class="sec-note">SV = π/4 × D² × VTI; CO = SV × HR. Combined CO indexed to fetal weight. Reference 425–550 mL/min/kg (Mielke 2001).</div>
+     <div class="sec-note">SV = π/4 × D² × VTI; CO = SV × HR. Combined CO indexed to fetal weight. Reference 425–550 mL/min/kg (Mielke 2001). Enter diameter in <b>mm</b>, VTI in cm.</div>
      <div class="grid">
-       <div class="field"><label>RVOT diameter <span class="u">cm</span></label><input id="in_rvotd" type="number" step="0.01" inputmode="decimal"></div>
-       <div class="field"><label>RVOT VTI <span class="u">cm</span></label><input id="in_rvotv" type="number" step="0.01" inputmode="decimal"></div>
-       <div class="field"><label>LVOT diameter <span class="u">cm</span></label><input id="in_lvotd" type="number" step="0.01" inputmode="decimal"></div>
-       <div class="field"><label>LVOT VTI <span class="u">cm</span></label><input id="in_lvotv" type="number" step="0.01" inputmode="decimal"></div>
+       <div class="field"><label>RVOT diameter <span class="u">mm</span></label><input id="in_rvotd" type="number" step="0.1" inputmode="decimal" placeholder="mm"></div>
+       <div class="field"><label>RVOT VTI <span class="u">cm</span></label><input id="in_rvotv" type="number" step="0.01" inputmode="decimal" placeholder="cm"></div>
+       <div class="field"><label>LVOT diameter <span class="u">mm</span></label><input id="in_lvotd" type="number" step="0.1" inputmode="decimal" placeholder="mm"></div>
+       <div class="field"><label>LVOT VTI <span class="u">cm</span></label><input id="in_lvotv" type="number" step="0.01" inputmode="decimal" placeholder="cm"></div>
      </div>
      <div class="sec-note" style="margin-top:6px">Uses heart rate &amp; fetal weight from the biometry panel.</div>
      <div id="coOut" class="sec-note"></div>
@@ -428,16 +428,16 @@ function buildSections(){
   // DeVore ratios
   h+=`<details class="sec"><summary>Ratios &amp; shape — DeVore <span class="cv" id="cv_dv"></span></summary>
    <div class="sec-body">
-     <div class="sec-note">Cardiothoracic ratio, chamber-area ratios, sphericity &amp; RV:LV ratios (DeVore 2017–18). Areas in cm², diameters in cm.</div>
+     <div class="sec-note">Cardiothoracic ratio, chamber-area ratios, sphericity &amp; RV:LV ratios (DeVore 2017–18). Areas in cm², diameters in mm.</div>
      <div class="grid">
        <div class="field"><label>Cardiac area <span class="u">cm²</span></label><input id="in_dvca" type="number" step="0.01" inputmode="decimal"></div>
        <div class="field"><label>Thoracic area <span class="u">cm²</span></label><input id="in_dvta" type="number" step="0.01" inputmode="decimal"></div>
-       <div class="field"><label>Cardiac longitudinal diam <span class="u">cm</span></label><input id="in_dvcl" type="number" step="0.01" inputmode="decimal"></div>
-       <div class="field"><label>Cardiac transverse diam <span class="u">cm</span></label><input id="in_dvct" type="number" step="0.01" inputmode="decimal"></div>
-       <div class="field"><label>RV basal diam <span class="u">cm</span></label><input id="in_dvrvb" type="number" step="0.01" inputmode="decimal"></div>
-       <div class="field"><label>LV basal diam <span class="u">cm</span></label><input id="in_dvlvb" type="number" step="0.01" inputmode="decimal"></div>
-       <div class="field"><label>RV mid diam <span class="u">cm</span></label><input id="in_dvrvm" type="number" step="0.01" inputmode="decimal"></div>
-       <div class="field"><label>LV mid diam <span class="u">cm</span></label><input id="in_dvlvm" type="number" step="0.01" inputmode="decimal"></div>
+       <div class="field"><label>Cardiac longitudinal diam <span class="u">mm</span></label><input id="in_dvcl" type="number" step="0.1" inputmode="decimal" placeholder="mm"></div>
+       <div class="field"><label>Cardiac transverse diam <span class="u">mm</span></label><input id="in_dvct" type="number" step="0.1" inputmode="decimal" placeholder="mm"></div>
+       <div class="field"><label>RV basal diam <span class="u">mm</span></label><input id="in_dvrvb" type="number" step="0.1" inputmode="decimal" placeholder="mm"></div>
+       <div class="field"><label>LV basal diam <span class="u">mm</span></label><input id="in_dvlvb" type="number" step="0.1" inputmode="decimal" placeholder="mm"></div>
+       <div class="field"><label>RV mid diam <span class="u">mm</span></label><input id="in_dvrvm" type="number" step="0.1" inputmode="decimal" placeholder="mm"></div>
+       <div class="field"><label>LV mid diam <span class="u">mm</span></label><input id="in_dvlvm" type="number" step="0.1" inputmode="decimal" placeholder="mm"></div>
        <div class="field"><label>LA area <span class="u">cm²</span></label><input id="in_dvlaa" type="number" step="0.01" inputmode="decimal"></div>
        <div class="field"><label>RA area <span class="u">cm²</span></label><input id="in_dvraa" type="number" step="0.01" inputmode="decimal"></div>
      </div>
@@ -445,8 +445,8 @@ function buildSections(){
    </div></details>`;
   S.innerHTML=h;
   // fill core subgroups
-  $('coreOut').innerHTML = schCoreOut.map(k=>measRow('sch_'+k,schLabel[k],'cm','sch::'+k)).join('');
-  $('coreAv').innerHTML  = schCoreAv.map(k=>measRow('sch_'+k,schLabel[k],'cm','sch::'+k)).join('');
+  $('coreOut').innerHTML = schCoreOut.map(k=>measRow('sch_'+k,schLabel[k],'mm','sch::'+k)).join('');
+  $('coreAv').innerHTML  = schCoreAv.map(k=>measRow('sch_'+k,schLabel[k],'mm','sch::'+k)).join('');
   $('coreArch').innerHTML = pasCore.map(k=>measRow('pas_'+k,pasLabel[k],'mm','pas::'+k)).join('')
      + `<div class="mrow"><div class="ml">Isthmus : duct (I/D) ratio <span class="uu">computed</span></div><div id="idr_v" style="font-weight:700">—</div><div class="zbox"></div></div>`;
   $('coreVent').innerHTML =
@@ -454,7 +454,7 @@ function buildSections(){
    + `<div class="mrow"><div class="ml">RV minor — mid-transverse <span class="uu">mm</span></div><input type="number" step="0.01" inputmode="decimal" id="in_rvmin" placeholder="mm"><div class="zbox" id="z_rvmin"></div></div>`
    + `<div class="mrow"><div class="ml">LV : RV minor ratio <span class="uu">computed · left-heart concern if &lt; 0.9</span></div><div id="lvrv_v" style="font-weight:700">—</div><div class="zbox" id="z_lvrv"></div></div>`;
   // advanced great vessels + sagittal isthmus
-  $('schRows').innerHTML = schAdv.map(k=>measRow('sch_'+k,schLabel[k],'cm','sch::'+k)).join('');
+  $('schRows').innerHTML = schAdv.map(k=>measRow('sch_'+k,schLabel[k],'mm','sch::'+k)).join('');
   $('pasRows').innerHTML = pasAdv.map(k=>measRow('pas_'+k,pasLabel[k],'mm','pas::'+k)).join('');
   renderBcnRows();
   $('dvRows').innerHTML = [
@@ -501,9 +501,9 @@ function recompute(){
   schItems.forEach(it=>{
     const v=num('in_sch_'+it[0]); const [M,C,R]=sc[it[0]];
     let z=null; const x=c[xk];
-    if(v>0&&x>0) z=(ln(v)-(M*ln(x)+C))/R;
+    if(v>0&&x>0) z=(ln(v/10)-(M*ln(x)+C))/R;  // input in mm → /10 for Schneider cm formula
     paintZ('z_sch_'+it[0], z);
-    setResult('sch::'+it[0], it[1]+' (cm)', 'Valves & vessels', v, z);
+    setResult('sch::'+it[0], it[1]+' (mm)', 'Valves & vessels', v, z);
   });
   // Pasquini (mm). FL scale uses FL in mm.
   const pas = pasScale==='GA'?PAS_GA:PAS_FL;
@@ -558,7 +558,7 @@ function recompute(){
   (function(){
     const rd=num('in_rvotd'),rv=num('in_rvotv'),ld=num('in_lvotd'),lv=num('in_lvotv'),HR=c.HR;
     function sv(d,v){ return (d>0&&v>0)?(Math.PI/4)*d*d*v:NaN; }
-    const svR=sv(rd,rv), svL=sv(ld,lv);
+    const svR=sv(rd/10,rv), svL=sv(ld/10,lv);
     let co=0,any=false;
     if(isFinite(svR)&&HR>0){co+=svR*HR;any=true;}
     if(isFinite(svL)&&HR>0){co+=svL*HR;any=true;}
