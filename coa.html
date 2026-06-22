@@ -287,8 +287,11 @@
           <div class="z na">Retrograde/absent → severe obstruction or HLHS/IAA</div>
         </div>
         <div class="field">
-          <label>LV global longitudinal strain <span class="u">% · negative, e.g. −15</span></label>
-          <input id="gls" type="number" step="0.1" max="0" inputmode="decimal" placeholder="%">
+          <label>LV global longitudinal strain <span class="u">% · enter absolute value</span></label>
+          <div style="position:relative;display:flex;align-items:center">
+            <span style="position:absolute;left:10px;font-size:15px;color:var(--ink);pointer-events:none;user-select:none">−</span>
+            <input id="gls" type="number" step="0.1" min="0" inputmode="decimal" placeholder="e.g. 18" style="padding-left:22px;width:100%;box-sizing:border-box">
+          </div>
           <div class="z na" id="gls_z">Speckle tracking. Less negative = worse</div>
         </div>
       </div>
@@ -454,7 +457,7 @@ const NOM = {
   aoi3:(mm,ga)=>zPasquini(mm,ga,-4.2181,1.0171,0.221),
   aois:(mm,ga)=>zPasquini(mm,ga,-4.4372,1.0562,0.214),
   da:  (mm,ga)=>zPasquini(mm,ga,-4.4853,1.1468,0.195),
-  gls: (pct,ga)=>{ if(pct==null||ga==null) return null; return (pct-(-26.73+0.2024*ga))/2.1; },
+  gls: (pct,ga)=>{ if(pct==null||ga==null) return null; const v=pct>0?-pct:pct; return (v-(-26.73+0.2024*ga))/2.1; },
   // Ventricular dimensions — García-Otero 2020 (Fetal Diagn Ther, doi:10.1159/000494838)
   lvmt:(mm,ga)=>{ if(mm==null||ga==null||mm<=0) return null; const E=-13.84612225+1.260434429*ga-0.013971851*ga*ga; const S=-0.146296793+0.063289207*ga; return S>0?(mm-E)/S:null; },
   rvmt:(mm,ga)=>{ if(mm==null||ga==null||mm<=0) return null; const E=-14.41113899+1.279292585*ga-0.013661007*ga*ga; const S=0.002076007+0.057502992*ga; return S>0?(mm-E)/S:null; },

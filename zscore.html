@@ -149,7 +149,7 @@
     <div class="grid3">
       <div class="field"><label>Gestational age <span class="u">weeks</span></label><input id="gaW" type="number" step="1" min="14" max="41" inputmode="numeric" placeholder="weeks"></div>
       <div class="field"><label>+ days <span class="u">0–6</span></label><input id="gaD" type="number" step="1" min="0" max="6" inputmode="numeric" placeholder="days"></div>
-      <div class="field"><label>Estimated fetal weight <span class="u">grams</span></label><input id="efw" type="number" step="1" min="0" inputmode="numeric" placeholder="g"></div>
+      <div class="field"><label>Estimated fetal weight <span class="u">grams</span></label><input id="efw" type="number" step="1" min="0" inputmode="numeric" placeholder="g"><div class="hint" id="efwHint" style="font-size:11px;min-height:14px;margin-top:2px;color:var(--muted)"></div></div>
       <div class="field"><label>Biparietal diameter <span class="u">cm</span></label><input id="bpd" type="number" step="0.01" min="0" inputmode="decimal" placeholder="cm"></div>
       <div class="field"><label>Femur length <span class="u">cm</span></label><input id="fl" type="number" step="0.01" min="0" inputmode="decimal" placeholder="cm"></div>
       <div class="field"><label>Heart rate <span class="u">bpm · for output</span></label><input id="hr" type="number" step="1" min="0" inputmode="numeric" placeholder="bpm"></div>
@@ -516,9 +516,17 @@ function recompute(){
   });
   // BCN
   const list=bcnScale==='GA'?bcnGA:bcnEFW;
+  // EFW sanity check — formula expects EFWkg; if user enters in kg instead of grams the value explodes
+  const efwHint=$('efwHint');
+  if(efwHint){
+    if(isFinite(c.EFWg)&&c.EFWg>0&&c.EFWg<50){ efwHint.textContent='⚠ EFW seems very low — enter in grams (e.g. 490 not 0.49)'; efwHint.style.color='var(--bad)'; }
+    else if(isFinite(c.EFWg)&&c.EFWg>4800){ efwHint.textContent='⚠ EFW above typical range — check units'; efwHint.style.color='var(--bad)'; }
+    else{ efwHint.textContent=''; efwHint.style.color=''; }
+  }
+  const efw_ok = bcnScale==='GA' || (isFinite(c.EFWkg) && c.EFWkg>=0.05 && c.EFWkg<=6.0);
   list.forEach(it=>{
     const v=num('in_bcn_'+it[0]); let z=null;
-    if(isFinite(v)){ const r=it[3](v,c); if(r&&isFinite(r.z)) z=r.z; }
+    if(isFinite(v)&&efw_ok){ const r=it[3](v,c); if(r&&isFinite(r.z)) z=r.z; }
     paintZ('z_bcn_'+it[0], z);
     setResult('bcn::'+it[0], it[1]+' ('+it[2]+')', 'Chambers & walls', v, z);
   });
