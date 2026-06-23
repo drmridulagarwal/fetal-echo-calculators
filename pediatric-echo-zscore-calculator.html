@@ -296,12 +296,11 @@ footer{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px}
   </div>
 </details>
 
-<!-- ===== SECTION 3: 2D STRUCTURES (CANTINOTTI 2014) ===== -->
+<!-- ===== SECTION 3: 2D STRUCTURES (CANTINOTTI 2017) ===== -->
 <details class="sec noprint">
-  <summary>2D Structures <span class="cv">Cantinotti 2014</span></summary>
+  <summary>2D Structures <span class="cv">Cantinotti 2017</span></summary>
   <div class="sec-body">
-    <div class="sec-note">Measurements in <b>mm</b>. BSA formula: Haycock. Reference: Cantinotti M et al. J Am Soc Echocardiogr 2014;27:179–191. Valid range: age 0–3 years, BSA 0.12–0.67 m².</div>
-    <div class="warn">⚠ <b>Z-score coefficients pending.</b> Enter Cantinotti 2014 Table 3–5 polynomial coefficients into the <code>CANTINOTTI</code> object in the source JavaScript. Measurements are recorded immediately and will appear in the printout.</div>
+    <div class="sec-note">Measurements in <b>mm</b>. BSA formula: Haycock. Reference: Cantinotti M et al. J Cardiol 2017;69:208–215 (PMID 27118699). Valid range: age 0–17 years, BSA 0.12–2.12 m². RV dimensions and outflow tracts are recorded but have no reference data in this paper.</div>
     <div class="group-label">RV dimensions</div>
     <div class="mrow"><div class="ml">RVID basal — RV basal diameter, diastole <span class="uu">mm</span></div>
       <input type="number" step="0.1" inputmode="decimal" id="in_rvb" data-label="RVID basal" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
@@ -530,38 +529,42 @@ function kampmannZ(val, key, bsaD) {
 }
 
 /* ================================================================
-   CANTINOTTI 2014 COEFFICIENTS
-   Source: Cantinotti M et al. J Am Soc Echocardiogr 2014;27:179-91
-   BSA: Haycock
-   Equation form: Mean(mm) = a + b×BSA_H + c×BSA_H²; SD = fixed
-   Set a = null until values are entered from Tables 3-5.
+   CANTINOTTI 2017 COEFFICIENTS
+   Source: Cantinotti M et al. J Cardiol 2017;69:208–215
+   PMID: 27118699   DOI: 10.1016/j.jjcc.2016.03.010
+   Population: 1151 healthy Caucasian children, age 0–17 yr,
+               BSA 0.12–2.12 m² (Haycock formula)
+   Equation:   ln[measurement_mm] = a + b × ln[BSA_Haycock]
+   Z-score:    (ln[obs] − (a + b × ln[BSA])) / HMSE
+   Keys set to null have no data in this paper.
    ================================================================ */
 const CANTINOTTI = {
-  rvb:   { a: null, b: null, c: null, sd: null },
-  rvm:   { a: null, b: null, c: null, sd: null },
-  aoan:  { a: null, b: null, c: null, sd: null },
-  aosv:  { a: null, b: null, c: null, sd: null },
-  stj:   { a: null, b: null, c: null, sd: null },
-  ascao: { a: null, b: null, c: null, sd: null },
-  mpa:   { a: null, b: null, c: null, sd: null },
-  rpa:   { a: null, b: null, c: null, sd: null },
-  lpa:   { a: null, b: null, c: null, sd: null },
-  mva:   { a: null, b: null, c: null, sd: null },
-  tva:   { a: null, b: null, c: null, sd: null },
-  tarch: { a: null, b: null, c: null, sd: null },
-  isth:  { a: null, b: null, c: null, sd: null },
-  dao:   { a: null, b: null, c: null, sd: null },
-  pvan:  { a: null, b: null, c: null, sd: null },
-  rvot:  { a: null, b: null, c: null, sd: null },
-  lvot:  { a: null, b: null, c: null, sd: null },
+  rvb:   null,                                    // RV basal — not in Cantinotti 2017
+  rvm:   null,                                    // RV mid   — not in Cantinotti 2017
+  aoan:  { a: 2.750, b: 0.515, hmse: 0.088 },   // Aortic annulus
+  aosv:  { a: 3.051, b: 0.481, hmse: 0.092 },   // Sinuses of Valsalva
+  stj:   { a: 2.797, b: 0.512, hmse: 0.098 },   // Sinotubular junction
+  ascao: { a: 2.949, b: 0.486, hmse: 0.096 },   // Ascending aorta
+  mpa:   { a: 2.945, b: 0.489, hmse: 0.112 },   // Main pulmonary artery
+  rpa:   { a: 2.397, b: 0.558, hmse: 0.145 },   // Right pulmonary artery
+  lpa:   { a: 2.383, b: 0.569, hmse: 0.159 },   // Left pulmonary artery
+  mva:   { a: 3.161, b: 0.471, hmse: 0.087 },   // Mitral valve annulus
+  tva:   { a: 3.187, b: 0.466, hmse: 0.140 },   // Tricuspid valve annulus
+  tarch: { a: 2.742, b: 0.515, hmse: 0.121 },   // Transverse arch (IA–LCA segment)
+  isth:  { a: 2.356, b: 0.550, hmse: 0.146 },   // Aortic isthmus
+  dao:   { a: 2.518, b: 0.498, hmse: 0.130 },   // Descending thoracic aorta
+  pvan:  { a: 2.908, b: 0.538, hmse: 0.113 },   // Pulmonary valve annulus
+  rvot:  null,                                    // RVOT — not in Cantinotti 2017
+  lvot:  null,                                    // LVOT — not in Cantinotti 2017
 };
 
 function cantinottiZ(val, key, bsaH) {
   const c = CANTINOTTI[key];
-  if (!c || c.a === null) return null;
-  const mean = c.a + c.b * bsaH + c.c * bsaH * bsaH;
-  if (!isFinite(mean) || c.sd <= 0) return null;
-  return (val - mean) / c.sd;
+  if (!c) return null;                            // no reference data for this measurement
+  if (!isFinite(val) || val <= 0) return null;
+  if (!isFinite(bsaH) || bsaH <= 0) return null;
+  const meanLn = c.a + c.b * Math.log(bsaH);
+  return (Math.log(val) - meanLn) / c.hmse;
 }
 
 /* ================================================================
@@ -725,40 +728,40 @@ function drawGrowthChart() {
   for (let i = 0; i <= yTicks; i++) {
     const v = yMin + (yMax - yMin) * i / yTicks;
     const y = yScale(v);
-    yTickLines += `<line x1="${L}" y1="${y.toFixed(1)}" x2="${W-R}" y2="${y.toFixed(1)}" stroke="#e5ebf2" stroke-width="0.5"/>`;
-    yTickLines += `<text x="${(L-3).toFixed(1)}" y="${y.toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="7" fill="#8a9aaa">${Math.round(v)}</text>`;
+    yTickLines += `<line x1="${L}" y1="${y.toFixed(1)}" x2="${W-R}" y2="${y.toFixed(1)}" stroke="#bbbbbb" stroke-width="0.6"/>`;
+    yTickLines += `<text x="${(L-3).toFixed(1)}" y="${y.toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="7" fill="#444444">${Math.round(v)}</text>`;
   }
   // x ticks
   let xTickLines = '';
   [2,4,6,8,10,12,14,16,18].forEach(a => {
     const x = xScale(a);
-    xTickLines += `<line x1="${x.toFixed(1)}" y1="${T}" x2="${x.toFixed(1)}" y2="${(T+plotH).toFixed(1)}" stroke="#e5ebf2" stroke-width="0.5"/>`;
-    xTickLines += `<text x="${x.toFixed(1)}" y="${(H-B+12).toFixed(1)}" text-anchor="middle" font-size="7" fill="#8a9aaa">${a}</text>`;
+    xTickLines += `<line x1="${x.toFixed(1)}" y1="${T}" x2="${x.toFixed(1)}" y2="${(T+plotH).toFixed(1)}" stroke="#bbbbbb" stroke-width="0.6"/>`;
+    xTickLines += `<text x="${x.toFixed(1)}" y="${(H-B+12).toFixed(1)}" text-anchor="middle" font-size="7" fill="#444444">${a}</text>`;
   });
 
   // Patient dot
   let patDot = '';
   if (isFinite(ageY) && isFinite(patV) && ageY >= 2 && ageY <= 18) {
     const px = xScale(ageY), py = yScale(patV);
-    const dotColor = patV < gcInterp(ref.p5, ageY) || patV > gcInterp(ref.p95, ageY) ? '#c33a3a' : '#15607a';
-    patDot = `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="4" fill="${dotColor}" stroke="#fff" stroke-width="1.5"/>`;
+    const dotColor = patV < gcInterp(ref.p5, ageY) || patV > gcInterp(ref.p95, ageY) ? '#000000' : '#333333';
+    patDot = `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="4.5" fill="${dotColor}" stroke="#fff" stroke-width="1.5"/>`;
   }
 
   svg.innerHTML = `
 <rect x="0" y="0" width="${W}" height="${H}" fill="#f8fafc" rx="6"/>
-<rect x="${L}" y="${T}" width="${plotW}" height="${plotH}" fill="#fff" stroke="#e5ebf2" stroke-width="0.8"/>
+<rect x="${L}" y="${T}" width="${plotW}" height="${plotH}" fill="#fff" stroke="#999999" stroke-width="0.8"/>
 ${yTickLines}${xTickLines}
-<text x="${(W/2).toFixed(1)}" y="${(H-3).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="#5b6b7c">Age (years)</text>
-<text x="${(L-28).toFixed(1)}" y="${(T+plotH/2).toFixed(1)}" text-anchor="middle" font-size="7" fill="#5b6b7c" transform="rotate(-90,${(L-28).toFixed(1)},${(T+plotH/2).toFixed(1)})">${unit}</text>
-<polyline points="${polyline(ref.p95)}" fill="none" stroke="#f0c6a8" stroke-width="1.2" stroke-dasharray="3,2"/>
-<polyline points="${polyline(ref.p50)}" fill="none" stroke="#9fd8b5" stroke-width="1.8"/>
-<polyline points="${polyline(ref.p5)}"  fill="none" stroke="#f0c6a8" stroke-width="1.2" stroke-dasharray="3,2"/>
-<text x="${(L+4).toFixed(1)}" y="${(yScale(ref.p95[0])-3).toFixed(1)}" font-size="6.5" fill="#d99100">95th</text>
-<text x="${(L+4).toFixed(1)}" y="${(yScale(ref.p50[0])-3).toFixed(1)}" font-size="6.5" fill="#2f9e6b">50th</text>
-<text x="${(L+4).toFixed(1)}" y="${(yScale(ref.p5[0])+8).toFixed(1)}"  font-size="6.5" fill="#d99100">5th</text>
+<text x="${(W/2).toFixed(1)}" y="${(H-3).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="#333333">Age (years)</text>
+<text x="${(L-28).toFixed(1)}" y="${(T+plotH/2).toFixed(1)}" text-anchor="middle" font-size="7" fill="#333333" transform="rotate(-90,${(L-28).toFixed(1)},${(T+plotH/2).toFixed(1)})">${unit}</text>
+<polyline points="${polyline(ref.p95)}" fill="none" stroke="#666666" stroke-width="1.5" stroke-dasharray="4,2"/>
+<polyline points="${polyline(ref.p50)}" fill="none" stroke="#000000" stroke-width="2"/>
+<polyline points="${polyline(ref.p5)}"  fill="none" stroke="#666666" stroke-width="1.5" stroke-dasharray="4,2"/>
+<text x="${(L+4).toFixed(1)}" y="${(yScale(ref.p95[0])-3).toFixed(1)}" font-size="6.5" fill="#444444">95th</text>
+<text x="${(L+4).toFixed(1)}" y="${(yScale(ref.p50[0])-3).toFixed(1)}" font-size="6.5" fill="#000000">50th</text>
+<text x="${(L+4).toFixed(1)}" y="${(yScale(ref.p5[0])+8).toFixed(1)}"  font-size="6.5" fill="#444444">5th</text>
 ${patDot}
-${centileTxt ? `<text x="${(W-R-2).toFixed(1)}" y="${(T+8).toFixed(1)}" text-anchor="end" font-size="7.5" fill="#15607a" font-weight="bold">${centileTxt}</text>` : ''}
-<text x="${(L+4).toFixed(1)}" y="${(T+8).toFixed(1)}" font-size="7" fill="#5b6b7c">${title}</text>`;
+${centileTxt ? `<text x="${(W-R-2).toFixed(1)}" y="${(T+8).toFixed(1)}" text-anchor="end" font-size="7.5" fill="#000000" font-weight="bold">${centileTxt}</text>` : ''}
+<text x="${(L+4).toFixed(1)}" y="${(T+8).toFixed(1)}" font-size="7" fill="#333333">${title}</text>`;
 }
 
 function updateGrowthPanel() {
@@ -1084,7 +1087,7 @@ function recalc() {
     const v = mmv('in_' + k);
     if (!isFinite(v)) { clearZ('z_' + k); clrResult(k); return; }
     const z = isFinite(bsaH) ? cantinottiZ(v, k, bsaH) : null;
-    if (z === null) renderPending('z_' + k); else renderZ('z_' + k, z, null);
+    if (z === null) clearZ('z_' + k); else renderZ('z_' + k, z, null);
     setResult(k, lbl, 'mm', '2D Structures', v, z, null);
   });
 
