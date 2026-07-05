@@ -174,7 +174,8 @@
     </div>
     <div class="btns">
       <a class="btn" href="index.html" style="text-decoration:none">← All Calculators</a>
-      <button class="btn primary" onclick="generatePrint()">Generate printable PDF</button>
+      <button class="btn primary" onclick="generatePrint()">Clinician Report</button>
+      <button class="btn" onclick="generatePatientPrint()" style="background:#e8f4e8;border-color:#5a9a5a;color:#2d6b2d">Patient Copy (B&amp;W)</button>
       <button class="btn" onclick="resetAll()">Clear all</button>
     </div>
     <div class="privacy">Patient name and ID are used only to label this printout on your own device. They are
@@ -470,7 +471,11 @@ function buildSections(){
   renderBcnRows();
   $('dvRows').innerHTML = [
     ['ctr','Cardiothoracic ratio (CA/TA)'],['laca','LA / heart area'],['raca','RA / heart area'],
-    ['sph','Cardiac sphericity (long/transv)'],['rvlvb','RV / LV basal diameter'],['rvlvm','RV / LV mid diameter']
+    ['sph','Cardiac sphericity (long/transv)'],['rvlvb','RV / LV basal diameter'],['rvlvm','RV / LV mid diameter'],
+    ['lvsi','LV sphericity index (long/transv) · no fetal norms'],
+    ['rvsi','RV sphericity index (long/transv) · no fetal norms'],
+    ['lasi','LA sphericity index (long/transv) · no fetal norms'],
+    ['rasi','RA sphericity index (long/transv) · no fetal norms']
   ].map(r=>`<div class="mrow"><div class="ml">${r[1]}</div><div id="dv_v_${r[0]}" style="font-weight:700">—</div><div class="zbox" id="z_dv_${r[0]}"></div></div>`).join('');
   attachInputs();
 }
@@ -497,7 +502,8 @@ function attachInputs(){
 /* ---------- compute everything ---------- */
 function fmtZ(z){ return (z>=0?'+':'')+z.toFixed(2); }
 function classZ(z){ const a=Math.abs(z); return a>=2?'bad':(a>=1.5?'bord':'ok'); }
-function tagZ(z){ const a=Math.abs(z); return a>=2?'<span class="tag t-bad">OUT OF RANGE</span>':(a>=1.5?'<span class="tag t-bord">BORDERLINE</span>':'<span class="tag t-ok">WITHIN RANGE</span>'); }
+/* on-screen only: show OUT OF RANGE tag for >2; no text for 1.5–2 (colour only) or within range */
+function tagZ(z){ const a=Math.abs(z); return a>=2?'<span class="tag t-bad">OUT OF RANGE</span>':''; }
 function paintZ(elId,z){ const el=$(elId); if(!el)return; if(z==null||!isFinite(z)){ el.className='zbox'; el.innerHTML=''; return;} const cl=classZ(z); el.className='zbox '+cl; el.innerHTML=`<span class="zval">Z ${fmtZ(z)}</span> · ${(normsdist(z)*100).toFixed(0)}c ${tagZ(z)}`; }
 
 function recompute(){
@@ -618,6 +624,33 @@ function recompute(){
   dv('rvlvb','dv_v_rvlvb','z_dv_rvlvb','RV/LV basal',(rvb>0&&lvb>0)?rvb/lvb:NaN,LNT,GA=>0.00198602365847468*GA-0.0380005952830765,()=>0.11921652);
   dv('rvlvm','dv_v_rvlvm','z_dv_rvlvm','RV/LV mid',(rvm>0&&lvm>0)?rvm/lvm:NaN,LNT,GA=>0.0029058086758513*GA-0.067568872086084,()=>0.151192276408318);
 
+  // Chamber sphericity indices — auto-sourced from BCN; no published fetal Z-score norms
+  (function(){
+    function dvRatio(key,vId,label,ratio){
+      const el=$(vId); if(el) el.textContent=isFinite(ratio)?ratio.toFixed(3):'—';
+      setResult(key,label,'Ratios & shape',isFinite(ratio)?ratio:null,null);
+    }
+    const lvlong=num('in_bcn_lvl'), lvtrans=numOr('in_bcn_lvbt','in_bcn_lvmt');
+    const rvlong=num('in_bcn_rvl'), rvtrans=numOr('in_bcn_rvbt','in_bcn_rvmt');
+    const lalong=num('in_bcn_lald'),latrans=num('in_bcn_latd');
+    const ralong=num('in_bcn_rald'),ratrans=num('in_bcn_ratd');
+    dvRatio('lvsi','dv_v_lvsi','LV sphericity (long/transv)',(lvlong>0&&lvtrans>0)?lvlong/lvtrans:NaN);
+    dvRatio('rvsi','dv_v_rvsi','RV sphericity (long/transv)',(rvlong>0&&rvtrans>0)?rvlong/rvtrans:NaN);
+    dvRatio('lasi','dv_v_lasi','LA sphericity (long/transv)',(lalong>0&&latrans>0)?lalong/latrans:NaN);
+    dvRatio('rasi','dv_v_rasi','RA sphericity (long/transv)',(ralong>0&&ratrans>0)?ralong/ratrans:NaN);
+  })();
+
+  // DeVore override field placeholders — show BCN-sourced value so user knows what's being used
+  [['in_dvca','in_bcn_ca','cm²'],['in_dvcl','in_bcn_cld','mm'],['in_dvct','in_bcn_ctd','mm'],
+   ['in_dvrvb','in_bcn_rvbt','mm'],['in_dvlvb','in_bcn_lvbt','mm'],
+   ['in_dvrvm','in_bcn_rvmt','mm'],['in_dvlvm','in_bcn_lvmt','mm'],
+   ['in_dvlaa','in_bcn_laa','cm²'],['in_dvraa','in_bcn_raa','cm²']
+  ].forEach(([dvId,bcnId,unit])=>{
+    const dvEl=$(dvId),bcnEl=$(bcnId); if(!dvEl||!bcnEl)return;
+    const v=parseFloat(bcnEl.value);
+    if(!dvEl.value) dvEl.placeholder=isFinite(v)?`↑ BCN: ${v}`:unit;
+  });
+
   computeCoA(c);
   updateCounts(); renderFindings();
 }
@@ -732,19 +765,16 @@ function generatePrint(){
   order.forEach(g=>{
     const items=arr.filter(r=>r.group===g);
     if(!items.length)return;
-    rows+=`<tr><td colspan="4" class="pgl">${g}</td></tr>`;
+    rows+=`<tr><td colspan="3" class="pgl">${g}</td></tr>`;
     items.forEach(r=>{
       const zOk=r.z!=null&&isFinite(r.z);
       const a=zOk?Math.abs(r.z):-1;
       const cls=a>=2?'pbad':(a>=1.5?'pbord':'');
-      const flag=zOk?(a>=2?'Out of range':(a>=1.5?'Borderline':'Within range')):(g==='Cardiac output'?'Ref: 425–550 mL/min/kg':'—');
-      rows+=`<tr><td>${r.label}</td><td class="r">${r.val.toFixed(2)}</td><td class="r ${cls}">${zOk?fmtZ(r.z):'—'}</td><td class="${cls}">${flag}</td></tr>`;
+      /* print: no status text — colour-coded Z-score only; bold in B&W */
+      rows+=`<tr><td>${r.label}</td><td class="r">${r.val.toFixed(2)}</td><td class="r ${cls}">${zOk?fmtZ(r.z):'—'}</td></tr>`;
     });
   });
-  if(!rows) rows='<tr><td colspan="4">No measurements entered.</td></tr>';
-  const flagged=arr.filter(r=>isFinite(r.z)&&Math.abs(r.z)>=1.5).sort((a,b)=>Math.abs(b.z)-Math.abs(a.z));
-  let findHtml = flagged.length? '<ul>'+flagged.map(r=>`<li class="${Math.abs(r.z)>=2?'pbad':'pbord'}">${r.label}: Z ${fmtZ(r.z)} — ${noteFor(r.key,r.z)}</li>`).join('')+'</ul>'
-    : '<p>All entered parameters are within the reference range (|Z| &lt; 1.5).</p>';
+  if(!rows) rows='<tr><td colspan="3">No measurements entered.</td></tr>';
   $('printArea').innerHTML=`
     <div class="ph">
       <div><h2>Fetal Echocardiography — Z-Score Report</h2>
@@ -756,10 +786,45 @@ function generatePrint(){
       </div>
     </div>
     <div><b>Gestational age:</b> ${isFinite(c.GA)?c.GA.toFixed(1)+' weeks':'—'} &nbsp; <b>EFW:</b> ${isFinite(c.EFWg)?c.EFWg+' g':'—'} &nbsp; <b>BPD:</b> ${isFinite(c.BPD)?c.BPD+' cm':'—'} &nbsp; <b>FL:</b> ${isFinite(c.FL)?c.FL+' cm':'—'}</div>
-    <table><thead><tr><th>Parameter</th><th class="r">Measured</th><th class="r">Z-score</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>
-    <div class="pgl">Flagged findings &amp; interpretation</div>
-    ${findHtml}
-    <p style="font-size:10px;color:#555;margin-top:14px">Z = (observed − expected)/SD. |Z| ≥ 2 lies outside the 95% reference range. Decision-support only; interpret with image quality, serial data and clinical context. Sources: Schneider 2005, Pasquini 2007, García-Otero 2020 (Fetal Diagn Ther), Luewan 2011, Messing 2011, Carvalho 2017, Mielke 2001, DeVore 2017–18.</p>
+    <table><thead><tr><th>Parameter</th><th class="r">Measured</th><th class="r">Z-score</th></tr></thead><tbody>${rows}</tbody></table>
+    <p style="font-size:10px;color:#555;margin-top:14px">Z = (observed − expected)/SD. Values outside the reference range are highlighted. For clinical interpretation, please discuss with your specialist. Sources: Schneider 2005, Pasquini 2007, García-Otero 2020, Luewan 2011, Messing 2011, Carvalho 2017, Mielke 2001, DeVore 2017–18.</p>
+    <p style="font-size:9.5px;color:#777">Patient identifiers shown here were entered locally for this printout and are not stored in any database.</p>`;
+  window.print();
+}
+
+/* Patient copy — plain B&W, values + Z-scores, no colour, no interpretation */
+function generatePatientPrint(){
+  const c=ctx();
+  const name=$('pname').value.trim(), mrn=$('pmrn').value.trim();
+  const now=new Date();
+  const dateStr=now.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+  const arr=Object.values(RESULTS).filter(r=>r.val!=null&&isFinite(r.val));
+  const order=['Core','Valves & vessels','Isthmus & duct','Chambers & walls','RV function','Time fractions','Ratios & shape','Cardiac output'];
+  let rows='';
+  order.forEach(g=>{
+    const items=arr.filter(r=>r.group===g);
+    if(!items.length)return;
+    rows+=`<tr><td colspan="3" class="pgl">${g}</td></tr>`;
+    items.forEach(r=>{
+      const zOk=r.z!=null&&isFinite(r.z);
+      /* No colour classes — plain numbers only */
+      rows+=`<tr><td>${r.label}</td><td class="r">${r.val.toFixed(2)}</td><td class="r">${zOk?fmtZ(r.z):'—'}</td></tr>`;
+    });
+  });
+  if(!rows) rows='<tr><td colspan="3">No measurements entered.</td></tr>';
+  $('printArea').innerHTML=`
+    <div class="ph">
+      <div><h2>Fetal Echocardiography — Measurements</h2>
+        <div>fetal-echo.org</div></div>
+      <div style="text-align:right">
+        <div><b>Name:</b> ${name||'—'}</div>
+        <div><b>ID/MRN:</b> ${mrn||'—'}</div>
+        <div><b>Date:</b> ${dateStr}</div>
+      </div>
+    </div>
+    <div><b>Gestational age:</b> ${isFinite(c.GA)?c.GA.toFixed(1)+' weeks':'—'} &nbsp; <b>EFW:</b> ${isFinite(c.EFWg)?c.EFWg+' g':'—'} &nbsp; <b>BPD:</b> ${isFinite(c.BPD)?c.BPD+' cm':'—'} &nbsp; <b>FL:</b> ${isFinite(c.FL)?c.FL+' cm':'—'}</div>
+    <table><thead><tr><th>Parameter</th><th class="r">Measured</th><th class="r">Z-score</th></tr></thead><tbody>${rows}</tbody></table>
+    <p style="font-size:10px;color:#555;margin-top:14px">Z-score = how the measurement compares to the normal range for this gestational age. For clinical interpretation, please discuss with your specialist. &nbsp;·&nbsp; fetal-echo.org</p>
     <p style="font-size:9.5px;color:#777">Patient identifiers shown here were entered locally for this printout and are not stored in any database.</p>`;
   window.print();
 }
