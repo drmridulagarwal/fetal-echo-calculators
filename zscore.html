@@ -752,6 +752,13 @@ const REFS=[
 ];
 $('refsList').innerHTML=REFS.map(r=>`<li>${r}</li>`).join('');
 
+/* ---------- GA format helper ---------- */
+function fmtGAweeks(ga){
+  if(!isFinite(ga)) return '—';
+  const w=Math.floor(ga), d=Math.round((ga-w)*7);
+  return d===7 ? `${w+1}w 0d` : `${w}w ${d}d`;
+}
+
 /* ---------- print ---------- */
 function generatePrint(){
   const c=ctx();
@@ -775,6 +782,28 @@ function generatePrint(){
     });
   });
   if(!rows) rows='<tr><td colspan="3">No measurements entered.</td></tr>';
+
+  /* ── Clinical findings — clinician report only ── */
+  const outOfRange=Object.values(RESULTS)
+    .filter(r=>r.z!=null&&isFinite(r.z)&&Math.abs(r.z)>=2)
+    .sort((a,b)=>Math.abs(b.z)-Math.abs(a.z));
+  const borderline=Object.values(RESULTS)
+    .filter(r=>r.z!=null&&isFinite(r.z)&&Math.abs(r.z)>=1.5&&Math.abs(r.z)<2)
+    .sort((a,b)=>Math.abs(b.z)-Math.abs(a.z));
+  let findHtml='';
+  if(outOfRange.length){
+    findHtml+=`<div class="pgl" style="margin-top:10px;color:#c33a3a">Out of range (|Z| ≥ 2)</div>
+    <ul style="margin:4px 0 8px;padding-left:16px;font-size:11px">
+    ${outOfRange.map(r=>`<li class="pbad"><b>${r.label}</b> (Z ${fmtZ(r.z)}) — ${noteFor(r.key,r.z)}</li>`).join('')}
+    </ul>`;
+  }
+  if(borderline.length){
+    findHtml+=`<div class="pgl" style="margin-top:6px;color:#b07400">Borderline (1.5 ≤ |Z| < 2)</div>
+    <ul style="margin:4px 0;padding-left:16px;font-size:11px">
+    ${borderline.map(r=>`<li class="pbord">${r.label} (Z ${fmtZ(r.z)}) — ${noteFor(r.key,r.z)}</li>`).join('')}
+    </ul>`;
+  }
+
   $('printArea').innerHTML=`
     <div class="ph">
       <div><h2>Fetal Echocardiography — Z-Score Report</h2>
@@ -785,9 +814,10 @@ function generatePrint(){
         <div><b>Date:</b> ${dateStr}</div>
       </div>
     </div>
-    <div><b>Gestational age:</b> ${isFinite(c.GA)?c.GA.toFixed(1)+' weeks':'—'} &nbsp; <b>EFW:</b> ${isFinite(c.EFWg)?c.EFWg+' g':'—'} &nbsp; <b>BPD:</b> ${isFinite(c.BPD)?c.BPD+' cm':'—'} &nbsp; <b>FL:</b> ${isFinite(c.FL)?c.FL+' cm':'—'}</div>
+    <div><b>Gestational age:</b> ${fmtGAweeks(c.GA)} &nbsp; <b>EFW:</b> ${isFinite(c.EFWg)?c.EFWg+' g':(isFinite(c.EFWest)?c.EFWest.toFixed(0)+' g (estimated from GA)':'—')} &nbsp; <b>BPD:</b> ${isFinite(c.BPD)?c.BPD+' cm':'—'} &nbsp; <b>FL:</b> ${isFinite(c.FL)?c.FL+' cm':'—'}</div>
     <table><thead><tr><th>Parameter</th><th class="r">Measured</th><th class="r">Z-score</th></tr></thead><tbody>${rows}</tbody></table>
-    <p style="font-size:10px;color:#555;margin-top:14px">Z = (observed − expected)/SD. Values outside the reference range are highlighted. For clinical interpretation, please discuss with your specialist. Sources: Schneider 2005, Pasquini 2007, García-Otero 2020, Luewan 2011, Messing 2011, Carvalho 2017, Mielke 2001, DeVore 2017–18.</p>
+    ${findHtml}
+    <p style="font-size:10px;color:#555;margin-top:12px">Z = (observed − expected)/SD. Highlighted values are outside the reference range. Interpret with serial measurements and full clinical context. Sources: Schneider 2005, Pasquini 2007, García-Otero 2020, Luewan 2011, Messing 2011, Carvalho 2017, Mielke 2001, DeVore 2017–18.</p>
     <p style="font-size:9.5px;color:#777">Patient identifiers shown here were entered locally for this printout and are not stored in any database.</p>`;
   window.print();
 }
@@ -822,7 +852,7 @@ function generatePatientPrint(){
         <div><b>Date:</b> ${dateStr}</div>
       </div>
     </div>
-    <div><b>Gestational age:</b> ${isFinite(c.GA)?c.GA.toFixed(1)+' weeks':'—'} &nbsp; <b>EFW:</b> ${isFinite(c.EFWg)?c.EFWg+' g':'—'} &nbsp; <b>BPD:</b> ${isFinite(c.BPD)?c.BPD+' cm':'—'} &nbsp; <b>FL:</b> ${isFinite(c.FL)?c.FL+' cm':'—'}</div>
+    <div><b>Gestational age:</b> ${fmtGAweeks(c.GA)} &nbsp; <b>EFW:</b> ${isFinite(c.EFWg)?c.EFWg+' g':'—'} &nbsp; <b>BPD:</b> ${isFinite(c.BPD)?c.BPD+' cm':'—'} &nbsp; <b>FL:</b> ${isFinite(c.FL)?c.FL+' cm':'—'}</div>
     <table><thead><tr><th>Parameter</th><th class="r">Measured</th><th class="r">Z-score</th></tr></thead><tbody>${rows}</tbody></table>
     <p style="font-size:10px;color:#555;margin-top:14px">Z-score = how the measurement compares to the normal range for this gestational age. For clinical interpretation, please discuss with your specialist. &nbsp;·&nbsp; fetal-echo.org</p>
     <p style="font-size:9.5px;color:#777">Patient identifiers shown here were entered locally for this printout and are not stored in any database.</p>`;
