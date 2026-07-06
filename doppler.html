@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fetal Doppler PI/RI Calculator — fetal-echo.org</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<style>
+  :root{
+    --bg:#f6f8fb; --card:#ffffff; --ink:#1d2733; --muted:#5b6b7c; --line:#e5ebf2;
+    --brand:#15607a; --brand-soft:#e8f1f5; --accent:#0f8a6d;
+    --ok:#2f9e6b; --okbg:#e8f6ee; --bord:#d99100; --bordbg:#fcf3df;
+    --bad:#c33a3a; --badbg:#fbe4e4;
+    --radius:14px; --shadow:0 1px 3px rgba(20,40,60,.06),0 6px 24px rgba(20,40,60,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:22px 16px 70px}
+  header.app{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+  .logo{flex:0 0 auto;width:42px;height:42px;border-radius:10px;background:var(--brand);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px}
+  h1{font-size:20px;margin:0;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:13px;margin:2px 0 0}
+  .disclaimer{margin:14px 0 18px;padding:10px 13px;background:#fff7e8;border:1px solid #f0dcae;
+    border-radius:10px;font-size:12.5px;color:#7a5c12}
+  .disclaimer b{color:#5e470c}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+  .card h2{font-size:14px;margin:0 0 2px;letter-spacing:.02em;text-transform:uppercase;color:var(--brand)}
+  .card .hint{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 16px}
+  @media(max-width:620px){.grid,.grid3{grid-template-columns:1fr}}
+  .field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:4px}
+  .field .u{color:var(--muted);font-weight:400}
+  .field input,.field select{width:100%;padding:9px 10px;border:1px solid var(--line);
+    border-radius:9px;font-size:14px;background:#fcfdfe;color:var(--ink);transition:border .15s,box-shadow .15s}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+  .mrow{display:grid;grid-template-columns:1.5fr .9fr auto;gap:10px;align-items:center;
+    padding:8px 0;border-top:1px solid var(--line)}
+  .mrow:first-of-type{border-top:none}
+  .mrow .ml{font-size:13px}
+  .mrow .ml .uu{color:var(--muted);font-size:11.5px}
+  .mrow input{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-size:14px;
+    background:#fcfdfe;text-align:right;font-variant-numeric:tabular-nums}
+  .mrow input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+  .mrow.chk{grid-template-columns:1fr auto}
+  .mrow.chk label{font-size:13px;display:flex;align-items:center;gap:8px;cursor:pointer}
+  .zbox{min-width:150px;text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums}
+  .zval{font-weight:700}
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.03em;padding:2px 7px;border-radius:5px;margin-left:6px}
+  .t-ok{background:var(--okbg);color:var(--ok)} .t-bord{background:var(--bordbg);color:var(--bord)}
+  .t-bad{background:var(--badbg);color:var(--bad)} .t-muted{background:#eef2f5;color:var(--muted)}
+  .zbox.ok .zval{color:var(--ok)} .zbox.bord .zval{color:var(--bord)} .zbox.bad .zval{color:var(--bad)}
+  .group-label{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);margin:16px 0 6px}
+  .group-label:first-child{margin-top:0}
+  details.sec{margin-bottom:16px;background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  details.sec>summary{cursor:pointer;list-style:none;padding:16px 18px;font-size:14px;font-weight:700;
+    color:var(--brand);text-transform:uppercase;letter-spacing:.02em;display:flex;justify-content:space-between;align-items:center}
+  details.sec>summary::-webkit-details-marker{display:none}
+  details.sec>summary .cv{font-size:11px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0}
+  details.sec[open]>summary{border-bottom:1px solid var(--line)}
+  .sec-body{padding:6px 18px 18px}
+  .sec-note{font-size:12px;color:var(--muted);margin:2px 0 12px}
+  details.stage{border:1px dashed var(--line);border-radius:10px;margin-top:14px;background:#fbfcfd}
+  details.stage>summary{cursor:pointer;list-style:none;padding:10px 12px;font-size:12.5px;font-weight:700;color:var(--brand)}
+  details.stage>summary::-webkit-details-marker{display:none}
+  details.stage .sec-body{padding:0 12px 12px}
+  /* findings */
+  .findings .fitem{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;
+    padding:10px 0;border-top:1px solid var(--line)}
+  .findings .fitem:first-of-type{border-top:none}
+  .dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex:0 0 auto}
+  .dot.bad{background:var(--bad)} .dot.bord{background:var(--bord)} .dot.ok{background:var(--ok)}
+  .fitem .fl{font-size:13.5px;font-weight:600}
+  .fitem .fi{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .fitem .fz{font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .empty{font-size:13px;color:var(--muted);padding:8px 0}
+  .summary-box{margin-top:14px;padding:12px 14px;border-radius:10px;font-size:13.5px;font-weight:600}
+  .summary-box.ok{background:var(--okbg);color:#1d6b46;border:1px solid #cdeadb}
+  .summary-box.bord{background:var(--bordbg);color:#7a5b0a;border:1px solid #f0dcae}
+  .summary-box.bad{background:var(--badbg);color:#8f2b2b;border:1px solid #f2caca}
+  .summary-box .ssub{font-weight:400;font-size:12px;margin-top:4px;color:inherit;opacity:.85}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);font-size:13px;font-weight:600;
+    padding:10px 16px;border-radius:9px;cursor:pointer}
+  .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn:hover{filter:brightness(.98)}
+  .refs{font-size:11.5px;color:var(--muted)} .refs li{margin-bottom:6px}
+  .refs a{color:var(--brand);text-decoration:none}
+  footer{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px}
+  .privacy{font-size:11.5px;color:#5b6b7c;background:#eef5f8;border:1px solid #d7e6ec;border-radius:9px;
+    padding:9px 12px;margin-top:10px}
+  .home-btn{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;
+    color:var(--brand);text-decoration:none;background:var(--brand-soft);border-radius:7px;
+    padding:4px 10px;margin-bottom:10px;width:fit-content}
+  .home-btn:hover{background:#d5e6ee}
+  .toggle2{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-bottom:12px}
+  .toggle2 button{border:0;background:#fff;color:var(--muted);font-size:12.5px;font-weight:600;padding:8px 14px;cursor:pointer}
+  .toggle2 button.on{background:var(--brand);color:#fff}
+  /* print */
+  #printArea{display:none}
+  @media print{
+    body{background:#fff}
+    .wrap{max-width:100%;padding:0}
+    .noprint{display:none !important}
+    #printArea{display:block;font-size:12px;color:#000}
+    #printArea h2{font-size:15px;margin:0 0 2px}
+    #printArea .ph{display:flex;justify-content:space-between;border-bottom:2px solid #15607a;padding-bottom:8px;margin-bottom:10px}
+    #printArea table{width:100%;border-collapse:collapse;margin:6px 0 14px}
+    #printArea th,#printArea td{border:1px solid #cfd8e0;padding:4px 7px;text-align:left;font-size:11px}
+    #printArea th{background:#eef5f8}
+    #printArea td.r{text-align:right;font-variant-numeric:tabular-nums}
+    #printArea .pgl{font-weight:700;color:#15607a;margin:10px 0 2px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="home-btn noprint" href="index.html">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    All calculators
+  </a>
+
+  <header class="app noprint">
+    <div class="logo">FE</div>
+    <div style="flex:1">
+      <h1>Fetal Doppler PI/RI Calculator <span class="sub" style="display:inline">v1.0</span></h1>
+      <p class="sub">Umbilical &amp; middle cerebral artery, cerebroplacental ratio, uterine artery, ductus venosus, MCA-PSV anemia surveillance · fetal-echo.org</p>
+    </div>
+    <div style="flex:0 0 auto;text-align:center;margin-left:10px">
+      <div id="_qrdop" style="border-radius:6px;border:1px solid var(--line);width:72px;height:72px;overflow:hidden;background:#fff;display:block"></div>
+      <p style="font-size:9px;color:var(--muted);margin:3px 0 0">fetal-echo.org</p>
+    </div>
+  </header>
+
+  <div class="disclaimer noprint">
+    <b>Clinical decision-support aid — not a diagnostic test.</b> Percentiles/Z-scores are computed from the
+    published reference populations listed at the bottom of each module and are valid only within each
+    source's gestational-age range. Published Doppler reference charts differ from one another by a
+    clinically meaningful margin (Oros et al., Ultrasound Obstet Gynecol 2019;53:454-464; Ruiz-Martinez et al.,
+    Ultrasound Obstet Gynecol 2020;56:166-172) — always correlate with growth biometry, serial trends and the
+    wider clinical picture. Assumes a singleton pregnancy with an accurately dated gestational age.
+  </div>
+
+  <!-- ===== SHARED INPUT ===== -->
+  <div class="card noprint">
+    <h2>Patient &amp; gestational age</h2>
+    <p class="hint">Enter once — every module below uses it. Name and ID are optional and only used to label a printout.</p>
+    <div class="grid">
+      <div class="field"><label>Patient name <span class="u">optional · printout only</span></label><input id="pname" type="text" placeholder="—"></div>
+      <div class="field"><label>ID / MRN <span class="u">optional · printout only</span></label><input id="pmrn" type="text" placeholder="—"></div>
+    </div>
+    <div class="grid3">
+      <div class="field"><label>Gestational age <span class="u">weeks</span></label><input id="gaW" type="number" step="1" min="11" max="41" inputmode="numeric" placeholder="weeks"></div>
+      <div class="field"><label>Gestational age <span class="u">+ days</span></label><input id="gaD" type="number" step="1" min="0" max="6" inputmode="numeric" placeholder="days" value="0"></div>
+      <div class="field"><label>Viewer <span class="u">changes what's shown</span></label>
+        <div class="toggle2" id="viewerToggle">
+          <button type="button" class="on" data-v="clin">Clinician</button>
+          <button type="button" data-v="pt">Patient view</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODULE 1: FGR STAGING ===== -->
+  <details class="sec" open id="secFGR">
+    <summary>Fetal growth restriction — arterial &amp; venous Doppler <span class="cv">UA · MCA · CPR · UtA · DV</span></summary>
+    <div class="sec-body">
+      <p class="sec-note">Enter umbilical artery and middle cerebral artery PI to get cerebroplacental ratio (CPR) automatically. Uterine artery and ductus venosus are optional add-ons for staged/advanced assessment — add them if resistance is already abnormal or on your unit's protocol.</p>
+
+      <div class="group-label">Core — umbilical &amp; middle cerebral artery</div>
+      <div class="mrow">
+        <div class="ml">Umbilical artery PI <div class="uu">Ciobanu et al. 2019</div></div>
+        <input id="uaPI" type="number" step="0.01" placeholder="e.g. 0.95">
+        <div class="zbox" id="uaOut">—</div>
+      </div>
+      <div class="mrow chk">
+        <label><input type="checkbox" id="uaAredf"> Absent or reversed end-diastolic flow (AREDF) in umbilical artery</label>
+        <span></span>
+      </div>
+      <div class="mrow">
+        <div class="ml">Middle cerebral artery PI <div class="uu">Ciobanu et al. 2019</div></div>
+        <input id="mcaPI" type="number" step="0.01" placeholder="e.g. 1.60">
+        <div class="zbox" id="mcaOut">—</div>
+      </div>
+      <div class="mrow">
+        <div class="ml">Cerebroplacental ratio (CPR) <div class="uu">= MCA-PI ÷ UA-PI · auto-calculated</div></div>
+        <input id="cprShow" type="text" disabled placeholder="—">
+        <div class="zbox" id="cprOut">—</div>
+      </div>
+
+      <details class="stage" id="advToggle">
+        <summary>+ Add uteroplacental &amp; venous Doppler (uterine artery, ductus venosus)</summary>
+        <div class="sec-body">
+          <div class="group-label">Uteroplacental — uterine artery</div>
+          <div class="mrow">
+            <div class="ml">Mean uterine artery PI <div class="uu">Gómez et al. 2008 · average of both sides</div></div>
+            <input id="utaPI" type="number" step="0.01" placeholder="e.g. 0.80">
+            <div class="zbox" id="utaOut">—</div>
+          </div>
+          <div class="group-label">Venous — ductus venosus</div>
+          <div class="mrow">
+            <div class="ml">Ductus venosus PIV <div class="uu">Kessler et al. 2006</div></div>
+            <input id="dvPIV" type="number" step="0.01" placeholder="e.g. 0.55">
+            <div class="zbox" id="dvOut">—</div>
+          </div>
+          <div class="mrow chk">
+            <label><input type="checkbox" id="dvAwave"> Absent or reversed ductus venosus a-wave</label>
+            <span></span>
+          </div>
+        </div>
+      </details>
+
+      <div id="fgrSummary"></div>
+
+      <p class="refs noprint" style="margin-top:16px">
+        <b>References (verified against full text):</b>
+        <ul>
+          <li>Ciobanu A, Wright A, Syngelaki A, Wright D, Akolekar R, Nicolaides KH. Fetal Medicine Foundation reference ranges for umbilical artery and middle cerebral artery pulsatility index and cerebroplacental ratio. <i>Ultrasound Obstet Gynecol</i> 2019;53(4):465–472. <a href="https://doi.org/10.1002/uog.20157" target="_blank">doi:10.1002/uog.20157</a></li>
+          <li>Gómez O, Figueras F, Fernández S, et al. Reference ranges for uterine artery mean pulsatility index at 11–41 weeks of gestation. <i>Ultrasound Obstet Gynecol</i> 2008;32(2):128–132. <a href="https://doi.org/10.1002/uog.5315" target="_blank">doi:10.1002/uog.5315</a></li>
+          <li>Kessler J, Rasmussen S, Hanson M, Kiserud T. Longitudinal reference ranges for ductus venosus flow velocities and waveform indices. <i>Ultrasound Obstet Gynecol</i> 2006;28(7):890–898. <a href="https://doi.org/10.1002/uog.3857" target="_blank">doi:10.1002/uog.3857</a></li>
+        </ul>
+      </p>
+    </div>
+  </details>
+
+  <!-- ===== MODULE 2: ANEMIA SURVEILLANCE ===== -->
+  <details class="sec" id="secAnemia">
+    <summary>Fetal anemia surveillance — MCA-PSV <span class="cv">alloimmunization · parvovirus risk</span></summary>
+    <div class="sec-body">
+      <p class="sec-note">Separate clinical question from growth restriction — used to time invasive testing (cordocentesis) in pregnancies at risk of fetal anemia (red-cell alloimmunization, parvovirus B19). Not a growth/placental-function test.</p>
+      <div class="mrow">
+        <div class="ml">MCA peak systolic velocity <div class="uu">cm/sec · Mari et al. 2000 (NEJM)</div></div>
+        <input id="mcaPSV" type="number" step="0.1" placeholder="e.g. 45">
+        <div class="zbox" id="psvOut">—</div>
+      </div>
+      <div id="anemiaSummary"></div>
+      <p class="refs noprint" style="margin-top:16px">
+        <b>Reference (verified against full text):</b>
+        <ul>
+          <li>Mari G, for the Collaborative Group for Doppler Assessment of the Blood Velocity in Anemic Fetuses. Noninvasive diagnosis by Doppler ultrasonography of fetal anemia due to maternal red-cell alloimmunization. <i>N Engl J Med</i> 2000;342(1):9–14. <a href="https://doi.org/10.1056/NEJM200001063420102" target="_blank">doi:10.1056/NEJM200001063420102</a></li>
+        </ul>
+      </p>
+    </div>
+  </details>
+
+  <div class="btns noprint">
+    <button class="btn primary" onclick="renderPrint()">Print / save patient summary (PDF)</button>
+  </div>
+
+  <div class="privacy noprint">
+    <b>Privacy:</b> this calculator runs entirely in your browser. No measurements, names or IDs are transmitted
+    or stored anywhere — closing this page clears everything.
+  </div>
+
+  <footer class="noprint">fetal-echo.org · Fetal Doppler PI/RI Calculator v1.0 · for use by trained clinicians alongside full clinical assessment</footer>
+
+  <!-- ===== PRINT AREA (patient-facing: numbers only, no interpretive flags) ===== -->
+  <div id="printArea">
+    <div class="ph">
+      <div>
+        <h2>Fetal Doppler Report</h2>
+        <div id="pr_meta"></div>
+      </div>
+      <div style="text-align:right;font-size:11px;color:#5b6b7c">fetal-echo.org<br>Generated <span id="pr_date"></span></div>
+    </div>
+    <div class="pgl">Umbilical &amp; cerebral Doppler</div>
+    <table id="pr_table1"></table>
+    <div class="pgl" id="pr_uta_dv_head" style="display:none">Uteroplacental &amp; venous Doppler</div>
+    <table id="pr_table2"></table>
+    <div class="pgl" id="pr_anemia_head" style="display:none">Anemia surveillance</div>
+    <table id="pr_table3"></table>
+    <p style="font-size:10px;color:#5b6b7c;margin-top:14px">
+      This report lists measured values and their percentile position for gestational age only. It is not a
+      diagnosis. Please discuss these results with your treating obstetrician / fetal medicine specialist.
+    </p>
+  </div>
+
+<script>
+/* =========================================================
+   VERIFIED REFERENCE DATA (see Doppler_Reference_Data_Extracted.md)
+   ========================================================= */
+
+// Ciobanu 2019 — UA-PI, MCA-PI, CPR. rows: {d: day-of-gestation, ua:[5,10,25,50,75,90,95], mca:[...], cpr:[...]}
+const CIOBANU = [
+{d:143,ua:[0.955,1.007,1.102,1.218,1.346,1.472,1.553],mca:[1.162,1.227,1.344,1.486,1.644,1.800,1.901],cpr:[0.872,0.938,1.059,1.212,1.388,1.567,1.686]},
+{d:150,ua:[0.939,0.990,1.083,1.197,1.322,1.446,1.526],mca:[1.213,1.278,1.396,1.540,1.699,1.855,1.956],cpr:[0.934,1.002,1.129,1.289,1.471,1.657,1.780]},
+{d:157,ua:[0.922,0.973,1.064,1.176,1.299,1.420,1.499],mca:[1.263,1.330,1.450,1.595,1.755,1.913,2.015],cpr:[0.996,1.068,1.201,1.367,1.557,1.750,1.877]},
+{d:164,ua:[0.906,0.956,1.045,1.155,1.276,1.395,1.472],mca:[1.313,1.381,1.503,1.651,1.813,1.973,2.075],cpr:[1.059,1.134,1.273,1.447,1.645,1.845,1.977]},
+{d:171,ua:[0.889,0.938,1.026,1.134,1.253,1.370,1.446],mca:[1.360,1.430,1.554,1.705,1.870,2.033,2.137],cpr:[1.121,1.200,1.345,1.526,1.732,1.942,2.079]},
+{d:178,ua:[0.871,0.920,1.006,1.113,1.230,1.346,1.420],mca:[1.405,1.476,1.603,1.757,1.926,2.091,2.197],cpr:[1.181,1.263,1.415,1.605,1.820,2.038,2.180]},
+{d:185,ua:[0.854,0.901,0.987,1.092,1.207,1.322,1.395],mca:[1.445,1.517,1.648,1.805,1.978,2.147,2.255],cpr:[1.237,1.324,1.482,1.680,1.904,2.132,2.281]},
+{d:192,ua:[0.836,0.883,0.967,1.070,1.185,1.298,1.371],mca:[1.478,1.553,1.686,1.848,2.024,2.198,2.309],cpr:[1.290,1.380,1.545,1.751,1.985,2.223,2.378]},
+{d:199,ua:[0.818,0.864,0.948,1.049,1.162,1.274,1.346],mca:[1.504,1.580,1.717,1.883,2.064,2.243,2.357],cpr:[1.336,1.430,1.602,1.817,2.061,2.309,2.471]},
+{d:206,ua:[0.800,0.846,0.928,1.028,1.140,1.251,1.322],mca:[1.521,1.599,1.739,1.909,2.095,2.278,2.395],cpr:[1.375,1.473,1.651,1.875,2.129,2.388,2.557]},
+{d:213,ua:[0.782,0.827,0.908,1.007,1.118,1.228,1.299],mca:[1.527,1.607,1.750,1.924,2.115,2.303,2.424],cpr:[1.406,1.507,1.692,1.924,2.189,2.457,2.634]},
+{d:220,ua:[0.763,0.807,0.888,0.986,1.096,1.205,1.275],mca:[1.521,1.603,1.749,1.926,2.122,2.316,2.440],cpr:[1.426,1.530,1.722,1.962,2.237,2.516,2.700]},
+{d:227,ua:[0.744,0.788,0.868,0.965,1.074,1.182,1.252],mca:[1.503,1.586,1.734,1.915,2.115,2.314,2.441],cpr:[1.436,1.543,1.740,1.988,2.272,2.562,2.753]},
+{d:234,ua:[0.725,0.769,0.847,0.944,1.052,1.160,1.229],mca:[1.472,1.555,1.705,1.889,2.093,2.296,2.426],cpr:[1.434,1.543,1.745,2.000,2.293,2.593,2.790]},
+{d:241,ua:[0.706,0.749,0.827,0.923,1.030,1.137,1.207],mca:[1.427,1.511,1.662,1.848,2.055,2.260,2.393],cpr:[1.419,1.531,1.736,1.997,2.298,2.607,2.811]},
+{d:248,ua:[0.687,0.730,0.807,0.902,1.009,1.115,1.184],mca:[1.369,1.453,1.604,1.791,1.999,2.207,2.342],cpr:[1.392,1.505,1.713,1.979,2.286,2.603,2.813]},
+{d:255,ua:[0.668,0.710,0.787,0.881,0.987,1.093,1.162],mca:[1.300,1.382,1.532,1.718,1.927,2.136,2.272],cpr:[1.353,1.466,1.676,1.944,2.256,2.579,2.795]},
+{d:262,ua:[0.649,0.691,0.766,0.860,0.966,1.071,1.140],mca:[1.219,1.300,1.448,1.632,1.839,2.048,2.184],cpr:[1.301,1.414,1.624,1.894,2.209,2.537,2.756]},
+{d:269,ua:[0.630,0.671,0.746,0.839,0.944,1.050,1.118],mca:[1.129,1.208,1.352,1.532,1.736,1.943,2.078],cpr:[1.239,1.350,1.558,1.827,2.143,2.474,2.696]},
+{d:276,ua:[0.610,0.651,0.725,0.818,0.923,1.028,1.097],mca:[1.032,1.108,1.246,1.421,1.620,1.823,1.956],cpr:[1.167,1.275,1.480,1.747,2.061,2.392,2.615]},
+{d:283,ua:[0.591,0.631,0.705,0.797,0.901,1.006,1.075],mca:[0.931,1.002,1.134,1.302,1.494,1.691,1.821],cpr:[1.086,1.192,1.391,1.653,1.963,2.291,2.514]},
+{d:290,ua:[0.572,0.612,0.685,0.776,0.880,0.985,1.053],mca:[0.827,0.894,1.018,1.177,1.360,1.548,1.674],cpr:[1.000,1.101,1.294,1.547,1.851,2.174,2.394]}
+];
+const PCTS = [5,10,25,50,75,90,95];
+
+// Kessler 2006 — Ductus venosus PIV. rows: {w: week, piv:[2.5,5,10,25,50,75,90,95,97.5]}
+const KESSLER_DV = [
+{w:21,piv:[0.27,0.32,0.38,0.47,0.57,0.68,0.77,0.83,0.88]},
+{w:22,piv:[0.28,0.32,0.38,0.47,0.57,0.68,0.77,0.83,0.88]},
+{w:23,piv:[0.28,0.32,0.38,0.47,0.57,0.68,0.77,0.83,0.88]},
+{w:24,piv:[0.27,0.32,0.38,0.47,0.57,0.68,0.77,0.83,0.88]},
+{w:25,piv:[0.27,0.32,0.37,0.47,0.57,0.67,0.77,0.83,0.88]},
+{w:26,piv:[0.27,0.31,0.37,0.46,0.57,0.67,0.77,0.82,0.87]},
+{w:27,piv:[0.26,0.31,0.36,0.46,0.56,0.67,0.76,0.82,0.87]},
+{w:28,piv:[0.26,0.31,0.36,0.45,0.56,0.66,0.76,0.81,0.86]},
+{w:29,piv:[0.25,0.30,0.35,0.45,0.55,0.65,0.75,0.81,0.86]},
+{w:30,piv:[0.25,0.29,0.35,0.44,0.54,0.65,0.74,0.80,0.85]},
+{w:31,piv:[0.24,0.28,0.34,0.43,0.53,0.64,0.73,0.79,0.84]},
+{w:32,piv:[0.23,0.28,0.33,0.42,0.53,0.63,0.73,0.78,0.83]},
+{w:33,piv:[0.22,0.27,0.32,0.41,0.52,0.62,0.72,0.77,0.82]},
+{w:34,piv:[0.21,0.26,0.31,0.40,0.51,0.61,0.71,0.76,0.81]},
+{w:35,piv:[0.20,0.25,0.30,0.39,0.50,0.60,0.70,0.75,0.80]},
+{w:36,piv:[0.19,0.24,0.29,0.38,0.49,0.59,0.69,0.74,0.79]},
+{w:37,piv:[0.18,0.23,0.28,0.37,0.48,0.58,0.67,0.73,0.78]},
+{w:38,piv:[0.17,0.22,0.27,0.36,0.46,0.57,0.66,0.72,0.77]},
+{w:39,piv:[0.16,0.21,0.26,0.35,0.45,0.56,0.65,0.71,0.76]}
+];
+const KESSLER_PCTS = [2.5,5,10,25,50,75,90,95,97.5];
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+function gaDays(){
+  const w = parseFloat(document.getElementById('gaW').value);
+  const d = parseFloat(document.getElementById('gaD').value)||0;
+  if(isNaN(w)) return null;
+  return w*7+d;
+}
+function gaWeeksDecimal(){ const dd=gaDays(); return dd===null?null:dd/7; }
+
+// estimate percentile of `value` given percentile curve (array of values aligned to PCTS/KESSLER_PCTS)
+function estimatePercentile(value, curve, pcts){
+  if(value<=curve[0]) return {pct:pcts[0], clip:'low'};
+  if(value>=curve[curve.length-1]) return {pct:pcts[pcts.length-1], clip:'high'};
+  for(let i=0;i<curve.length-1;i++){
+    if(value>=curve[i] && value<=curve[i+1]){
+      const f=(value-curve[i])/(curve[i+1]-curve[i]);
+      return {pct: pcts[i]+f*(pcts[i+1]-pcts[i]), clip:null};
+    }
+  }
+  return {pct:50, clip:null};
+}
+function fmtPct(p){
+  if(p.clip==='low') return '<'+p.pct+'th';
+  if(p.clip==='high') return '>'+p.pct+'th';
+  return p.pct.toFixed(0)+'th';
+}
+function tagFor(pct, lowBad, highBad){
+  // lowBad: true if being below 5th centile is the abnormal direction (e.g. MCA-PI, CPR)
+  // highBad: true if being above 95th is the abnormal direction (e.g. UA-PI, UtA-PI, DV-PIV)
+  const p = pct.clip==='low'?pct.pct:(pct.clip==='high'?pct.pct:pct.pct);
+  if(lowBad && (pct.clip==='low' || pct.pct<5)) return 'bad';
+  if(highBad && (pct.clip==='high' || pct.pct>95)) return 'bad';
+  if(lowBad && pct.pct<10) return 'bord';
+  if(highBad && pct.pct>90) return 'bord';
+  return 'ok';
+}
+
+/* =========================================================
+   GÓMEZ 2008 — UtA-PI formula (GA in days)
+   ========================================================= */
+function utaExpected(days){
+  const mean = 1.39 - 0.012*days + (days*days)*0.0000198; // this is Loge(mean)
+  const sd = 0.272 - days*0.000259;
+  return {logeMean:mean, sd:sd};
+}
+function utaResult(pi, days){
+  const {logeMean, sd} = utaExpected(days);
+  const z = (Math.log(pi) - logeMean)/sd;
+  // convert Z to approx percentile via standard normal CDF
+  const pct = 100*normCDF(z);
+  return {z, pct};
+}
+function normCDF(z){
+  // Abramowitz-Stegun approximation
+  const t = 1/(1+0.2316419*Math.abs(z));
+  const d = 0.3989423*Math.exp(-z*z/2);
+  let p = d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));
+  if(z>0) p = 1-p;
+  return p;
+}
+
+/* =========================================================
+   MARI 2000 — MCA-PSV anemia MoM
+   ========================================================= */
+function mariMedian(gaWeeks){ return Math.exp(2.31+0.046*gaWeeks); }
+
+/* =========================================================
+   RENDER: FGR MODULE
+   ========================================================= */
+let lastFGR = null, lastAnemia = null;
+
+function renderFGR(){
+  const days = gaDays();
+  const box = (id)=>document.getElementById(id);
+  const summaryEl = document.getElementById('fgrSummary');
+  if(days===null || days < 11*7){ box('uaOut').textContent='—'; box('mcaOut').textContent='—'; box('cprOut').textContent='—'; box('utaOut').textContent='—'; box('dvOut').textContent='—'; summaryEl.innerHTML=''; lastFGR=null; return; }
+
+  const uaVal = parseFloat(box('uaPI').value);
+  const mcaVal = parseFloat(box('mcaPI').value);
+  const utaVal = parseFloat(box('utaPI').value);
+  const dvVal = parseFloat(box('dvPIV').value);
+  const aredf = box('uaAredf').checked;
+  const dvAwave = box('dvAwave').checked;
+
+  let uaPct=null, mcaPct=null, cprPct=null, cprVal=null;
+  let uaTag='ok', mcaTag='ok', cprTag='ok';
+
+  function ciobanuLookup(days){
+    if(days<=CIOBANU[0].d) return {ua:CIOBANU[0].ua, mca:CIOBANU[0].mca, cpr:CIOBANU[0].cpr, out:true};
+    if(days>=CIOBANU[CIOBANU.length-1].d) return {ua:CIOBANU[CIOBANU.length-1].ua, mca:CIOBANU[CIOBANU.length-1].mca, cpr:CIOBANU[CIOBANU.length-1].cpr, out:true};
+    for(let i=0;i<CIOBANU.length-1;i++){
+      const a=CIOBANU[i], b=CIOBANU[i+1];
+      if(days>=a.d && days<=b.d){
+        const f=(days-a.d)/(b.d-a.d);
+        return {
+          ua: a.ua.map((v,idx)=>v+f*(b.ua[idx]-v)),
+          mca: a.mca.map((v,idx)=>v+f*(b.mca[idx]-v)),
+          cpr: a.cpr.map((v,idx)=>v+f*(b.cpr[idx]-v)),
+          out:false
+        };
+      }
+    }
+    return {ua:CIOBANU[CIOBANU.length-1].ua, mca:CIOBANU[CIOBANU.length-1].mca, cpr:CIOBANU[CIOBANU.length-1].cpr, out:true};
+  }
+
+  if(!isNaN(uaVal) || !isNaN(mcaVal)){
+    const cb = ciobanuLookup(days);
+    if(!isNaN(uaVal)){
+      uaPct = estimatePercentile(uaVal, cb.ua, PCTS);
+      uaTag = tagFor(uaPct, false, true); // high UA-PI is abnormal
+      box('uaOut').innerHTML = `<span class="zval">${fmtPct(uaPct)}</span> percentile${cb.out?' <span class="tag t-muted">extrapolated</span>':''}`;
+      box('uaOut').className='zbox '+uaTag;
+    } else { box('uaOut').textContent='—'; }
+
+    if(!isNaN(mcaVal)){
+      mcaPct = estimatePercentile(mcaVal, cb.mca, PCTS);
+      mcaTag = tagFor(mcaPct, true, false); // low MCA-PI is abnormal
+      box('mcaOut').innerHTML = `<span class="zval">${fmtPct(mcaPct)}</span> percentile${cb.out?' <span class="tag t-muted">extrapolated</span>':''}`;
+      box('mcaOut').className='zbox '+mcaTag;
+    } else { box('mcaOut').textContent='—'; }
+
+    if(!isNaN(uaVal) && !isNaN(mcaVal) && uaVal>0){
+      cprVal = mcaVal/uaVal;
+      box('cprShow').value = cprVal.toFixed(2);
+      cprPct = estimatePercentile(cprVal, cb.cpr, PCTS);
+      cprTag = tagFor(cprPct, true, false); // low CPR is abnormal
+      box('cprOut').innerHTML = `<span class="zval">${fmtPct(cprPct)}</span> percentile${cb.out?' <span class="tag t-muted">extrapolated</span>':''}`;
+      box('cprOut').className='zbox '+cprTag;
+    } else { box('cprShow').value=''; box('cprOut').textContent='—'; }
+  } else {
+    box('uaOut').textContent='—'; box('mcaOut').textContent='—'; box('cprShow').value=''; box('cprOut').textContent='—';
+  }
+
+  // UtA (Gómez) — valid 11-41 weeks (days 77-287)
+  let utaPct=null, utaTag='ok', utaZ=null;
+  if(!isNaN(utaVal) && days>=70){
+    const clipDays = Math.min(Math.max(days,77),287);
+    const r = utaResult(utaVal, clipDays);
+    utaZ = r.z; utaPct = r.pct;
+    utaTag = (utaPct>95)?'bad':(utaPct>90?'bord':'ok');
+    box('utaOut').innerHTML = `<span class="zval">${utaPct.toFixed(0)}th</span> percentile · Z ${utaZ>=0?'+':''}${utaZ.toFixed(2)}${(days<77||days>287)?' <span class="tag t-muted">extrapolated</span>':''}`;
+    box('utaOut').className='zbox '+utaTag;
+  } else { box('utaOut').textContent='—'; }
+
+  // DV PIV (Kessler) — valid 21-39 weeks
+  let dvPct=null, dvTag='ok';
+  if(!isNaN(dvVal)){
+    const wk = Math.min(Math.max(Math.round(days/7),21),39);
+    let row = KESSLER_DV.find(r=>r.w===wk);
+    if(!row){
+      // interpolate
+      for(let i=0;i<KESSLER_DV.length-1;i++){
+        const a=KESSLER_DV[i], b=KESSLER_DV[i+1];
+        const wDec = days/7;
+        if(wDec>=a.w && wDec<=b.w){
+          const f=(wDec-a.w)/(b.w-a.w);
+          row = {w:wDec, piv:a.piv.map((v,idx)=>v+f*(b.piv[idx]-v))};
+          break;
+        }
+      }
+      if(!row) row = KESSLER_DV[KESSLER_DV.length-1];
+    }
+    dvPct = estimatePercentile(dvVal, row.piv, KESSLER_PCTS);
+    dvTag = tagFor(dvPct, false, true); // high DV-PIV abnormal
+    const outOfRange = (days/7 < 21 || days/7 > 39);
+    box('dvOut').innerHTML = `<span class="zval">${fmtPct(dvPct)}</span> percentile${outOfRange?' <span class="tag t-muted">outside 21-39wk range</span>':''}`;
+    box('dvOut').className='zbox '+dvTag;
+  } else { box('dvOut').textContent='—'; }
+
+  lastFGR = {uaVal,mcaVal,cprVal,utaVal,dvVal,uaPct,mcaPct,cprPct,utaPct,dvPct,aredf,dvAwave,days};
+
+  // ===== Clinician-only interpretive summary (percentile-flag based; not a rigid numeric staging system) =====
+  const viewer = document.querySelector('#viewerToggle button.on').dataset.v;
+  if(viewer==='pt'){ summaryEl.innerHTML=''; return; }
+
+  let level='ok', lines=[];
+  const dvAbn = dvAwave || (dvPct && (dvPct.clip==='high' || dvPct.pct>95));
+  const uaAbn = aredf || (uaPct && (uaPct.clip==='high' || uaPct.pct>95));
+  const cprAbn = cprPct && (cprPct.clip==='low' || cprPct.pct<5);
+  const mcaAbn = mcaPct && (mcaPct.clip==='low' || mcaPct.pct<5);
+  const utaAbn = utaPct!==null && utaPct>95;
+
+  if(dvAbn){
+    level='bad';
+    lines.push(dvAwave ? 'Absent/reversed ductus venosus a-wave — a recognised marker of advanced hemodynamic compromise.' : 'Ductus venosus PIV above the 95th percentile.');
+    lines.push('Venous Doppler abnormality present — correlate urgently with biophysical profile, growth trend and consider fetal medicine / tertiary referral.');
+  } else if(aredf){
+    level='bad';
+    lines.push('Absent/reversed umbilical artery end-diastolic flow — a well-established sign of significant placental compromise.');
+    lines.push('Correlate with growth biometry and CTG/biophysical profile; consider increased surveillance frequency or referral.');
+  } else if(utaAbn && (uaAbn || cprAbn)){
+    level='bad';
+    lines.push('Combined uterine artery + umbilical/cerebral arterial abnormality — pattern suggestive of placental-based disease.');
+    lines.push('Correlate with growth scan and consider fetal medicine referral per local protocol.');
+  } else if(uaAbn || cprAbn || mcaAbn){
+    level='bord';
+    lines.push('Findings suggestive of possible fetal growth restriction / redistribution — correlate with estimated fetal weight and growth trend.');
+    lines.push('Consider adding uteroplacental and venous Doppler (above) and increasing surveillance frequency per local protocol.');
+  } else if(uaPct||mcaPct||cprPct){
+    level='ok';
+    lines.push('Arterial Doppler indices entered are within the reference range for gestational age.');
+  } else {
+    summaryEl.innerHTML=''; return;
+  }
+
+  summaryEl.innerHTML = `<div class="summary-box ${level}">${lines[0]}<div class="ssub">${lines[1]||''}</div></div>`;
+}
+
+/* =========================================================
+   RENDER: ANEMIA MODULE
+   ========================================================= */
+function renderAnemia(){
+  const wDec = gaWeeksDecimal();
+  const box = document.getElementById('psvOut');
+  const summaryEl = document.getElementById('anemiaSummary');
+  const psv = parseFloat(document.getElementById('mcaPSV').value);
+  if(wDec===null || isNaN(psv)){ box.textContent='—'; summaryEl.innerHTML=''; lastAnemia=null; return; }
+
+  const clipW = Math.min(Math.max(wDec,18),40);
+  const median = mariMedian(clipW);
+  const mom = psv/median;
+  const outRange = (wDec<18||wDec>40);
+
+  let tag='ok', label='';
+  if(mom>=1.55){ tag='bad'; label='≥1.55 MoM — threshold associated with severe anemia'; }
+  else if(mom>=1.50){ tag='bad'; label='≥1.50 MoM — operational cutoff for moderate/severe anemia (100% sensitivity, 12% false-positive in the original cohort)'; }
+  else if(mom>=1.29){ tag='bord'; label='≥1.29 MoM — threshold associated with mild anemia'; }
+  else { tag='ok'; label='below 1.29 MoM — not anemic or mild anemia range'; }
+
+  box.innerHTML = `<span class="zval">${mom.toFixed(2)} MoM</span>${outRange?' <span class="tag t-muted">outside 18-40wk validated range</span>':''}`;
+  box.className='zbox '+tag;
+
+  lastAnemia = {psv, median, mom, wDec};
+
+  const viewer = document.querySelector('#viewerToggle button.on').dataset.v;
+  if(viewer==='pt'){ summaryEl.innerHTML=''; return; }
+
+  let box2class = tag==='bad'?'bad':(tag==='bord'?'bord':'ok');
+  let mainLine = mom>=1.50 ? 'MCA-PSV at or above the 1.5 MoM action threshold.' : (mom>=1.29 ? 'MCA-PSV in the mild-anemia range.' : 'MCA-PSV below the mild-anemia threshold.');
+  let subLine = mom>=1.50 ? 'Per Mari et al. 2000, values ≥1.50 MoM warrant consideration of cordocentesis / further work-up in an at-risk pregnancy.' : label;
+  summaryEl.innerHTML = `<div class="summary-box ${box2class}">${mainLine}<div class="ssub">${subLine}</div></div>`;
+}
+
+/* =========================================================
+   PRINT (patient-facing — numbers only, no interpretive flags)
+   ========================================================= */
+function renderPrint(){
+  const name = document.getElementById('pname').value || '—';
+  const mrn = document.getElementById('pmrn').value || '—';
+  const w = document.getElementById('gaW').value||'—';
+  const d = document.getElementById('gaD').value||'0';
+  document.getElementById('pr_meta').innerHTML = `Name: ${name} &nbsp;·&nbsp; ID: ${mrn} &nbsp;·&nbsp; GA at scan: ${w}+${d} weeks`;
+  document.getElementById('pr_date').textContent = new Date().toLocaleDateString();
+
+  let t1 = '<tr><th>Measurement</th><th>Value</th><th>Percentile / MoM</th></tr>';
+  if(lastFGR){
+    if(!isNaN(lastFGR.uaVal)) t1 += `<tr><td>Umbilical artery PI</td><td class="r">${lastFGR.uaVal}</td><td class="r">${lastFGR.uaPct?fmtPct(lastFGR.uaPct):'—'}</td></tr>`;
+    if(!isNaN(lastFGR.mcaVal)) t1 += `<tr><td>Middle cerebral artery PI</td><td class="r">${lastFGR.mcaVal}</td><td class="r">${lastFGR.mcaPct?fmtPct(lastFGR.mcaPct):'—'}</td></tr>`;
+    if(lastFGR.cprVal) t1 += `<tr><td>Cerebroplacental ratio</td><td class="r">${lastFGR.cprVal.toFixed(2)}</td><td class="r">${lastFGR.cprPct?fmtPct(lastFGR.cprPct):'—'}</td></tr>`;
+  }
+  document.getElementById('pr_table1').innerHTML = t1;
+
+  let t2 = '';
+  const hasUtaDv = lastFGR && (!isNaN(lastFGR.utaVal) || !isNaN(lastFGR.dvVal));
+  document.getElementById('pr_uta_dv_head').style.display = hasUtaDv?'block':'none';
+  if(hasUtaDv){
+    t2 = '<tr><th>Measurement</th><th>Value</th><th>Percentile</th></tr>';
+    if(!isNaN(lastFGR.utaVal)) t2 += `<tr><td>Mean uterine artery PI</td><td class="r">${lastFGR.utaVal}</td><td class="r">${lastFGR.utaPct?lastFGR.utaPct.toFixed(0)+'th':'—'}</td></tr>`;
+    if(!isNaN(lastFGR.dvVal)) t2 += `<tr><td>Ductus venosus PIV</td><td class="r">${lastFGR.dvVal}</td><td class="r">${lastFGR.dvPct?fmtPct(lastFGR.dvPct):'—'}</td></tr>`;
+  }
+  document.getElementById('pr_table2').innerHTML = t2;
+
+  const hasAnemia = !!lastAnemia;
+  document.getElementById('pr_anemia_head').style.display = hasAnemia?'block':'none';
+  let t3='';
+  if(hasAnemia){
+    t3 = '<tr><th>Measurement</th><th>Value</th><th>Multiples of median</th></tr>';
+    t3 += `<tr><td>MCA peak systolic velocity</td><td class="r">${lastAnemia.psv} cm/s</td><td class="r">${lastAnemia.mom.toFixed(2)} MoM</td></tr>`;
+  }
+  document.getElementById('pr_table3').innerHTML = t3;
+
+  window.print();
+}
+
+/* =========================================================
+   WIRING
+   ========================================================= */
+['gaW','gaD','uaPI','mcaPI','utaPI','dvPIV','mcaPSV'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{ renderFGR(); renderAnemia(); });
+});
+['uaAredf','dvAwave'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', renderFGR);
+});
+document.querySelectorAll('#viewerToggle button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#viewerToggle button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    renderFGR(); renderAnemia();
+  });
+});
+
+window.addEventListener('load', ()=>{
+  try{ new QRCode(document.getElementById('_qrdop'), {text: window.location.href, width:72, height:72, colorDark:'#15607a', colorLight:'#ffffff'}); }catch(e){}
+});
+</script>
+</div>
+</body>
+</html>

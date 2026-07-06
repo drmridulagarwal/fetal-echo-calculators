@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pediatric Echo Measurements &amp; Z-Scores — fetal-echo.org</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 <style>
 :root{
   --bg:#f6f8fb; --card:#ffffff; --ink:#1d2733; --muted:#5b6b7c; --line:#e5ebf2;
@@ -150,13 +149,9 @@ footer{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px}
 </a>
 <header class="app noprint">
   <div class="logo">PE</div>
-  <div style="flex:1">
+  <div>
     <h1>Pediatric Echo Measurements &amp; Z-Scores <span class="sub" style="display:inline">v1.0</span></h1>
     <p class="sub">M-mode · Coronaries · 2D structures · Function · evidence-anchored reference ranges · fetal-echo.org</p>
-  </div>
-  <div style="flex:0 0 auto;text-align:center;margin-left:10px">
-    <div id="_qrped" style="border-radius:6px;border:1px solid var(--line);width:72px;height:72px;overflow:hidden;background:#fff;display:block"></div>
-    <p style="font-size:9px;color:var(--muted);margin:3px 0 0">fetal-echo.org</p>
   </div>
 </header>
 
@@ -205,18 +200,6 @@ footer{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px}
   </div>
 </div>
 
-<!-- ===== UNIT TOGGLE ===== -->
-<div class="card noprint" style="padding:10px 18px">
-  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-    <span style="font-size:12.5px;font-weight:600;color:var(--ink)">Measurement units:</span>
-    <div class="seg">
-      <button id="unit_mm" class="on" onclick="setUnit('mm')">mm</button>
-      <button id="unit_cm" onclick="setUnit('cm')">cm</button>
-    </div>
-    <span id="unitNote" style="font-size:11px;color:var(--muted)">Enter all echo measurements in mm</span>
-  </div>
-</div>
-
 <!-- ===== SECTION 1: M-MODE (KAMPMANN 2000) ===== -->
 <details class="sec noprint" open>
   <summary>M-mode — LV dimensions &amp; function <span class="cv">Kampmann 2000</span></summary>
@@ -255,10 +238,10 @@ footer{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px}
     <div class="der-row"><div class="dl">LA:Ao ratio</div><div class="dv" id="d_laao">—</div></div>
     <!-- De Simone / RWT rows — shown only when age > 8 years -->
     <div class="der-row" id="row_lwt_title" style="display:none;border-top:2px solid var(--brand-soft);margin-top:6px">
-      <div class="dl" style="color:var(--brand);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em">Age 8–18 y — Khoury LV geometry · De Simone indexing</div><div class="dv"></div>
+      <div class="dl" style="color:var(--brand);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em">Age &gt; 8 y — De Simone indexed LV mass &amp; geometry</div><div class="dv"></div>
     </div>
-    <div class="der-row" id="row_lvmi_ht" style="display:none"><div class="dl">LVMI by height<sup>2.7</sup> <span style="font-size:11px">g/m<sup>2.7</sup> · Khoury 95th%ile threshold · ⚠ De Simone alert ≥ 51</span></div><div class="dv" id="d_lvmi_ht">—</div></div>
-    <div class="der-row" id="row_rwt" style="display:none"><div class="dl">RWT — Relative wall thickness <span style="font-size:11px">= 2×LVPWd/LVIDd · paediatric concentric ≥ 0.38</span></div><div class="dv" id="d_rwt">—</div></div>
+    <div class="der-row" id="row_lvmi_ht" style="display:none"><div class="dl">LVMI by height<sup>2.7</sup> <span style="font-size:11px">g/m<sup>2.7</sup> · De Simone (LVH &gt; 51)</span></div><div class="dv" id="d_lvmi_ht">—</div></div>
+    <div class="der-row" id="row_rwt" style="display:none"><div class="dl">RWT — Relative wall thickness <span style="font-size:11px">= 2×LVPWd/LVIDd · (conc ≥ 0.42)</span></div><div class="dv" id="d_rwt">—</div></div>
     <div class="der-row" id="row_lvgeom" style="display:none"><div class="dl">LV Geometry</div><div class="dv" id="d_lvgeom">—</div></div>
   </div>
 </details>
@@ -296,11 +279,12 @@ footer{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px}
   </div>
 </details>
 
-<!-- ===== SECTION 3: 2D STRUCTURES (CANTINOTTI 2017) ===== -->
+<!-- ===== SECTION 3: 2D STRUCTURES (CANTINOTTI 2014) ===== -->
 <details class="sec noprint">
-  <summary>2D Structures <span class="cv">Cantinotti 2017</span></summary>
+  <summary>2D Structures <span class="cv">Cantinotti 2014</span></summary>
   <div class="sec-body">
-    <div class="sec-note">Measurements in <b>mm</b>. BSA formula: Haycock. Reference: Cantinotti M et al. J Cardiol 2017;69:208–215 (PMID 27118699). Valid range: age 0–17 years, BSA 0.12–2.12 m². RV dimensions and outflow tracts are recorded but have no reference data in this paper.</div>
+    <div class="sec-note">Measurements in <b>mm</b>. BSA formula: Haycock. Reference: Cantinotti M et al. J Am Soc Echocardiogr 2014;27:179–191. Valid range: age 0–3 years, BSA 0.12–0.67 m².</div>
+    <div class="warn">⚠ <b>Z-score coefficients pending.</b> Enter Cantinotti 2014 Table 3–5 polynomial coefficients into the <code>CANTINOTTI</code> object in the source JavaScript. Measurements are recorded immediately and will appear in the printout.</div>
     <div class="group-label">RV dimensions</div>
     <div class="mrow"><div class="ml">RVID basal — RV basal diameter, diastole <span class="uu">mm</span></div>
       <input type="number" step="0.1" inputmode="decimal" id="in_rvb" data-label="RVID basal" data-unit="mm" data-sec="2D Structures" placeholder="mm" oninput="recalc()">
@@ -420,13 +404,14 @@ footer{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px}
 <footer class="noprint" style="padding:18px 0 22px;border-top:1px solid var(--line);margin-top:18px">
   <div style="display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap;margin-bottom:8px">
     <div style="text-align:center">
-      <div id="qr-footer" style="width:72px;height:72px;margin:0 auto;border-radius:6px;overflow:hidden;background:#fff;border:1px solid var(--line)"></div>
+      <div id="qr-footer" style="width:72px;height:72px;margin:0 auto;background:var(--line);border-radius:6px;display:flex;align-items:center;justify-content:center">
+        <span style="font-size:9px;color:var(--muted)">QR</span>
+      </div>
       <div style="font-size:9px;margin-top:4px;color:var(--muted)">Scan to open calculator</div>
     </div>
     <div style="text-align:left;line-height:1.7">
       <div style="font-weight:700;font-size:14px;color:var(--brand)">fetal-echo.org</div>
       <div style="font-size:12px">Pediatric Echo Z-Score Calculator · v1.0</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:2px">by Dr. Mridul Agarwal</div>
       <div style="margin-top:4px;font-size:11px">
         <a href="https://fetal-echo.org" target="_blank" style="color:var(--brand);text-decoration:none">fetal-echo.org</a>
         &nbsp;·&nbsp;
@@ -529,42 +514,38 @@ function kampmannZ(val, key, bsaD) {
 }
 
 /* ================================================================
-   CANTINOTTI 2017 COEFFICIENTS
-   Source: Cantinotti M et al. J Cardiol 2017;69:208–215
-   PMID: 27118699   DOI: 10.1016/j.jjcc.2016.03.010
-   Population: 1151 healthy Caucasian children, age 0–17 yr,
-               BSA 0.12–2.12 m² (Haycock formula)
-   Equation:   ln[measurement_mm] = a + b × ln[BSA_Haycock]
-   Z-score:    (ln[obs] − (a + b × ln[BSA])) / HMSE
-   Keys set to null have no data in this paper.
+   CANTINOTTI 2014 COEFFICIENTS
+   Source: Cantinotti M et al. J Am Soc Echocardiogr 2014;27:179-91
+   BSA: Haycock
+   Equation form: Mean(mm) = a + b×BSA_H + c×BSA_H²; SD = fixed
+   Set a = null until values are entered from Tables 3-5.
    ================================================================ */
 const CANTINOTTI = {
-  rvb:   null,                                    // RV basal — not in Cantinotti 2017
-  rvm:   null,                                    // RV mid   — not in Cantinotti 2017
-  aoan:  { a: 2.750, b: 0.515, hmse: 0.088 },   // Aortic annulus
-  aosv:  { a: 3.051, b: 0.481, hmse: 0.092 },   // Sinuses of Valsalva
-  stj:   { a: 2.797, b: 0.512, hmse: 0.098 },   // Sinotubular junction
-  ascao: { a: 2.949, b: 0.486, hmse: 0.096 },   // Ascending aorta
-  mpa:   { a: 2.945, b: 0.489, hmse: 0.112 },   // Main pulmonary artery
-  rpa:   { a: 2.397, b: 0.558, hmse: 0.145 },   // Right pulmonary artery
-  lpa:   { a: 2.383, b: 0.569, hmse: 0.159 },   // Left pulmonary artery
-  mva:   { a: 3.161, b: 0.471, hmse: 0.087 },   // Mitral valve annulus
-  tva:   { a: 3.187, b: 0.466, hmse: 0.140 },   // Tricuspid valve annulus
-  tarch: { a: 2.742, b: 0.515, hmse: 0.121 },   // Transverse arch (IA–LCA segment)
-  isth:  { a: 2.356, b: 0.550, hmse: 0.146 },   // Aortic isthmus
-  dao:   { a: 2.518, b: 0.498, hmse: 0.130 },   // Descending thoracic aorta
-  pvan:  { a: 2.908, b: 0.538, hmse: 0.113 },   // Pulmonary valve annulus
-  rvot:  null,                                    // RVOT — not in Cantinotti 2017
-  lvot:  null,                                    // LVOT — not in Cantinotti 2017
+  rvb:   { a: null, b: null, c: null, sd: null },
+  rvm:   { a: null, b: null, c: null, sd: null },
+  aoan:  { a: null, b: null, c: null, sd: null },
+  aosv:  { a: null, b: null, c: null, sd: null },
+  stj:   { a: null, b: null, c: null, sd: null },
+  ascao: { a: null, b: null, c: null, sd: null },
+  mpa:   { a: null, b: null, c: null, sd: null },
+  rpa:   { a: null, b: null, c: null, sd: null },
+  lpa:   { a: null, b: null, c: null, sd: null },
+  mva:   { a: null, b: null, c: null, sd: null },
+  tva:   { a: null, b: null, c: null, sd: null },
+  tarch: { a: null, b: null, c: null, sd: null },
+  isth:  { a: null, b: null, c: null, sd: null },
+  dao:   { a: null, b: null, c: null, sd: null },
+  pvan:  { a: null, b: null, c: null, sd: null },
+  rvot:  { a: null, b: null, c: null, sd: null },
+  lvot:  { a: null, b: null, c: null, sd: null },
 };
 
 function cantinottiZ(val, key, bsaH) {
   const c = CANTINOTTI[key];
-  if (!c) return null;                            // no reference data for this measurement
-  if (!isFinite(val) || val <= 0) return null;
-  if (!isFinite(bsaH) || bsaH <= 0) return null;
-  const meanLn = c.a + c.b * Math.log(bsaH);
-  return (Math.log(val) - meanLn) / c.hmse;
+  if (!c || c.a === null) return null;
+  const mean = c.a + c.b * bsaH + c.c * bsaH * bsaH;
+  if (!isFinite(mean) || c.sd <= 0) return null;
+  return (val - mean) / c.sd;
 }
 
 /* ================================================================
@@ -728,40 +709,40 @@ function drawGrowthChart() {
   for (let i = 0; i <= yTicks; i++) {
     const v = yMin + (yMax - yMin) * i / yTicks;
     const y = yScale(v);
-    yTickLines += `<line x1="${L}" y1="${y.toFixed(1)}" x2="${W-R}" y2="${y.toFixed(1)}" stroke="#bbbbbb" stroke-width="0.6"/>`;
-    yTickLines += `<text x="${(L-3).toFixed(1)}" y="${y.toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="7" fill="#444444">${Math.round(v)}</text>`;
+    yTickLines += `<line x1="${L}" y1="${y.toFixed(1)}" x2="${W-R}" y2="${y.toFixed(1)}" stroke="#e5ebf2" stroke-width="0.5"/>`;
+    yTickLines += `<text x="${(L-3).toFixed(1)}" y="${y.toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="7" fill="#8a9aaa">${Math.round(v)}</text>`;
   }
   // x ticks
   let xTickLines = '';
   [2,4,6,8,10,12,14,16,18].forEach(a => {
     const x = xScale(a);
-    xTickLines += `<line x1="${x.toFixed(1)}" y1="${T}" x2="${x.toFixed(1)}" y2="${(T+plotH).toFixed(1)}" stroke="#bbbbbb" stroke-width="0.6"/>`;
-    xTickLines += `<text x="${x.toFixed(1)}" y="${(H-B+12).toFixed(1)}" text-anchor="middle" font-size="7" fill="#444444">${a}</text>`;
+    xTickLines += `<line x1="${x.toFixed(1)}" y1="${T}" x2="${x.toFixed(1)}" y2="${(T+plotH).toFixed(1)}" stroke="#e5ebf2" stroke-width="0.5"/>`;
+    xTickLines += `<text x="${x.toFixed(1)}" y="${(H-B+12).toFixed(1)}" text-anchor="middle" font-size="7" fill="#8a9aaa">${a}</text>`;
   });
 
   // Patient dot
   let patDot = '';
   if (isFinite(ageY) && isFinite(patV) && ageY >= 2 && ageY <= 18) {
     const px = xScale(ageY), py = yScale(patV);
-    const dotColor = patV < gcInterp(ref.p5, ageY) || patV > gcInterp(ref.p95, ageY) ? '#000000' : '#333333';
-    patDot = `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="4.5" fill="${dotColor}" stroke="#fff" stroke-width="1.5"/>`;
+    const dotColor = patV < gcInterp(ref.p5, ageY) || patV > gcInterp(ref.p95, ageY) ? '#c33a3a' : '#15607a';
+    patDot = `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="4" fill="${dotColor}" stroke="#fff" stroke-width="1.5"/>`;
   }
 
   svg.innerHTML = `
 <rect x="0" y="0" width="${W}" height="${H}" fill="#f8fafc" rx="6"/>
-<rect x="${L}" y="${T}" width="${plotW}" height="${plotH}" fill="#fff" stroke="#999999" stroke-width="0.8"/>
+<rect x="${L}" y="${T}" width="${plotW}" height="${plotH}" fill="#fff" stroke="#e5ebf2" stroke-width="0.8"/>
 ${yTickLines}${xTickLines}
-<text x="${(W/2).toFixed(1)}" y="${(H-3).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="#333333">Age (years)</text>
-<text x="${(L-28).toFixed(1)}" y="${(T+plotH/2).toFixed(1)}" text-anchor="middle" font-size="7" fill="#333333" transform="rotate(-90,${(L-28).toFixed(1)},${(T+plotH/2).toFixed(1)})">${unit}</text>
-<polyline points="${polyline(ref.p95)}" fill="none" stroke="#666666" stroke-width="1.5" stroke-dasharray="4,2"/>
-<polyline points="${polyline(ref.p50)}" fill="none" stroke="#000000" stroke-width="2"/>
-<polyline points="${polyline(ref.p5)}"  fill="none" stroke="#666666" stroke-width="1.5" stroke-dasharray="4,2"/>
-<text x="${(L+4).toFixed(1)}" y="${(yScale(ref.p95[0])-3).toFixed(1)}" font-size="6.5" fill="#444444">95th</text>
-<text x="${(L+4).toFixed(1)}" y="${(yScale(ref.p50[0])-3).toFixed(1)}" font-size="6.5" fill="#000000">50th</text>
-<text x="${(L+4).toFixed(1)}" y="${(yScale(ref.p5[0])+8).toFixed(1)}"  font-size="6.5" fill="#444444">5th</text>
+<text x="${(W/2).toFixed(1)}" y="${(H-3).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="#5b6b7c">Age (years)</text>
+<text x="${(L-28).toFixed(1)}" y="${(T+plotH/2).toFixed(1)}" text-anchor="middle" font-size="7" fill="#5b6b7c" transform="rotate(-90,${(L-28).toFixed(1)},${(T+plotH/2).toFixed(1)})">${unit}</text>
+<polyline points="${polyline(ref.p95)}" fill="none" stroke="#f0c6a8" stroke-width="1.2" stroke-dasharray="3,2"/>
+<polyline points="${polyline(ref.p50)}" fill="none" stroke="#9fd8b5" stroke-width="1.8"/>
+<polyline points="${polyline(ref.p5)}"  fill="none" stroke="#f0c6a8" stroke-width="1.2" stroke-dasharray="3,2"/>
+<text x="${(L+4).toFixed(1)}" y="${(yScale(ref.p95[0])-3).toFixed(1)}" font-size="6.5" fill="#d99100">95th</text>
+<text x="${(L+4).toFixed(1)}" y="${(yScale(ref.p50[0])-3).toFixed(1)}" font-size="6.5" fill="#2f9e6b">50th</text>
+<text x="${(L+4).toFixed(1)}" y="${(yScale(ref.p5[0])+8).toFixed(1)}"  font-size="6.5" fill="#d99100">5th</text>
 ${patDot}
-${centileTxt ? `<text x="${(W-R-2).toFixed(1)}" y="${(T+8).toFixed(1)}" text-anchor="end" font-size="7.5" fill="#000000" font-weight="bold">${centileTxt}</text>` : ''}
-<text x="${(L+4).toFixed(1)}" y="${(T+8).toFixed(1)}" font-size="7" fill="#333333">${title}</text>`;
+${centileTxt ? `<text x="${(W-R-2).toFixed(1)}" y="${(T+8).toFixed(1)}" text-anchor="end" font-size="7.5" fill="#15607a" font-weight="bold">${centileTxt}</text>` : ''}
+<text x="${(L+4).toFixed(1)}" y="${(T+8).toFixed(1)}" font-size="7" fill="#5b6b7c">${title}</text>`;
 }
 
 function updateGrowthPanel() {
@@ -771,21 +752,7 @@ function updateGrowthPanel() {
   const hasAge  = isFinite(ageY) && ageY > 0 && ageY <= 18;
   const hasWt   = isFinite(wt);
   const hasHt   = isFinite(ht);
-  const isInfant = isFinite(ageY) && ageY > 0 && ageY < 2;
   const panel = $('growthPanel');
-  // Show/hide infant note
-  let infantNote = $('gcInfantNote');
-  if (!infantNote) {
-    infantNote = document.createElement('div');
-    infantNote.id = 'gcInfantNote';
-    infantNote.style.cssText = 'font-size:11.5px;color:#b08000;margin-top:6px;padding:6px 10px;background:#fffbe6;border-radius:6px;border:1px solid #ffe58f';
-    panel.appendChild(infantNote);
-  }
-  infantNote.style.display = isInfant ? 'block' : 'none';
-  if (isInfant) {
-    const mo = Math.round(ageY * 12);
-    infantNote.textContent = `Age ${mo} month${mo !== 1 ? 's' : ''}: WHO chart below covers 2–18 years. For infants, use WHO Child Growth Standards (0–24 months) separately.`;
-  }
   if (hasAge && (hasWt || hasHt)) {
     panel.style.display = 'block';
     $('ageDisplay').textContent = 'Age: ' + (fmtAge(ageY) || '—') + (($('psex').value) ? ' · ' + ($('psex').value === 'M' ? 'Male' : 'Female') : '');
@@ -804,77 +771,56 @@ function updateGrowthPanel() {
 }
 
 /* ================================================================
-   PEDIATRIC LV GEOMETRY — KHOURY (age 8–18 years)
-   LVMI = LVM / height(m)^2.7   (De Simone 1992 indexing method)
-   LVMI threshold: Khoury 95th percentile (age- and sex-specific)
-     Age 8–9:  girls 95th = 77.5265 − 15.8939×age + 5.2322×age^1.5 − 0.4671×age²
-               boys 95th  = girls 95th + 2.738
-     Age 9–18: boys 45.0 g/m²·⁷ · girls 40.0 g/m²·⁷
-   RWT = 2×LVPWd/LVIDd · Pediatric concentric threshold: ≥ 0.38
-   Geometry (Khoury / Daniels):
-     Normal geometry:        LVMI ≤ threshold AND RWT < 0.38
-     Concentric remodelling: LVMI ≤ threshold AND RWT ≥ 0.38
-     Eccentric hypertrophy:  LVMI > threshold AND RWT < 0.38
-     Concentric hypertrophy: LVMI > threshold AND RWT ≥ 0.38
-   De Simone override alert: LVMI ≥ 51 → CRITICAL regardless of paediatric class
-   Refs: Khoury PR et al. J Am Soc Echocardiogr 2009;22:606–616
-         De Simone G et al. JACC 1992;20:1251–60
-         Devereux RB et al. Am J Cardiol 1986;57:450–8
+   DE SIMONE HEIGHT-INDEXED LV MASS + RWT (age > 8 years)
+   Devereux formula: LVM = 0.8×(1.04×(LVIDd+IVSd+LVPWd)³ − LVIDd³) + 0.6
+   De Simone 1992 JACC indexing: LVM/height(m)^2.7
+   LVH threshold: > 51 g/m^2.7 (widely applied cut-off)
+   RWT = 2×LVPWd/LVIDd · Concentric geometry: RWT ≥ 0.42
+   Geometry classification (Ganau 1992):
+     Normal:              LVMI ≤51 AND RWT <0.42
+     Concentric remodel: LVMI ≤51 AND RWT ≥0.42
+     Eccentric LVH:      LVMI >51 AND RWT <0.42
+     Concentric LVH:     LVMI >51 AND RWT ≥0.42
+   Ref: De Simone G et al. JACC 1992;20:1251-60
+        Devereux RB et al. Am J Cardiol 1986;57:450-8
    ================================================================ */
 function updateDeSimone(lvm, ht, lvpwd, lvedd) {
   const ageY = getAgeYears();
   const ids = ['row_lwt_title','row_lvmi_ht','row_rwt','row_lvgeom'];
-  if (!isFinite(ageY) || ageY < 8 || ageY > 18 || !isFinite(lvm) || !isFinite(ht) || ht <= 0) {
+  if (!isFinite(ageY) || ageY <= 8 || !isFinite(lvm) || !isFinite(ht) || ht <= 0) {
     ids.forEach(id => { const el=$(id); if(el) el.style.display='none'; });
     return;
   }
   ids.forEach(id => { const el=$(id); if(el) el.style.display=''; });
 
-  // Khoury 95th percentile LVMI threshold (age- & sex-specific)
-  const sex = ($('psex') ? $('psex').value : '') || '';
-  const isMale = sex === 'M';
-  let lvmiThresh;
-  if (ageY < 9) {
-    const g95 = 77.5265 - (15.8939 * ageY) + (5.2322 * Math.pow(ageY, 1.5)) - (0.4671 * ageY * ageY);
-    lvmiThresh = isMale ? g95 + 2.738 : g95;
-    if (!sex) lvmiThresh = g95 + 2.738; // use male (higher) if sex not entered — conservative
-  } else {
-    lvmiThresh = (sex === 'F') ? 40.0 : 45.0; // default to male if not entered
-  }
-
-  const htM    = ht / 100;
+  const htM  = ht / 100;
   const lvmiHt = lvm / Math.pow(htM, 2.7);
-  const isLvmiElev   = lvmiHt > lvmiThresh;
-  const deSimoneAlert = lvmiHt >= 51;
-
+  const hasLVH  = lvmiHt > 51;
   const el_lvmi = $('d_lvmi_ht');
   if (el_lvmi) {
-    let txt = lvmiHt.toFixed(1) + ' g/m²·⁷  [Khoury 95th: ' + lvmiThresh.toFixed(1) + ']';
-    if (deSimoneAlert) txt += '  ⚠ CRITICAL ≥ 51';
-    el_lvmi.textContent = txt;
-    el_lvmi.style.color = deSimoneAlert ? 'var(--bad)' : isLvmiElev ? 'var(--bord)' : 'var(--ok)';
+    el_lvmi.textContent = lvmiHt.toFixed(1) + ' g/m²·⁷';
+    el_lvmi.style.color = hasLVH ? 'var(--bad)' : 'var(--ok)';
   }
 
-  // RWT (paediatric threshold 0.38)
+  // RWT
   const el_rwt = $('d_rwt');
   if (!isFinite(lvpwd) || !isFinite(lvedd) || lvedd <= 0) {
     if (el_rwt) { el_rwt.textContent = '— (enter LVPWd & LVIDd)'; el_rwt.style.color = 'var(--muted)'; }
     const el_g = $('d_lvgeom'); if (el_g) { el_g.textContent = '—'; el_g.style.color = ''; }
     return;
   }
-  const rwt       = 2 * lvpwd / lvedd;
-  const isConcGeom = rwt >= 0.38;
+  const rwt  = 2 * lvpwd / lvedd;
+  const isConcGeom = rwt >= 0.42;
   if (el_rwt) {
-    el_rwt.textContent = rwt.toFixed(2) + (isConcGeom ? ' ≥ 0.38 — concentric' : ' < 0.38 — eccentric');
+    el_rwt.textContent = rwt.toFixed(2) + (isConcGeom ? ' (concentric ≥ 0.42)' : ' (eccentric < 0.42)');
     el_rwt.style.color = isConcGeom ? 'var(--bord)' : 'var(--ok)';
   }
 
   let geomTxt, geomColor;
-  if      (isLvmiElev  && isConcGeom)  { geomTxt = 'Concentric Hypertrophy';  geomColor = 'var(--bad)'; }
-  else if (isLvmiElev  && !isConcGeom) { geomTxt = 'Eccentric Hypertrophy';   geomColor = 'var(--bad)'; }
-  else if (!isLvmiElev && isConcGeom)  { geomTxt = 'Concentric Remodelling';  geomColor = 'var(--bord)'; }
-  else                                  { geomTxt = 'Normal Geometry';          geomColor = 'var(--ok)'; }
-  if (deSimoneAlert) { geomTxt += ' · CRITICAL: LVMI ≥ 51 g/m²·⁷'; geomColor = 'var(--bad)'; }
+  if (hasLVH  && isConcGeom)  { geomTxt = 'Concentric LVH';       geomColor = 'var(--bad)'; }
+  else if (hasLVH && !isConcGeom) { geomTxt = 'Eccentric LVH';    geomColor = 'var(--bad)'; }
+  else if (!hasLVH && isConcGeom) { geomTxt = 'Concentric remodelling'; geomColor = 'var(--bord)'; }
+  else                            { geomTxt = 'Normal geometry';    geomColor = 'var(--ok)'; }
 
   const el_g = $('d_lvgeom');
   if (el_g) { el_g.textContent = geomTxt; el_g.style.color = geomColor; }
@@ -915,8 +861,8 @@ function renderZ(elId, z, kawa) {
   const cls = zCls(z);
   const a = Math.abs(z);
   const tCls = a >= 2 ? 't-bad' : a >= 1.5 ? 't-bord' : 't-ok';
-  const tTxt = a >= 2 ? 'OUT OF RANGE' : '';
-  let html = `<span class="zval">Z ${fmtZ(z)}</span>${tTxt ? `<span class="tag ${tCls}">${tTxt}</span>` : ''}`;
+  const tTxt = a >= 2 ? 'Abnormal' : a >= 1.5 ? 'Borderline' : 'Normal';
+  let html = `<span class="zval">Z ${fmtZ(z)}</span><span class="tag ${tCls}">${tTxt}</span>`;
   if (kawa && kawa.txt) {
     html += `<br><span class="tag t-${kawa.cls}" style="margin-top:3px">${kawa.txt}</span>`;
   }
@@ -942,42 +888,19 @@ function renderRange(elId, val, unit, normalLow, borderLow, higherBetter) {
   let cls, tCls, tTxt;
   if (higherBetter) {
     cls = val >= normalLow ? 'ok' : val >= borderLow ? 'bord' : 'bad';
-    tTxt = val >= normalLow ? '' : val >= borderLow ? '' : 'Low';
+    tTxt = val >= normalLow ? 'Normal' : val >= borderLow ? 'Borderline' : 'Low';
   } else {
     // lower is worse (e.g., strain absolute value)
     cls = val >= normalLow ? 'ok' : val >= borderLow ? 'bord' : 'bad';
-    tTxt = val >= normalLow ? '' : val >= borderLow ? '' : 'Low';
+    tTxt = val >= normalLow ? 'Normal' : val >= borderLow ? 'Borderline' : 'Low';
   }
   tCls = 't-' + cls;
   el.className = 'zbox ' + cls;
-  el.innerHTML = `<span class="zval">${val.toFixed(1)} ${unit}</span>${tTxt ? `<span class="tag ${tCls}">${tTxt}</span>` : ''}`;
+  el.innerHTML = `<span class="zval">${val.toFixed(1)} ${unit}</span><span class="tag ${tCls}">${tTxt}</span>`;
 }
 
 /* ── global results store (for findings panel + print) ── */
 const RESULTS = {};
-
-/* ── Unit conversion (mm / cm toggle) ── */
-let globalUnit = 'mm';
-function setUnit(u) {
-  globalUnit = u;
-  $('unit_mm').className = u === 'mm' ? 'on' : '';
-  $('unit_cm').className = u === 'cm' ? 'on' : '';
-  $('unitNote').textContent = u === 'mm'
-    ? 'Enter all echo measurements in mm'
-    : 'Enter in cm — converted to mm automatically for z-scores';
-  // Update placeholders on all mm fields
-  document.querySelectorAll('[data-unit="mm"]').forEach(el => {
-    el.placeholder = u === 'cm' ? 'cm' : 'mm';
-  });
-  recalc();
-}
-/* mmv: reads input, applies cm→mm conversion only for data-unit="mm" fields */
-function mmv(id) {
-  const v = numId(id);
-  if (!isFinite(v) || globalUnit !== 'cm') return v;
-  const el = $(id);
-  return (el && el.dataset.unit === 'mm') ? v * 10 : v;
-}
 function setResult(key, label, unit, sec, val, z, kawa, note) {
   if (!isFinite(val)) { delete RESULTS[key]; return; }
   RESULTS[key] = { label, unit, sec, val, z: isFinite(z) ? z : null, kawa: kawa || null, note: note || null };
@@ -1004,7 +927,7 @@ function recalc() {
   [['lvedd','LVIDd'],['lvesd','LVIDs'],['ivsd','IVSd'],['lvpwd','LVPWd'],
    ['ivss','IVSs'],['lvpws','LVPWs'],['ao','Aortic root (Ao)'],['la','LA diameter']
   ].forEach(([k, lbl]) => {
-    const v = mmv('in_' + k);
+    const v = numId('in_' + k);
     if (!isFinite(v)) { clearZ('z_' + k); clrResult(k); return; }
     if (!isFinite(bsaD)) {
       const el = $('z_' + k);
@@ -1027,9 +950,9 @@ function recalc() {
   });
 
   /* Derived LV */
-  const lvedd = mmv('in_lvedd'), lvesd = mmv('in_lvesd');
-  const ivsd  = mmv('in_ivsd'),  lvpwd = mmv('in_lvpwd');
-  const ao    = mmv('in_ao'),    la    = mmv('in_la');
+  const lvedd = numId('in_lvedd'), lvesd = numId('in_lvesd');
+  const ivsd  = numId('in_ivsd'),  lvpwd = numId('in_lvpwd');
+  const ao    = numId('in_ao'),    la    = numId('in_la');
 
   if (isFinite(lvedd) && isFinite(lvesd) && lvedd > 0) {
     const fs = (lvedd - lvesd) / lvedd * 100;
@@ -1056,7 +979,7 @@ function recalc() {
   /* ── Coronaries ── */
   /* LMCA, LAD, RCA */
   [['lmca','LMCA'],['lad','LAD'],['rca','RCA']].forEach(([k, lbl]) => {
-    const v = mmv('in_' + k);
+    const v = numId('in_' + k);
     if (!isFinite(v) || !isFinite(bsaH)) { clearZ('z_' + k); clrResult(k); return; }
     const z = corRef === 'boston' ? bostonZ(v, k, bsaH) : montrealZ(v, k, bsaH);
     const kw = kawasaki(z);
@@ -1065,7 +988,7 @@ function recalc() {
   });
 
   /* LCx — always Dallaire 2011 (circ); McCrindle does not include LCx */
-  const lcxV = mmv('in_lcx');
+  const lcxV = numId('in_lcx');
   if (isFinite(lcxV) && isFinite(bsaH)) {
     const zLcx = montrealZ(lcxV, 'circ', bsaH);
     const kw = kawasaki(zLcx);
@@ -1084,16 +1007,16 @@ function recalc() {
    ['tarch','Transverse arch'],['isth','Aortic isthmus'],['dao','Descending aorta'],
    ['pvan','Pulmonary valve annulus'],['rvot','RVOT'],['lvot','LVOT']
   ].forEach(([k, lbl]) => {
-    const v = mmv('in_' + k);
+    const v = numId('in_' + k);
     if (!isFinite(v)) { clearZ('z_' + k); clrResult(k); return; }
     const z = isFinite(bsaH) ? cantinottiZ(v, k, bsaH) : null;
-    if (z === null) clearZ('z_' + k); else renderZ('z_' + k, z, null);
+    if (z === null) renderPending('z_' + k); else renderZ('z_' + k, z, null);
     setResult(k, lbl, 'mm', '2D Structures', v, z, null);
   });
 
   /* ── Functional ── */
   /* TAPSE — age-adjusted z-score pending; guide thresholds only */
-  const tapseV = mmv('in_tapse');
+  const tapseV = numId('in_tapse');
   if (isFinite(tapseV)) {
     const cls = tapseV >= 15 ? 'ok' : tapseV >= 10 ? 'bord' : 'bad';
     const tCls = 't-' + cls;
@@ -1270,18 +1193,16 @@ function generatePrint() {
 
   /* ── Growth chart SVGs (right column) ── */
   const hasAge = isFinite(ageY) && ageY >= 2 && ageY <= 18;
-  /* Growth charts: always include in report when wt or ht are entered.
-     Patient dot appears only when age 2–18 years is calculable. */
   let gcHtml = '';
-  if (isFinite(wt)) {
-    gcHtml += buildPrintGrowthSvg('wt', sex, ageY, wt);
-    gcHtml += '<div class="gc-lbl">Weight (kg) · WHO 2007 · 5th / 50th / 95th centile'
-      + (hasAge ? ' · ● patient' : ' · DOB needed for patient dot') + '</div>';
-  }
-  if (isFinite(ht)) {
-    gcHtml += buildPrintGrowthSvg('ht', sex, ageY, ht);
-    gcHtml += '<div class="gc-lbl">Height (cm) · WHO 2007 · 5th / 50th / 95th centile'
-      + (hasAge ? ' · ● patient' : ' · DOB needed for patient dot') + '</div>';
+  if (hasAge) {
+    if (isFinite(wt)) {
+      gcHtml += buildPrintGrowthSvg('wt', sex, ageY, wt);
+      gcHtml += '<div class="gc-lbl">Weight (kg) · WHO 2007 · 5th / 50th / 95th centile · ● patient</div>';
+    }
+    if (isFinite(ht)) {
+      gcHtml += buildPrintGrowthSvg('ht', sex, ageY, ht);
+      gcHtml += '<div class="gc-lbl">Height (cm) · WHO 2007 · 5th / 50th / 95th centile · ● patient</div>';
+    }
   }
 
   /* ── Patient info block ── */
@@ -1321,9 +1242,9 @@ function generatePrint() {
   });
 
   /* ── Derived ── */
-  const lvedd = mmv('in_lvedd'), lvesd = mmv('in_lvesd');
-  const ivsd  = mmv('in_ivsd'),  lvpwd = mmv('in_lvpwd');
-  const ao    = mmv('in_ao'),    la    = mmv('in_la');
+  const lvedd = numId('in_lvedd'), lvesd = numId('in_lvesd');
+  const ivsd  = numId('in_ivsd'),  lvpwd = numId('in_lvpwd');
+  const ao    = numId('in_ao'),    la    = numId('in_la');
   let derivedHtml = '';
   if (isFinite(lvedd) && isFinite(lvesd) && lvedd > 0) {
     const fs = (lvedd - lvesd) / lvedd * 100;
@@ -1333,33 +1254,17 @@ function generatePrint() {
     const lvm = 0.8*(1.04*(Math.pow((lvedd+ivsd+lvpwd)/10,3)-Math.pow(lvedd/10,3)))+0.6;
     derivedHtml += `<tr><td>LV Mass (Devereux)</td><td class="r">${lvm.toFixed(1)}</td><td>g</td><td></td></tr>`;
     if (isFinite(bsaD)) derivedHtml += `<tr><td>LV Mass Index (DuBois)</td><td class="r">${(lvm/bsaD).toFixed(1)}</td><td>g/m²</td><td></td></tr>`;
-    if (hasAge && isFinite(ageY) && ageY >= 8 && ageY <= 18 && isFinite(ht) && ht > 0) {
+    if (hasAge && ageY > 8 && isFinite(ht) && ht > 0) {
       const lvmiHt = lvm / Math.pow(ht/100, 2.7);
-      // Khoury 95th percentile threshold
-      const pSex = $('psex') ? $('psex').value : '';
-      const pMale = pSex === 'M';
-      let lvmiThresh;
-      if (ageY < 9) {
-        const g95 = 77.5265 - (15.8939*ageY) + (5.2322*Math.pow(ageY,1.5)) - (0.4671*ageY*ageY);
-        lvmiThresh = (pSex === 'F') ? g95 : g95 + 2.738;
-      } else {
-        lvmiThresh = (pSex === 'F') ? 40.0 : 45.0;
-      }
-      const isLvmiElev   = lvmiHt > lvmiThresh;
-      const deSimoneAlert = lvmiHt >= 51;
-      const rwt = (isFinite(lvpwd) && lvedd > 0) ? 2*lvpwd/lvedd : NaN;
-      const isConcGeom = isFinite(rwt) && rwt >= 0.38;
+      const rwt    = (isFinite(lvpwd) && lvedd > 0) ? 2*lvpwd/lvedd : NaN;
       let geom = '—';
       if (isFinite(rwt)) {
-        geom = isLvmiElev && isConcGeom ? 'Concentric Hypertrophy'
-             : isLvmiElev               ? 'Eccentric Hypertrophy'
-             : isConcGeom               ? 'Concentric Remodelling'
-             : 'Normal Geometry';
-        if (deSimoneAlert) geom += ' · LVMI ≥ 51';
+        const hasLVH = lvmiHt > 51, conc = rwt >= 0.42;
+        geom = hasLVH && conc ? 'Concentric LVH' : hasLVH ? 'Eccentric LVH' : conc ? 'Concentric remodelling' : 'Normal geometry';
       }
-      derivedHtml += `<tr><td>LVMI height²·⁷ (De Simone)</td><td class="r">${lvmiHt.toFixed(1)}</td><td>g/m²·⁷</td><td class="${deSimoneAlert?'pbad':isLvmiElev?'pbord':''}">Khoury 95th: ${lvmiThresh.toFixed(1)}</td></tr>`;
-      if (isFinite(rwt)) derivedHtml += `<tr><td>RWT (2×LVPWd/LVIDd)</td><td class="r">${rwt.toFixed(2)}</td><td></td><td class="${isConcGeom?'pbord':''}">Paed concentric ≥ 0.38</td></tr>`;
-      derivedHtml += `<tr><td>LV Geometry (Khoury)</td><td colspan="3" class="${geom.includes('CRITICAL')||geom.includes('Hypertrophy')?'pbad':geom.includes('Remodel')?'pbord':''}">${geom}</td></tr>`;
+      derivedHtml += `<tr><td>LVMI height²·⁷ (De Simone)</td><td class="r">${lvmiHt.toFixed(1)}</td><td>g/m²·⁷</td><td class="${lvmiHt>51?'pbad':''}">LVH > 51</td></tr>`;
+      if (isFinite(rwt)) derivedHtml += `<tr><td>RWT (2×LVPWd/LVIDd)</td><td class="r">${rwt.toFixed(2)}</td><td></td><td class="${rwt>=0.42?'pbord':''}">Conc ≥ 0.42</td></tr>`;
+      derivedHtml += `<tr><td>LV Geometry</td><td colspan="3" class="${geom.includes('LVH')?'pbad':geom.includes('remodel')?'pbord':''}">${geom}</td></tr>`;
     }
   }
   if (isFinite(ao) && isFinite(la) && ao > 0) {
@@ -1367,6 +1272,19 @@ function generatePrint() {
   }
   if (derivedHtml) tableHtml += `<tr><td colspan="4" class="pgl">Derived values</td></tr>${derivedHtml}`;
   if (!tableHtml) tableHtml = '<tr><td colspan="4" style="color:#888;font-style:italic">No measurements entered.</td></tr>';
+
+  /* ── Flagged summary ── */
+  const flagged = Object.values(RESULTS)
+    .filter(r => r.z !== null && isFinite(r.z) && Math.abs(r.z) >= 1.5)
+    .sort((a,b) => Math.abs(b.z) - Math.abs(a.z));
+  const flagHtml = flagged.length
+    ? '<ul style="margin:4px 0 0;padding-left:16px">'
+      + flagged.map(r => {
+          const a = Math.abs(r.z);
+          const kw = r.kawa && r.kawa.txt ? ` · ${r.kawa.txt}` : '';
+          return `<li class="${a>=2?'pbad':'pbord'}">${r.label}: Z ${fmtZ(r.z)}${kw}</li>`;
+        }).join('') + '</ul>'
+    : '<p style="margin:4px 0;font-style:italic;font-size:11px">All entered parameters with available z-scores are within the reference range.</p>';
 
   const refLine = corRef === 'boston'
     ? 'Coronary z-scores: McCrindle 2007 (Boston); LCx: Dallaire 2011 (Montreal). M-mode: Kampmann 2000.'
@@ -1386,15 +1304,18 @@ function generatePrint() {
   <tbody>${tableHtml}</tbody>
 </table>
 
+<div class="pgl" style="margin-top:8px">Flagged parameters (|Z| ≥ 1.5)</div>
+${flagHtml}
+
 <div class="pr-footer">
   ${window._qrDataUrl ? `<img src="${window._qrDataUrl}" width="52" height="52" style="border:1px solid #e5ebf2;border-radius:3px" alt="QR">` : ''}
   <div>
     <p class="pnote">${refLine}</p>
-    <p class="pnote">For clinical interpretation, please discuss with your specialist. &nbsp;·&nbsp; <b>fetal-echo.org</b></p>
+    <p class="pnote">Clinical decision-support only — not a diagnostic tool. Verify measurements against original publications before clinical use. &nbsp;·&nbsp; <b>fetal-echo.org</b></p>
   </div>
 </div>`;
 
-  setTimeout(() => window.print(), 300); // allow DOM to render before print dialog
+  window.print();
 }
 
 /* ── Initialise ── */
@@ -1421,18 +1342,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   document.head.appendChild(s);
 })();
-
-/* QR code — generated locally, no external API */
-window.addEventListener('load', function(){
-  var url = 'https://drmridulagarwal.github.io/fetal-echo-calculators/pediatric-echo-zscore-calculator.html';
-  ['_qrped','qr-footer'].forEach(function(id){
-    var el = document.getElementById(id);
-    if(el && typeof QRCode !== 'undefined'){
-      el.innerHTML = '';
-      new QRCode(el, {text: url, width: 72, height: 72, correctLevel: QRCode.CorrectLevel.L});
-    }
-  });
-});
 </script>
 </body>
 </html>
