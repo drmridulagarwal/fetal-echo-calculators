@@ -156,16 +156,15 @@
       <div class="field"><label>Patient name <span class="u">optional · printout only</span></label><input id="pname" type="text" placeholder="—"></div>
       <div class="field"><label>ID / MRN <span class="u">optional · printout only</span></label><input id="pmrn" type="text" placeholder="—"></div>
     </div>
-    <div class="grid3">
+    <div class="grid">
       <div class="field"><label>Gestational age <span class="u">weeks</span></label><input id="gaW" type="number" step="1" min="11" max="41" inputmode="numeric" placeholder="weeks"></div>
       <div class="field"><label>Gestational age <span class="u">+ days</span></label><input id="gaD" type="number" step="1" min="0" max="6" inputmode="numeric" placeholder="days" value="0"></div>
-      <div class="field"><label>Viewer <span class="u">changes what's shown</span></label>
-        <div class="toggle2" id="viewerToggle">
-          <button type="button" class="on" data-v="clin">Clinician</button>
-          <button type="button" data-v="pt">Patient view</button>
-        </div>
-      </div>
     </div>
+  </div>
+
+  <div class="privacy noprint" style="margin-bottom:16px">
+    <b>For clinician use.</b> This screen shows full percentiles, normal ranges and interpretive flags. The
+    only patient-facing output is the separate numbers-only printout below — nothing interpretive is ever printed for the patient.
   </div>
 
   <!-- ===== MODULE 1: FGR STAGING ===== -->
@@ -366,6 +365,13 @@ function fmtPct(p){
   if(p.clip==='high') return '>'+p.pct+'th';
   return p.pct.toFixed(0)+'th';
 }
+// 5th-95th centile band from a percentile curve, for "normal range" display alongside the percentile
+function normalRange(curve, pcts, dp){
+  dp = dp===undefined?2:dp;
+  const i5 = pcts.indexOf(5), i95 = pcts.indexOf(95);
+  if(i5<0 || i95<0) return '';
+  return curve[i5].toFixed(dp)+'–'+curve[i95].toFixed(dp);
+}
 function tagFor(pct, lowBad, highBad){
   // lowBad: true if being below 5th centile is the abnormal direction (e.g. MCA-PI, CPR)
   // highBad: true if being above 95th is the abnormal direction (e.g. UA-PI, UtA-PI, DV-PIV)
@@ -391,6 +397,10 @@ function utaResult(pi, days){
   // convert Z to approx percentile via standard normal CDF
   const pct = 100*normCDF(z);
   return {z, pct};
+}
+function utaRange(days){
+  const {logeMean, sd} = utaExpected(days);
+  return { lo: Math.exp(logeMean - 1.645*sd), hi: Math.exp(logeMean + 1.645*sd) };
 }
 function normCDF(z){
   // Abramowitz-Stegun approximation
@@ -426,6 +436,7 @@ function renderFGR(){
 
   let uaPct=null, mcaPct=null, cprPct=null, cprVal=null;
   let uaTag='ok', mcaTag='ok', cprTag='ok';
+  let uaRangeStr='', mcaRangeStr='', cprRangeStr='', utaRangeStr='', dvRangeStr='';
 
   function ciobanuLookup(days){
     if(days<=CIOBANU[0].d) return {ua:CIOBANU[0].ua, mca:CIOBANU[0].mca, cpr:CIOBANU[0].cpr, out:true};
@@ -450,14 +461,16 @@ function renderFGR(){
     if(!isNaN(uaVal)){
       uaPct = estimatePercentile(uaVal, cb.ua, PCTS);
       uaTag = tagFor(uaPct, false, true); // high UA-PI is abnormal
-      box('uaOut').innerHTML = `<span class="zval">${fmtPct(uaPct)}</span> percentile${cb.out?' <span class="tag t-muted">extrapolated</span>':''}`;
+      uaRangeStr = normalRange(cb.ua,PCTS);
+      box('uaOut').innerHTML = `<span class="zval">${fmtPct(uaPct)}</span> percentile${cb.out?' <span class="tag t-muted">extrapolated</span>':''}<div class="fi" style="margin-top:2px">Normal range (5th–95th): ${uaRangeStr}</div>`;
       box('uaOut').className='zbox '+uaTag;
     } else { box('uaOut').textContent='—'; }
 
     if(!isNaN(mcaVal)){
       mcaPct = estimatePercentile(mcaVal, cb.mca, PCTS);
       mcaTag = tagFor(mcaPct, true, false); // low MCA-PI is abnormal
-      box('mcaOut').innerHTML = `<span class="zval">${fmtPct(mcaPct)}</span> percentile${cb.out?' <span class="tag t-muted">extrapolated</span>':''}`;
+      mcaRangeStr = normalRange(cb.mca,PCTS);
+      box('mcaOut').innerHTML = `<span class="zval">${fmtPct(mcaPct)}</span> percentile${cb.out?' <span class="tag t-muted">extrapolated</span>':''}<div class="fi" style="margin-top:2px">Normal range (5th–95th): ${mcaRangeStr}</div>`;
       box('mcaOut').className='zbox '+mcaTag;
     } else { box('mcaOut').textContent='—'; }
 
@@ -466,7 +479,8 @@ function renderFGR(){
       box('cprShow').value = cprVal.toFixed(2);
       cprPct = estimatePercentile(cprVal, cb.cpr, PCTS);
       cprTag = tagFor(cprPct, true, false); // low CPR is abnormal
-      box('cprOut').innerHTML = `<span class="zval">${fmtPct(cprPct)}</span> percentile${cb.out?' <span class="tag t-muted">extrapolated</span>':''}`;
+      cprRangeStr = normalRange(cb.cpr,PCTS);
+      box('cprOut').innerHTML = `<span class="zval">${fmtPct(cprPct)}</span> percentile${cb.out?' <span class="tag t-muted">extrapolated</span>':''}<div class="fi" style="margin-top:2px">Normal range (5th–95th): ${cprRangeStr}</div>`;
       box('cprOut').className='zbox '+cprTag;
     } else { box('cprShow').value=''; box('cprOut').textContent='—'; }
   } else {
@@ -480,7 +494,9 @@ function renderFGR(){
     const r = utaResult(utaVal, clipDays);
     utaZ = r.z; utaPct = r.pct;
     utaTag = (utaPct>95)?'bad':(utaPct>90?'bord':'ok');
-    box('utaOut').innerHTML = `<span class="zval">${utaPct.toFixed(0)}th</span> percentile · Z ${utaZ>=0?'+':''}${utaZ.toFixed(2)}${(days<77||days>287)?' <span class="tag t-muted">extrapolated</span>':''}`;
+    const utaR = utaRange(clipDays);
+    utaRangeStr = utaR.lo.toFixed(2)+'–'+utaR.hi.toFixed(2);
+    box('utaOut').innerHTML = `<span class="zval">${utaPct.toFixed(0)}th</span> percentile · Z ${utaZ>=0?'+':''}${utaZ.toFixed(2)}${(days<77||days>287)?' <span class="tag t-muted">extrapolated</span>':''}<div class="fi" style="margin-top:2px">Normal range (5th–95th): ${utaRangeStr}</div>`;
     box('utaOut').className='zbox '+utaTag;
   } else { box('utaOut').textContent='—'; }
 
@@ -505,16 +521,15 @@ function renderFGR(){
     dvPct = estimatePercentile(dvVal, row.piv, KESSLER_PCTS);
     dvTag = tagFor(dvPct, false, true); // high DV-PIV abnormal
     const outOfRange = (days/7 < 21 || days/7 > 39);
-    box('dvOut').innerHTML = `<span class="zval">${fmtPct(dvPct)}</span> percentile${outOfRange?' <span class="tag t-muted">outside 21-39wk range</span>':''}`;
+    dvRangeStr = normalRange(row.piv,KESSLER_PCTS);
+    box('dvOut').innerHTML = `<span class="zval">${fmtPct(dvPct)}</span> percentile${outOfRange?' <span class="tag t-muted">outside 21-39wk range</span>':''}<div class="fi" style="margin-top:2px">Normal range (5th–95th): ${dvRangeStr}</div>`;
     box('dvOut').className='zbox '+dvTag;
   } else { box('dvOut').textContent='—'; }
 
-  lastFGR = {uaVal,mcaVal,cprVal,utaVal,dvVal,uaPct,mcaPct,cprPct,utaPct,dvPct,aredf,dvAwave,days};
+  lastFGR = {uaVal,mcaVal,cprVal,utaVal,dvVal,uaPct,mcaPct,cprPct,utaPct,dvPct,aredf,dvAwave,days,
+             uaRangeStr,mcaRangeStr,cprRangeStr,utaRangeStr,dvRangeStr};
 
-  // ===== Clinician-only interpretive summary (percentile-flag based; not a rigid numeric staging system) =====
-  const viewer = document.querySelector('#viewerToggle button.on').dataset.v;
-  if(viewer==='pt'){ summaryEl.innerHTML=''; return; }
-
+  // ===== Clinician interpretive summary (percentile-flag based) =====
   let level='ok', lines=[];
   const dvAbn = dvAwave || (dvPct && (dvPct.clip==='high' || dvPct.pct>95));
   const uaAbn = aredf || (uaPct && (uaPct.clip==='high' || uaPct.pct>95));
@@ -574,13 +589,10 @@ function renderAnemia(){
 
   lastAnemia = {psv, median, mom, wDec};
 
-  const viewer = document.querySelector('#viewerToggle button.on').dataset.v;
-  if(viewer==='pt'){ summaryEl.innerHTML=''; return; }
-
   let box2class = tag==='bad'?'bad':(tag==='bord'?'bord':'ok');
   let mainLine = mom>=1.50 ? 'MCA-PSV at or above the 1.5 MoM action threshold.' : (mom>=1.29 ? 'MCA-PSV in the mild-anemia range.' : 'MCA-PSV below the mild-anemia threshold.');
   let subLine = mom>=1.50 ? 'Per Mari et al. 2000, values ≥1.50 MoM warrant consideration of cordocentesis / further work-up in an at-risk pregnancy.' : label;
-  summaryEl.innerHTML = `<div class="summary-box ${box2class}">${mainLine}<div class="ssub">${subLine}</div></div>`;
+  summaryEl.innerHTML = `<div class="summary-box ${box2class}">${mainLine}<div class="ssub">${subLine} — median expected PSV for this GA: ${median.toFixed(1)} cm/s</div></div>`;
 }
 
 /* =========================================================
@@ -594,11 +606,11 @@ function renderPrint(){
   document.getElementById('pr_meta').innerHTML = `Name: ${name} &nbsp;·&nbsp; ID: ${mrn} &nbsp;·&nbsp; GA at scan: ${w}+${d} weeks`;
   document.getElementById('pr_date').textContent = new Date().toLocaleDateString();
 
-  let t1 = '<tr><th>Measurement</th><th>Value</th><th>Percentile / MoM</th></tr>';
+  let t1 = '<tr><th>Measurement</th><th>Value</th><th>Percentile / MoM</th><th>Normal range</th></tr>';
   if(lastFGR){
-    if(!isNaN(lastFGR.uaVal)) t1 += `<tr><td>Umbilical artery PI</td><td class="r">${lastFGR.uaVal}</td><td class="r">${lastFGR.uaPct?fmtPct(lastFGR.uaPct):'—'}</td></tr>`;
-    if(!isNaN(lastFGR.mcaVal)) t1 += `<tr><td>Middle cerebral artery PI</td><td class="r">${lastFGR.mcaVal}</td><td class="r">${lastFGR.mcaPct?fmtPct(lastFGR.mcaPct):'—'}</td></tr>`;
-    if(lastFGR.cprVal) t1 += `<tr><td>Cerebroplacental ratio</td><td class="r">${lastFGR.cprVal.toFixed(2)}</td><td class="r">${lastFGR.cprPct?fmtPct(lastFGR.cprPct):'—'}</td></tr>`;
+    if(!isNaN(lastFGR.uaVal)) t1 += `<tr><td>Umbilical artery PI</td><td class="r">${lastFGR.uaVal}</td><td class="r">${lastFGR.uaPct?fmtPct(lastFGR.uaPct):'—'}</td><td class="r">${lastFGR.uaRangeStr||'—'}</td></tr>`;
+    if(!isNaN(lastFGR.mcaVal)) t1 += `<tr><td>Middle cerebral artery PI</td><td class="r">${lastFGR.mcaVal}</td><td class="r">${lastFGR.mcaPct?fmtPct(lastFGR.mcaPct):'—'}</td><td class="r">${lastFGR.mcaRangeStr||'—'}</td></tr>`;
+    if(lastFGR.cprVal) t1 += `<tr><td>Cerebroplacental ratio</td><td class="r">${lastFGR.cprVal.toFixed(2)}</td><td class="r">${lastFGR.cprPct?fmtPct(lastFGR.cprPct):'—'}</td><td class="r">${lastFGR.cprRangeStr||'—'}</td></tr>`;
   }
   document.getElementById('pr_table1').innerHTML = t1;
 
@@ -606,9 +618,9 @@ function renderPrint(){
   const hasUtaDv = lastFGR && (!isNaN(lastFGR.utaVal) || !isNaN(lastFGR.dvVal));
   document.getElementById('pr_uta_dv_head').style.display = hasUtaDv?'block':'none';
   if(hasUtaDv){
-    t2 = '<tr><th>Measurement</th><th>Value</th><th>Percentile</th></tr>';
-    if(!isNaN(lastFGR.utaVal)) t2 += `<tr><td>Mean uterine artery PI</td><td class="r">${lastFGR.utaVal}</td><td class="r">${lastFGR.utaPct?lastFGR.utaPct.toFixed(0)+'th':'—'}</td></tr>`;
-    if(!isNaN(lastFGR.dvVal)) t2 += `<tr><td>Ductus venosus PIV</td><td class="r">${lastFGR.dvVal}</td><td class="r">${lastFGR.dvPct?fmtPct(lastFGR.dvPct):'—'}</td></tr>`;
+    t2 = '<tr><th>Measurement</th><th>Value</th><th>Percentile</th><th>Normal range</th></tr>';
+    if(!isNaN(lastFGR.utaVal)) t2 += `<tr><td>Mean uterine artery PI</td><td class="r">${lastFGR.utaVal}</td><td class="r">${lastFGR.utaPct?lastFGR.utaPct.toFixed(0)+'th':'—'}</td><td class="r">${lastFGR.utaRangeStr||'—'}</td></tr>`;
+    if(!isNaN(lastFGR.dvVal)) t2 += `<tr><td>Ductus venosus PIV</td><td class="r">${lastFGR.dvVal}</td><td class="r">${lastFGR.dvPct?fmtPct(lastFGR.dvPct):'—'}</td><td class="r">${lastFGR.dvRangeStr||'—'}</td></tr>`;
   }
   document.getElementById('pr_table2').innerHTML = t2;
 
@@ -616,8 +628,8 @@ function renderPrint(){
   document.getElementById('pr_anemia_head').style.display = hasAnemia?'block':'none';
   let t3='';
   if(hasAnemia){
-    t3 = '<tr><th>Measurement</th><th>Value</th><th>Multiples of median</th></tr>';
-    t3 += `<tr><td>MCA peak systolic velocity</td><td class="r">${lastAnemia.psv} cm/s</td><td class="r">${lastAnemia.mom.toFixed(2)} MoM</td></tr>`;
+    t3 = '<tr><th>Measurement</th><th>Value</th><th>Multiples of median</th><th>Median for GA</th></tr>';
+    t3 += `<tr><td>MCA peak systolic velocity</td><td class="r">${lastAnemia.psv} cm/s</td><td class="r">${lastAnemia.mom.toFixed(2)} MoM</td><td class="r">${lastAnemia.median.toFixed(1)} cm/s</td></tr>`;
   }
   document.getElementById('pr_table3').innerHTML = t3;
 
@@ -633,16 +645,12 @@ function renderPrint(){
 ['uaAredf','dvAwave'].forEach(id=>{
   document.getElementById(id).addEventListener('change', renderFGR);
 });
-document.querySelectorAll('#viewerToggle button').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('#viewerToggle button').forEach(b=>b.classList.remove('on'));
-    btn.classList.add('on');
-    renderFGR(); renderAnemia();
-  });
-});
 
 window.addEventListener('load', ()=>{
-  try{ new QRCode(document.getElementById('_qrdop'), {text: window.location.href, width:72, height:72, colorDark:'#15607a', colorLight:'#ffffff'}); }catch(e){}
+  var el=document.getElementById('_qrdop');
+  if(el && typeof QRCode!=='undefined'){
+    new QRCode(el,{text:'https://fetal-echo.org/',width:72,height:72,correctLevel:QRCode.CorrectLevel.L});
+  }
 });
 </script>
 </div>

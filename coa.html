@@ -505,26 +505,24 @@ function compute(){
   const idMvtv= (aoida!=null && mvtv!=null) ? aoida*mvtv : null;
 
   // ---- CoA predictor rules ----
-  // lr = positive likelihood ratio from source paper (null = not separately published or uncertain)
-  // † values are derived from reported sensitivity/specificity — verify against original paper for thesis use
   const rules = [];
-  const add = (cond, applicable, points, label, src, lr=null) => {
+  const add = (cond, applicable, points, label, src) => {
     if(!applicable) return;
-    rules.push({hit:!!cond, points, label, src, lr});
+    rules.push({hit:!!cond, points, label, src});
   };
   // Primary — robust, verified predictors (raw ratios + well-calibrated Z nomograms only)
-  add(Z.aoi3!=null && Z.aoi3<=-2, Z.aoi3!=null, 3, 'Aortic isthmus (3VT) Z ≤ −2', 'Pasquini 2007 / Gómez-Montes 2013', 4.5);  // †
-  add(pvav!=null   && pvav>=1.6,   pvav!=null,  2, 'PV/AV ratio ≥ 1.6', 'Gómez-Montes 2013', 3.8);  // †
-  add(aoida!=null  && aoida<0.74,  aoida!=null, 2, 'AOI/DA ratio < 0.74', 'Pasquini 2007', 4.6);     // Sen 79% Spec 83%
-  add(mvtv!=null   && mvtv<0.80,   mvtv!=null,  1, 'MV/TV ratio < 0.80 (R-dominance)', 'Fricke 2020', 2.4);  // †
-  add(ga!=null     && ga<=28,      ga!=null,    1, 'Presented ≤ 28 wks', 'Gómez-Montes 2013', null); // effect modifier, not a standalone predictor LR
+  add(Z.aoi3!=null && Z.aoi3<=-2, Z.aoi3!=null, 3, 'Aortic isthmus (3VT) Z ≤ −2', 'Pasquini 2007 / Gómez-Montes 2013');
+  add(pvav!=null   && pvav>=1.6,   pvav!=null,  2, 'PV/AV ratio ≥ 1.6', 'Gómez-Montes 2013');
+  add(aoida!=null  && aoida<0.74,  aoida!=null, 2, 'AOI/DA ratio < 0.74', 'Pasquini 2007');
+  add(mvtv!=null   && mvtv<0.80,   mvtv!=null,  1, 'MV/TV ratio < 0.80 (R-dominance)', 'Fricke 2020');
+  add(ga!=null     && ga<=28,      ga!=null,    1, 'Presented ≤ 28 wks', 'Gómez-Montes 2013');
   // Advanced, high-specificity confirmatory (all raw indices — calibration-robust)
-  add(csai!=null    && csai<0.78,     csai!=null,    3, 'CSAI < 0.78', 'Fricke 2020', 6.5);           // † high-specificity predictor
-  add(idMvtv!=null  && idMvtv<0.37,   idMvtv!=null,  3, 'I/D × MV/TV < 0.37', 'Fricke 2020', 7.0);  // † highest specificity in Fricke
-  add(Z.aois!=null  && Z.aois<=-2,    Z.aois!=null,  2, 'Aortic isthmus (sagittal) Z ≤ −2', 'Pasquini 2007', 4.0);  // †
-  add(sel.isth==='2', sel.isth!=='', 2, 'Isthmus systolic flow reversal', 'Chen 2024 (tier)', null);
-  add(Zgls!=null && Zgls>0, Zgls!=null, 1.5, 'Reduced LV strain (Z > 0)', 'Liu 2022 (OR 1.79)', null); // OR reported, LR not directly stated
-  add(lvrv!=null && lvrv<0.75 && lvrv>=0.6, lvrv!=null, 1, 'LV/RV 0.60–0.75 (borderline)', 'Quartermain 2009', 1.8);  // †
+  add(csai!=null    && csai<0.78,     csai!=null,    3, 'CSAI < 0.78', 'Fricke 2020');
+  add(idMvtv!=null  && idMvtv<0.37,   idMvtv!=null,  3, 'I/D × MV/TV < 0.37', 'Fricke 2020');
+  add(Z.aois!=null  && Z.aois<=-2,    Z.aois!=null,  2, 'Aortic isthmus (sagittal) Z ≤ −2', 'Pasquini 2007');
+  add(sel.isth==='2', sel.isth!=='', 2, 'Isthmus systolic flow reversal', 'Chen 2024 (tier)');
+  add(Zgls!=null && Zgls>0, Zgls!=null, 1.5, 'Reduced LV strain (Z > 0)', 'Liu 2022 (OR 1.79)');
+  add(lvrv!=null && lvrv<0.75 && lvrv>=0.6, lvrv!=null, 1, 'LV/RV 0.60–0.75 (borderline)', 'Quartermain 2009');
 
   const got = rules.filter(r=>r.hit);
   const points = got.reduce((s,r)=>s+r.points,0);
@@ -756,7 +754,7 @@ function buildReport(){
   L.push(r.ctx);
   L.push('');
   L.push('Positive predictors:');
-  if(r.got.length) r.got.forEach(g=>L.push('  • '+g.label+'  ('+qp(g.points)+', '+g.src+(g.lr!=null?', LR+ '+g.lr.toFixed(1)+'†':'')+')'));
+  if(r.got.length) r.got.forEach(g=>L.push('  • '+g.label+'  ('+qp(g.points)+', '+g.src+')'));
   else L.push('  • none');
   L.push('');
   L.push('HLHS features: '+(r.hlhs.length?r.hlhs.join(', '):'none flagged'));
@@ -809,18 +807,9 @@ function generateCoaPrint(){
   const bandColours = {low:'#e8f6ee',mod:'#fcf3df',high:'#fbeadf',vhigh:'#fbe4e4',na:'#f2f5f8'};
   const bandBorder  = {low:'#9fd8b5',mod:'#f0dcae',high:'#f0c6a8',vhigh:'#f0bcbc',na:'#e0e6ed'};
 
-  // Positive predictors table with LR+
-  const lrNote = r.got.some(g=>g.lr!=null) ? '<span style="font-size:9px;color:#777"> · †LR+ values derived from reported sensitivity/specificity in source papers — verify against original publication before citing</span>' : '';
+  // Positive predictors list
   const predHtml = r.got.length
-    ? `<table style="font-size:11px;width:100%;border-collapse:collapse;margin:4px 0 8px">
-        <thead><tr style="background:#eef5f8"><th style="padding:3px 6px;text-align:left;border:1px solid #cfd8e0">Predictor</th><th style="padding:3px 6px;text-align:center;border:1px solid #cfd8e0">Weight</th><th style="padding:3px 6px;text-align:left;border:1px solid #cfd8e0">Source</th><th style="padding:3px 6px;text-align:center;border:1px solid #cfd8e0">LR+</th></tr></thead>
-        <tbody>${r.got.sort((a,b)=>b.points-a.points).map(g=>`<tr>
-          <td style="padding:3px 6px;border:1px solid #cfd8e0"><b>${g.label}</b></td>
-          <td style="padding:3px 6px;text-align:center;border:1px solid #cfd8e0">${qp(g.points)}</td>
-          <td style="padding:3px 6px;border:1px solid #cfd8e0">${g.src}</td>
-          <td style="padding:3px 6px;text-align:center;border:1px solid #cfd8e0">${g.lr!=null?g.lr.toFixed(1)+'†':'—'}</td>
-        </tr>`).join('')}</tbody>
-      </table>${lrNote}`
+    ? '<ul>'+r.got.sort((a,b)=>b.points-a.points).map(g=>`<li>${g.label} — ${qp(g.points)} · ${g.src}</li>`).join('')+'</ul>'
     : '<p style="margin:4px 0;color:#666">No positive predictors</p>';
 
   const hlhsHtml = r.hlhs.length ? r.hlhs.map(c=>`<li>${c}</li>`).join('') : '<li style="color:#666">None flagged</li>';
