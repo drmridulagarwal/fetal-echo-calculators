@@ -343,11 +343,23 @@ function calcZ(obs, E_fn, MAD_fn, ga){
 
 /* ---------- Row builder ---------- */
 function measRow(p){
+  const isEA = p[0]==='mvea' || p[0]==='tvea';
+  const hint = isEA ? 'auto from E÷A' : p[2];
   return `<div class="mrow">
-    <div class="ml">${p[1]} <span class="uu">${p[2]}</span></div>
-    <input type="number" step="0.1" inputmode="decimal" id="in_${p[0]}" placeholder="${p[2]}" oninput="recompute()">
+    <div class="ml">${p[1]} <span class="uu">${p[2]}</span>${isEA?' <span style="font-size:10px;color:var(--accent)">(auto)</span>':''}</div>
+    <input type="number" step="0.001" inputmode="decimal" id="in_${p[0]}" placeholder="${hint}" oninput="recompute()">
     <div class="zbox" id="z_${p[0]}"></div>
   </div>`;
+}
+
+/* ---------- Get E/A value: manual entry takes priority, else compute from E÷A ---------- */
+function getEA(prefix){
+  const manual = num('in_'+prefix+'ea');
+  if(isFinite(manual)) return {val:manual, auto:false};
+  const e = num('in_'+prefix+'e');
+  const a = num('in_'+prefix+'a');
+  if(isFinite(e) && isFinite(a) && a>0) return {val:e/a, auto:true};
+  return {val:NaN, auto:false};
 }
 
 /* ---------- Build rows by section ---------- */
@@ -364,9 +376,24 @@ function recompute(){
   const ga = isFinite(gaW) ? gaW + gaD/7 : NaN;
   const gaOk = isFinite(ga) && ga>=13 && ga<=36;
 
+  // Update E/A placeholders to show computed value
+  ['mv','tv'].forEach(pfx=>{
+    const ea = getEA(pfx);
+    const inp = $('in_'+pfx+'ea');
+    if(inp && !inp.value){
+      inp.placeholder = isFinite(ea.val) ? ea.val.toFixed(3)+' (auto)' : 'auto from E÷A';
+    }
+  });
+
   PARAM.forEach(p=>{
     const [id,label,unit,,E_fn,MAD_fn] = p;
-    const obs = num('in_'+id);
+
+    // For E/A ratios, use auto-computed value if field is empty
+    let obs;
+    if(id==='mvea'){ const ea=getEA('mv'); obs=ea.val; }
+    else if(id==='tvea'){ const ea=getEA('tv'); obs=ea.val; }
+    else { obs = num('in_'+id); }
+
     if(!isFinite(obs)){ delete RESULTS[id]; paintZ('z_'+id, null); return; }
     if(!gaOk){
       delete RESULTS[id];
