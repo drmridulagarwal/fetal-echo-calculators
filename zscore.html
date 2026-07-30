@@ -297,23 +297,6 @@ const bcnEFW=[
 let bcnScale='GA';
 const BCNGA_FN={}; bcnGA.forEach(it=>BCNGA_FN[it[0]]=it[3]);
 
-/* ---------- Gagnon 2016 Doppler function (PWD peak velocities & isthmus VTI indices, by GA weeks, 18-39wk validated) ---------- */
-const GAGNON = [
- ['aov','Ascending aortic peak velocity','m/s', zGen(IDENT, c=>-0.000365*c.GA*c.GA+0.0457*c.GA-0.0413, c=>0.00403*c.GA+0.0189)],
- ['mpa','Main pulmonary artery peak velocity','m/s', zGen(IDENT, c=>-0.000027*Math.pow(c.GA,3)+0.00244*c.GA*c.GA-0.0523*c.GA+0.904, c=>0.00260*c.GA+0.0379)],
- ['mve','Mitral valve E-wave peak velocity','m/s', zGen(IDENT, c=>-0.000478*c.GA*c.GA+0.0354*c.GA-0.205, c=>0.000370*c.GA+0.0567)],
- ['mva','Mitral valve A-wave peak velocity','m/s', zGen(IDENT, c=>-0.000674*c.GA*c.GA+0.0420*c.GA-0.0834, c=>0.00146*c.GA+0.0472)],
- ['mvea','Mitral valve E/A ratio','ratio', zGen(IDENT, c=>0.000231*c.GA*c.GA-0.000536*c.GA+0.560, c=>0.00354*c.GA-0.0197)],
- ['tve','Tricuspid valve E-wave peak velocity','m/s', zGen(IDENT, c=>0.0000155*c.GA*c.GA+0.00969*c.GA+0.155, c=>0.00294*c.GA-0.0157)],
- ['tva','Tricuspid valve A-wave peak velocity','m/s', zGen(IDENT, c=>-0.000275*c.GA*c.GA+0.0236*c.GA+0.161, c=>0.000499*c.GA+0.0600)],
- ['tvea','Tricuspid valve E/A ratio','ratio', zGen(IDENT, c=>-0.0000589*c.GA*c.GA+0.0115*c.GA+0.471, c=>0.00514*c.GA-0.0586)],
- ['da','Ductus arteriosus peak velocity','m/s', zGen(IDENT, c=>0.000083*Math.pow(c.GA,3)-0.00621*c.GA*c.GA+0.184*c.GA-1.073, c=>0.0122*c.GA-0.128)],
- ['isv','Isthmus systolic VTI','m', zGen(IDENT, c=>-0.000296*c.GA*c.GA+0.0179*c.GA-0.163, c=>0.000657*c.GA-0.000244)],
- ['iav','Isthmus diastolic antegrade VTI','m', zGen(IDENT, c=>-0.000136*c.GA*c.GA+0.00830*c.GA-0.0907, c=>0.000231*c.GA+0.000279)],
- ['ifi','Isthmic flow index','ratio', zGen(IDENT, c=>-0.00134*c.GA*c.GA+0.0742*c.GA+0.303, c=>0.00348*c.GA-0.00518)]
-];
-const GAGNON_VALVE_KEYS=['aov','mpa','da'], GAGNON_INFLOW_KEYS=['mve','mva','mvea','tve','tva','tvea'], GAGNON_ISTHMUS_KEYS=['isv','iav','ifi'];
-
 /* core vs advanced key sets */
 const schCoreOut=['aov','pv','aao','dao'], schCoreAv=['tv','mv'], schAdv=['mpa','ivc','rpa','lpa','duct'];
 const pasCore=['i3vt','duct'], pasAdv=['isag'];
@@ -431,23 +414,12 @@ function buildSections(){
      <div class="mrow"><div class="ml">RV ETF <span class="uu">%</span></div><div id="rvetf_v" style="font-weight:700">—</div><div class="zbox" id="z_rvetf"></div></div>
      <div class="mrow"><div class="ml">LV ETF <span class="uu">%</span></div><div id="lvetf_v" style="font-weight:700">—</div><div class="zbox" id="z_lvetf"></div></div>
    </div></details>`;
-  // Doppler function: valves, DA, isthmus (Gagnon 2016) + ductal PI (Tulzer 1991, separate)
-  h+=`<details class="sec"><summary>Doppler function — valves, DA &amp; isthmus <span class="cv" id="cv_gagnon"></span></summary>
-   <div class="sec-body">
-     <div class="sec-note">Pulsed-wave Doppler peak velocities and isthmus flow indices, Z-scored by gestational age (Gagnon 2016, validated 18–39 weeks). Ductal pulsatility index below is a separate, fixed, non-GA-dependent reference (Tulzer 1991) — deliberately kept out of this Z-score set.</div>
-     <div class="group-label">Valves &amp; great vessels</div>
-     <div id="gagnonValves"></div>
-     <div class="group-label">Mitral &amp; tricuspid inflow (E, A, E/A)</div>
-     <div class="sec-note">Fetal inflow is A-wave dominant (E/A &lt; 1), unlike the adult heart — E/A rises gradually with gestation as ventricular compliance matures.</div>
-     <div id="gagnonInflow"></div>
-     <div class="group-label">Aortic isthmus</div>
-     <div id="gagnonIsthmus"></div>
-     <div class="group-label">Ductus arteriosus PI — fixed reference, not a Z-score</div>
-     <div class="mrow"><div class="ml">Ductal PI <span class="uu">unitless · (peak−end-diastolic)/mean velocity</span></div>
-       <input type="number" step="0.01" inputmode="decimal" id="in_ductalpi" placeholder="e.g. 2.40">
-       <div class="zbox" id="z_ductalpi"></div></div>
-     <div class="sec-note" id="ductalpi_note" style="margin-top:6px"></div>
-   </div></details>`;
+  // Link to dedicated cardiac Doppler velocities calculator
+  h+=`<div class="sec-body" style="background:#f0f6ff;border:1px solid #b8d4f0;border-radius:8px;padding:12px 16px;margin-bottom:10px">
+    <div style="font-weight:700;color:#1a4a8a;margin-bottom:4px">Cardiac Doppler velocities (outflow &amp; inflow)</div>
+    <div style="font-size:13px;color:#444;margin-bottom:8px">AoV, PV peak velocities, MV &amp; TV E-wave, A-wave, E/A ratios, and fetal heart rate — Z-scored by gestational age using Zidere 2021 (JASE) reference data with clinical interpretation.</div>
+    <a class="btn primary" href="cardiac-velocities.html" target="_blank" rel="noopener">Open Cardiac Velocities Calculator →</a>
+  </div>`;
   // Cardiac output
   h+=`<details class="sec"><summary>Cardiac output <span class="cv" id="cv_co"></span></summary>
    <div class="sec-body">
@@ -489,10 +461,6 @@ function buildSections(){
      `<div class="mrow"><div class="ml">LV minor — mid-transverse <span class="uu">mm</span></div><input type="number" step="0.01" inputmode="decimal" id="in_lvmin" placeholder="mm"><div class="zbox" id="z_lvmin"></div></div>`
    + `<div class="mrow"><div class="ml">RV minor — mid-transverse <span class="uu">mm</span></div><input type="number" step="0.01" inputmode="decimal" id="in_rvmin" placeholder="mm"><div class="zbox" id="z_rvmin"></div></div>`
    + `<div class="mrow"><div class="ml">LV : RV minor ratio <span class="uu">computed · left-heart concern if &lt; 0.9</span></div><div id="lvrv_v" style="font-weight:700">—</div><div class="zbox" id="z_lvrv"></div></div>`;
-  // Gagnon 2016 Doppler function rows
-  $('gagnonValves').innerHTML = GAGNON.filter(it=>GAGNON_VALVE_KEYS.includes(it[0])).map(it=>measRow('gag_'+it[0],it[1],it[2],'gag::'+it[0])).join('');
-  $('gagnonInflow').innerHTML = GAGNON.filter(it=>GAGNON_INFLOW_KEYS.includes(it[0])).map(it=>measRow('gag_'+it[0],it[1],it[2],'gag::'+it[0])).join('');
-  $('gagnonIsthmus').innerHTML = GAGNON.filter(it=>GAGNON_ISTHMUS_KEYS.includes(it[0])).map(it=>measRow('gag_'+it[0],it[1],it[2],'gag::'+it[0])).join('');
   // advanced great vessels + sagittal isthmus
   $('schRows').innerHTML = schAdv.map(k=>measRow('sch_'+k,schLabel[k],'mm','sch::'+k)).join('');
   $('pasRows').innerHTML = pasAdv.map(k=>measRow('pas_'+k,pasLabel[k],'mm','pas::'+k)).join('');
@@ -658,33 +626,6 @@ function recompute(){
     if(!dvEl.value) dvEl.placeholder=isFinite(v)?`BCN: ${v} ${bcnUnit}`:bcnUnit;
   });
 
-  // Gagnon 2016 Doppler function (valves, DA, isthmus)
-  GAGNON.forEach(it=>{
-    const v=num('in_gag_'+it[0]); let z=null;
-    if(isFinite(v)){ const r=it[3](v,c); if(r&&isFinite(r.z)) z=r.z; }
-    paintZ('z_gag_'+it[0], z);
-    // Show GA hint when value entered but GA not available
-    if(isFinite(v) && z==null){
-      const el=$('z_gag_'+it[0]); if(el){ el.className='zbox'; el.innerHTML='<span style="color:#aaa;font-size:10px">enter GA above for Z</span>'; }
-    }
-    // Store value regardless of z so it appears in report (z shown as — if GA missing)
-    if(isFinite(v)){ RESULTS['gag::'+it[0]]={label:it[1]+(it[2]?' ('+it[2]+')':''),group:'Doppler function',val:v,z,key:it[0]}; }
-    else { delete RESULTS['gag::'+it[0]]; }
-  });
-  // Ductal PI (Tulzer 1991) — fixed, non-GA reference. Deliberately kept OUT of RESULTS/Z-score findings.
-  (function(){
-    const pi=num('in_ductalpi');
-    const el=$('z_ductalpi'), noteEl=$('ductalpi_note');
-    if(!isFinite(pi)){ if(el){el.className='zbox';el.innerHTML='';} if(noteEl) noteEl.textContent=''; return; }
-    let cls='ok', tag='NORMAL', note='Within the normal range (1.94–2.98, mean 2.46 ± 2SD 0.52). This index does not change with gestational age.';
-    if(pi<1.94){ cls='bad'; tag='LOW';
-      note='Below normal — pattern seen with ductal constriction (Tulzer 1991: mean 1.25 ± 0.76 in fetuses with indomethacin/NSAID-induced constriction). Review maternal medication history and reassess.'; }
-    else if(pi>2.98){ cls='bord'; tag='HIGH';
-      note='Above normal — pattern seen with increased right ventricular output, either a tocolytic (terbutaline) effect (mean 3.11 ± 0.46) or duct-dependent systemic circulation, e.g. HLHS (mean 3.09 ± 0.7). Correlate with cardiac anatomy and maternal medications.'; }
-    if(el){ el.className='zbox '+cls; el.innerHTML=`<span class="zval">${pi.toFixed(2)}</span> <span class="tag ${cls==='bad'?'t-bad':(cls==='bord'?'t-bord':'t-ok')}">${tag}</span>`; }
-    if(noteEl) noteEl.textContent = note;
-  })();
-
   computeCoA(c);
   updateCounts(); renderFindings();
 }
@@ -738,7 +679,7 @@ function computeCoA(c){
 }
 
 function updateCounts(){
-  const groups={'Valves & vessels':'cv_core','Isthmus & duct':'cv_core','Core':'cv_core','Chambers & walls':'cv_bcn','RV function':'cv_fac','Time fractions':'cv_tf','Ratios & shape':'cv_dv','Doppler function':'cv_gagnon'};
+  const groups={'Valves & vessels':'cv_core','Isthmus & duct':'cv_core','Core':'cv_core','Chambers & walls':'cv_bcn','RV function':'cv_fac','Time fractions':'cv_tf','Ratios & shape':'cv_dv'};
   const tally={};
   Object.values(RESULTS).forEach(r=>{ const a=Math.abs(r.z); if(a>=1.5){ tally[r.group]=(tally[r.group]||0)+1; } });
   for(const g in groups){ const el=$(groups[g]); if(el) el.textContent = tally[g]?`${tally[g]} flagged`:''; }
@@ -768,8 +709,6 @@ const REFS=[
  'Carvalho JS, et al. Filling and ejection time fractions; Heart 2002; 88: 387–391 and updated Z-scores, Ultrasound Obstet Gynecol 2017.',
  'Mielke G, Benda N. Cardiac output and central distribution of blood flow in the human fetus. Circulation 2001; 103: 1662–1668.',
  'DeVore GR. Cardiothoracic ratio, sphericity index and chamber-to-cardiac area ratios. Echocardiography 2017; 34: 1812–1822 and Z-score reference values, 2018.',
- 'Gagnon C, Bigras JL, Fouron JC, Dallaire F. Reference Values and Z Scores for Pulsed-Wave Doppler and M-Mode Measurements in Fetal Echocardiography. J Am Soc Echocardiogr 2016; 29(5): 448–460.e9. doi:10.1016/j.echo.2016.01.002.',
- 'Tulzer G, Gudmundsson S, Sharkey AM, Wood DC, Cohen AW, Huhta JC. Doppler echocardiography of fetal ductus arteriosus constriction versus increased right ventricular output. J Am Coll Cardiol 1991; 18(2): 532–536. doi:10.1016/0735-1097(91)90611-c.'
 ];
 $('refsList').innerHTML=REFS.map(r=>`<li>${r}</li>`).join('');
 
@@ -786,7 +725,7 @@ function generatePrint(){
   const dateStr=now.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
   const arr=Object.values(RESULTS).filter(r=>r.val!=null&&isFinite(r.val));
   // group ordering
-  const order=['Valves & vessels','Isthmus & duct','Chambers & walls','RV function','Time fractions','Doppler function','Ratios & shape'];
+  const order=['Valves & vessels','Isthmus & duct','Chambers & walls','RV function','Time fractions','Ratios & shape'];
   let rows='';
   order.forEach(g=>{
     const items=arr.filter(r=>r.group===g);
@@ -815,11 +754,6 @@ function generatePrint(){
     </ul>`;
   }
   if(!findHtml) findHtml='<p>All entered parameters are within the reference range (|Z| &lt; 1.5).</p>';
-  const ductPI=num('in_ductalpi');
-  const ductRow = isFinite(ductPI) ? `<div class="pgl">Ductus arteriosus PI (fixed reference, Tulzer 1991 — not a Z-score)</div>
-    <table><tr><th>Measurement</th><th class="r">Value</th><th>Normal range</th><th>Status</th></tr>
-    <tr><td>Ductal PI</td><td class="r">${ductPI.toFixed(2)}</td><td>1.94–2.98</td>
-    <td class="${ductPI<1.94?'pbad':(ductPI>2.98?'pbord':'')}">${ductPI<1.94?'Low':(ductPI>2.98?'High':'Normal')}</td></tr></table>` : '';
   $('printArea').innerHTML=`
     <div class="ph">
       <div><h2>Fetal Echocardiography — Z-Score Report</h2>
@@ -834,8 +768,7 @@ function generatePrint(){
     <table><thead><tr><th>Parameter</th><th class="r">Measured</th><th class="r">Z-score</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>
     <div class="pgl">Flagged findings &amp; interpretation</div>
     ${findHtml}
-    ${ductRow}
-    <p style="font-size:10px;color:#555;margin-top:14px">Z = (observed − expected)/SD. |Z| ≥ 2 lies outside the 95% reference range. Decision-support only; interpret with image quality, serial data and clinical context. Sources: Schneider 2005, Pasquini 2007, García-Otero 2020 (Fetal Diagn Ther), Luewan 2011, Messing 2011, Carvalho 2017, Mielke 2001, DeVore 2017–18, Gagnon 2016 (J Am Soc Echocardiogr), Tulzer 1991 (J Am Coll Cardiol).</p>
+    <p style="font-size:10px;color:#555;margin-top:14px">Z = (observed − expected)/SD. |Z| ≥ 2 lies outside the 95% reference range. Decision-support only; interpret with image quality, serial data and clinical context. Sources: Schneider 2005, Pasquini 2007, García-Otero 2020 (Fetal Diagn Ther), Luewan 2011, Messing 2011, Carvalho 2017, Mielke 2001, DeVore 2017–18.</p>
     <p style="font-size:9.5px;color:#777">Patient identifiers shown here were entered locally for this printout and are not stored in any database.</p>`;
   window.print();
 }
@@ -846,7 +779,7 @@ function generatePatientPrint(){
   const now=new Date();
   const dateStr=now.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
   const arr=Object.values(RESULTS).filter(r=>r.val!=null&&isFinite(r.val));
-  const order=['Valves & vessels','Isthmus & duct','Chambers & walls','RV function','Time fractions','Doppler function','Ratios & shape'];
+  const order=['Valves & vessels','Isthmus & duct','Chambers & walls','RV function','Time fractions','Ratios & shape'];
   let rows='';
   order.forEach(g=>{
     const items=arr.filter(r=>r.group===g);

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fetal Cardiac Velocities — Z-Score Calculator — fetal-echo.org</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<style>
+  :root{
+    --bg:#f6f8fb; --card:#ffffff; --ink:#1d2733; --muted:#5b6b7c; --line:#e5ebf2;
+    --brand:#15607a; --brand-soft:#e8f1f5; --accent:#0f8a6d;
+    --ok:#2f9e6b; --okbg:#e8f6ee; --bord:#d99100; --bordbg:#fcf3df;
+    --bad:#c33a3a; --badbg:#fbe4e4;
+    --radius:14px; --shadow:0 1px 3px rgba(20,40,60,.06),0 6px 24px rgba(20,40,60,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:22px 16px 70px}
+  header.app{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+  .logo{flex:0 0 auto;width:42px;height:42px;border-radius:10px;background:var(--brand);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px}
+  h1{font-size:20px;margin:0;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:13px;margin:2px 0 0}
+  .disclaimer{margin:14px 0 18px;padding:10px 13px;background:#fff7e8;border:1px solid #f0dcae;
+    border-radius:10px;font-size:12.5px;color:#7a5c12}
+  .disclaimer b{color:#5e470c}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+  .card h2{font-size:14px;margin:0 0 2px;letter-spacing:.02em;text-transform:uppercase;color:var(--brand)}
+  .card .hint{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 16px}
+  @media(max-width:620px){.grid,.grid3{grid-template-columns:1fr}}
+  .field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:4px}
+  .field .u{color:var(--muted);font-weight:400}
+  .field input{width:100%;padding:9px 10px;border:1px solid var(--line);
+    border-radius:9px;font-size:14px;background:#fcfdfe;color:var(--ink);transition:border .15s,box-shadow .15s}
+  .field input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+  .mrow{display:grid;grid-template-columns:1.8fr .9fr auto;gap:10px;align-items:center;
+    padding:8px 0;border-top:1px solid var(--line)}
+  .mrow:first-of-type{border-top:none}
+  .mrow .ml{font-size:13px}
+  .mrow .ml .uu{color:var(--muted);font-size:11.5px}
+  .mrow input{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-size:14px;
+    background:#fcfdfe;text-align:right;font-variant-numeric:tabular-nums}
+  .mrow input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+  .zbox{min-width:150px;text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums}
+  .zval{font-weight:700}
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.03em;padding:2px 7px;border-radius:5px;margin-left:5px}
+  .t-ok{background:var(--okbg);color:var(--ok)} .t-bord{background:var(--bordbg);color:var(--bord)}
+  .t-bad{background:var(--badbg);color:var(--bad)} .t-muted{background:#eef2f5;color:var(--muted)}
+  .zbox.ok .zval{color:var(--ok)} .zbox.bord .zval{color:var(--bord)} .zbox.bad .zval{color:var(--bad)}
+  .group-label{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);margin:16px 0 6px;padding-top:4px}
+  .group-label:first-child{margin-top:0}
+  .sec-note{font-size:12.5px;color:var(--muted);margin:0 0 10px;line-height:1.5}
+  .fetal-note{background:#e8f6f0;border-left:3px solid var(--accent);padding:8px 12px;
+    border-radius:0 8px 8px 0;font-size:12.5px;color:#1a4a3a;margin:6px 0 12px}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:10px;
+    font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--line);
+    background:#fff;color:var(--ink);transition:all .15s}
+  .btn:hover{background:#f2f5f8}
+  .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn.primary:hover{background:#10506a}
+  .btn-bar{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+  .findings{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:16px;margin-bottom:16px;min-height:52px}
+  .findings h3{font-size:13px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.05em;color:var(--brand)}
+  .fitem{display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
+  .fitem:first-of-type{border-top:none}
+  .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+  .dot.bad{background:var(--bad)} .dot.bord{background:var(--bord)}
+  .fl{font-size:13px;font-weight:600}
+  .fi{font-size:12px;color:var(--muted)}
+  .fz{font-size:12px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;min-width:70px}
+  .empty{color:var(--muted);font-size:13px;text-align:center;padding:10px 0}
+  .reflist{font-size:11.5px;color:var(--muted);line-height:1.6;padding-left:18px}
+  .nav-back{font-size:13px;color:var(--brand);text-decoration:none;display:inline-flex;align-items:center;gap:4px;margin-bottom:14px}
+  .nav-back:hover{text-decoration:underline}
+  footer.noprint{text-align:center;font-size:11.5px;color:var(--muted);margin-top:30px;padding-top:14px;border-top:1px solid var(--line)}
+
+  /* print */
+  #printArea{display:none}
+  @media print{
+    .noprint{display:none!important}
+    body{background:#fff;color:#000;font-size:11px;margin:0;padding:0}
+    #printArea{display:block!important}
+    .wrap>*:not(#printArea){display:none}
+    table{border-collapse:collapse;width:100%;margin:10px 0}
+    th,td{border:1px solid #ccc;padding:4px 7px;text-align:left;font-size:10.5px}
+    th{background:#f0f0f0;font-weight:700}
+    td.r{text-align:right}
+    .ph{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;border-bottom:2px solid #333;padding-bottom:8px}
+    .ph h2{font-size:14px;margin:0}
+    .pgl{font-weight:700;font-size:11px;text-transform:uppercase;color:#444;border-bottom:1px solid #ccc;padding-bottom:3px;margin:12px 0 6px}
+    .pbad{color:#b00;font-weight:600} .pbord{color:#7a5c00}
+    ul{margin:4px 0 8px;padding-left:16px}
+    li{font-size:10.5px;margin-bottom:2px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="nav-back noprint" href="zscore.html">← Z-Score Calculator</a>
+
+  <header class="app noprint">
+    <div class="logo">♥</div>
+    <div>
+      <h1>Fetal Cardiac Velocities</h1>
+      <div class="sub">Z-score calculator · AoV, PV, MV, TV, E/A ratio, Heart rate · Zidere 2021 (JASE) · fetal-echo.org</div>
+    </div>
+  </header>
+
+  <div class="disclaimer noprint">
+    <b>Clinical decision-support tool.</b> All calculations are performed locally in your browser. No patient data is transmitted or stored. For clinical decisions, interpret in the context of image quality, serial data and the full echocardiographic examination. Reference range: Zidere V et al., <i>J Am Soc Echocardiogr</i> 2021 (validated 13–36 weeks).
+  </div>
+
+  <!-- Biometry panel -->
+  <div class="card noprint">
+    <h2>Biometry</h2>
+    <div class="hint">Gestational age is required for all Z-scores. Valid range: 13–36 weeks.</div>
+    <div class="grid3">
+      <div class="field">
+        <label>GA weeks <span class="u">weeks</span></label>
+        <input type="number" id="gaW" min="13" max="36" step="1" inputmode="numeric" placeholder="e.g. 22" oninput="recompute()">
+      </div>
+      <div class="field">
+        <label>GA days <span class="u">days (0–6)</span></label>
+        <input type="number" id="gaD" min="0" max="6" step="1" inputmode="numeric" placeholder="e.g. 3" oninput="recompute()">
+      </div>
+      <div class="field">
+        <label>Patient name <span class="u">for report</span></label>
+        <input type="text" id="pname" placeholder="(optional)">
+      </div>
+    </div>
+    <div class="grid" style="margin-top:10px">
+      <div class="field">
+        <label>MRN / ID <span class="u">for report</span></label>
+        <input type="text" id="pmrn" placeholder="(optional)">
+      </div>
+    </div>
+  </div>
+
+  <!-- Outflow -->
+  <div class="card noprint">
+    <h2>Outflow tract peak velocities</h2>
+    <div class="hint">Pulsed-wave Doppler, cm/s. Measure at valve level; angle-correct to &lt;20°.</div>
+    <div id="rows_outflow"></div>
+  </div>
+
+  <!-- Left inflow -->
+  <div class="card noprint">
+    <h2>Left inflow — mitral valve</h2>
+    <div class="hint">E-wave and A-wave in cm/s; E/A ratio (computed or entered directly).</div>
+    <div class="fetal-note">Fetal inflow is A-wave dominant (E/A &lt; 1) throughout gestation — opposite to the adult heart. E/A approaching 1 is abnormal and warrants investigation.</div>
+    <div id="rows_mv"></div>
+  </div>
+
+  <!-- Right inflow -->
+  <div class="card noprint">
+    <h2>Right inflow — tricuspid valve</h2>
+    <div class="hint">E-wave and A-wave in cm/s; E/A ratio (computed or entered directly).</div>
+    <div class="fetal-note">Same principle as the mitral valve — E/A is normally &lt; 1. Tricuspid E/A approaching 1 may indicate RV diastolic dysfunction or volume load.</div>
+    <div id="rows_tv"></div>
+  </div>
+
+  <!-- Heart rate -->
+  <div class="card noprint">
+    <h2>Fetal heart rate</h2>
+    <div class="hint">Average rate in bpm from M-mode or Doppler.</div>
+    <div id="rows_hr"></div>
+  </div>
+
+  <!-- Live findings -->
+  <div class="findings noprint">
+    <h3>Live findings</h3>
+    <div id="findingsList"><div class="empty">Enter measurements above — abnormal and borderline results will appear here.</div></div>
+  </div>
+
+  <!-- Actions -->
+  <div class="btn-bar noprint">
+    <button class="btn primary" onclick="generatePrint()">Clinician Report</button>
+    <button class="btn" onclick="generatePatientPrint()" style="background:#e8f4e8;border-color:#5a9a5a;color:#2d6b2d">Patient Copy (B&amp;W)</button>
+    <button class="btn" onclick="resetAll()">Clear all</button>
+  </div>
+
+  <!-- Print area -->
+  <div id="printArea"></div>
+
+  <!-- QR code + references -->
+  <div class="card noprint" style="margin-top:24px">
+    <h2>Reference</h2>
+    <ol class="reflist">
+      <li>Zidere V, Vigneswaran TV, Allan LD, Simpson JM. Doppler velocities across fetal cardiac valves and the relationship to fetal heart rate: a prospective study. <i>J Am Soc Echocardiogr</i> 2021; 34(11): 1169–1179.e2. doi:10.1016/j.echo.2021.05.011.</li>
+    </ol>
+    <div id="_qrcv" style="margin-top:10px"></div>
+  </div>
+
+  <footer class="noprint">
+    fetal-echo.org · Fetal Cardiac Care &nbsp;|&nbsp; Calculator — clinical decision-support only &nbsp;|&nbsp; <span id="yr"></span>
+  </footer>
+</div>
+
+<script>
+/* ---------------------------------------------------------------
+   Fetal Cardiac Velocities — Zidere 2021 (JASE)
+   All velocities in cm/s (Table 3: mean equations; Table 4: MAD → SD)
+   GA in completed weeks (decimal), centred at 20 weeks
+   Fitted SD = MAD × √(π/2) where MAD = intercept + d × E_expected (+ e × E² for TV A-wave)
+   Formula: Z = (observed − E) / Fitted_SD
+   Valid range 13–36 weeks
+--------------------------------------------------------------- */
+
+const SQRT_PI_2 = Math.sqrt(Math.PI / 2); // ≈ 1.2533
+
+/* normsdist for centile display */
+function normsdist(z){
+  const p=[0.2316419,0.319381530,-0.356563782,1.781477937,-1.821255978,1.330274429];
+  const abs=Math.abs(z), t=1/(1+p[0]*abs);
+  const poly=t*(p[1]+t*(p[2]+t*(p[3]+t*(p[4]+t*p[5]))));
+  const phi=Math.exp(-0.5*z*z)/Math.sqrt(2*Math.PI);
+  const cp=1-phi*poly;
+  return z>=0?cp:1-cp;
+}
+function fmtZ(z){ if(!isFinite(z)) return '—'; return (z>=0?'+':'')+z.toFixed(2); }
+function fmtC(z){ if(!isFinite(z)) return ''; return (normsdist(z)*100).toFixed(0)+'th'; }
+function $(id){ return document.getElementById(id); }
+function num(id){ const el=$(id); if(!el) return NaN; const v=parseFloat(el.value); return isFinite(v)?v:NaN; }
+
+/* ---------- Zidere 2021 regression coefficients ----------
+   Each entry: [id, label, unit, E_fn(ga_decimal), MAD_fn(E_expected)]
+   All velocities in cm/s; E/A dimensionless; HR in bpm
+*/
+const PARAM = [
+  // --- Outflow ---
+  ['aov', 'Aortic valve peak velocity', 'cm/s', 'outflow',
+    ga => { const g=ga-20; return 56.36077 + 2.26257*g - 0.08074*g*g; },
+    e  => 2.94439 + 0.10359*e ],
+  ['pv',  'Pulmonary valve peak velocity', 'cm/s', 'outflow',
+    ga => { const g=ga-20; return 53.93331 + 1.73602*g - 0.10197*g*g + 0.00418*g*g*g; },
+    e  => 2.81433 + 0.09967*e ],
+  // --- Mitral ---
+  ['mve',  'Mitral E-wave peak velocity', 'cm/s', 'mv',
+    ga => { const g=ga-20; return 26.77036 + 0.67487*g; },
+    e  => 0.99805 + 0.10700*e ],
+  ['mva',  'Mitral A-wave peak velocity', 'cm/s', 'mv',
+    ga => { const g=ga-20; return 45.90545 + 0.61927*g; },
+    e  => -4.75765 + 0.22174*e ],
+  ['mvea', 'Mitral E/A ratio', 'ratio', 'mv',
+    ga => { const g=ga-20; return 0.58496 + 0.00686*g + 0.00046*g*g - 0.00003*g*g*g; },
+    e  => -0.03340 + 0.15835*e ],
+  // --- Tricuspid ---
+  ['tve',  'Tricuspid E-wave peak velocity', 'cm/s', 'tv',
+    ga => { const g=ga-20; return 30.26405 + 0.67144*g; },
+    e  => 0.68259 + 0.15823*e ],
+  ['tva',  'Tricuspid A-wave peak velocity', 'cm/s', 'tv',
+    ga => { const g=ga-20; return 49.41979 + 0.79625*g - 0.01673*g*g; },
+    // quadratic MAD for TV A-wave
+    e  => 75.12201 - 2.92946*e + 0.03079*e*e ],
+  ['tvea', 'Tricuspid E/A ratio', 'ratio', 'tv',
+    ga => { const g=ga-20; return 0.61308 + 0.00519*g; },
+    e  => 0.02690 + 0.13406*e ],
+  // --- Heart rate ---
+  ['hr',  'Fetal heart rate', 'bpm', 'hr',
+    ga => { const g=ga-20; return 147.91391 - 0.42929*g; },
+    e  => 45.73972 - 0.26960*e ]
+];
+
+/* ---------- Per-parameter clinical notes (|Z|≥2) ---------- */
+/* Index [0] = low Z (<−2), [1] = high Z (>+2). Clinician report only. */
+const NOTE = {
+  aov: [
+    'Low aortic outflow velocity — consider reduced LV output, critical aortic stenosis with failing ventricle, or low cardiac output state. Assess LV function and valve morphology carefully.',
+    'Elevated aortic outflow velocity — consider LVOTO, aortic valve stenosis (peak velocity alone does not define severity), or high-output state (fetal anaemia, arteriovenous malformation). Correlate with 2D anatomy and ventricular function.'
+  ],
+  pv: [
+    'Low pulmonary outflow velocity — consider reduced RV output, critical pulmonary stenosis with RV dysfunction, or low cardiac output state. Assess infundibulum and valve morphology.',
+    'Elevated pulmonary outflow velocity — consider RVOTO, pulmonary valve stenosis, or increased RV output. Assess valve and infundibular anatomy.'
+  ],
+  mve: [
+    'Low mitral E-wave — consider impaired LV relaxation or reduced preload. Assess in context of ventricular function and rhythm.',
+    'Elevated mitral E-wave — consider AV valve regurgitation, elevated LA pressure, or volume-loaded left ventricle. Assess for mitral regurgitation and atrial size.'
+  ],
+  mva: [
+    'Low mitral A-wave — consider reduced atrial contractility. Assess cardiac rhythm (may reflect PR interval prolongation or atrial dysfunction).',
+    'Elevated mitral A-wave — consider reduced LV compliance or elevated LV filling pressure. Assess in context of structural anatomy and rhythm.'
+  ],
+  mvea: [
+    'Low mitral E/A ratio — accentuated atrial filling dominance; less common as an isolated finding. Assess in context of heart rate and rhythm.',
+    'Elevated mitral E/A ratio (approaching or exceeding 1.0) — IMPORTANT: in fetal life E/A is normally less than 1 (A-wave dominant). E/A approaching 1 is pathological and may indicate diastolic dysfunction, elevated LV filling pressure, early cardiac compromise (e.g. cardiomyopathy, TTTS-related, fetal anaemia). Detailed cardiac assessment and serial monitoring advised.'
+  ],
+  tve: [
+    'Low tricuspid E-wave — consider impaired RV relaxation or reduced preload.',
+    'Elevated tricuspid E-wave — consider tricuspid regurgitation, elevated RA pressure, or volume-loaded RV. Assess for TR and atrial size.'
+  ],
+  tva: [
+    'Low tricuspid A-wave — consider reduced atrial contractility. Assess rhythm.',
+    'Elevated tricuspid A-wave — consider reduced RV compliance or elevated RV filling pressure. Assess for underlying structural disease.'
+  ],
+  tvea: [
+    'Low tricuspid E/A ratio — accentuated atrial filling dominance; assess in context of heart rate and rhythm.',
+    'Elevated tricuspid E/A ratio (approaching or exceeding 1.0) — IMPORTANT: as with the mitral valve, fetal tricuspid E/A is normally less than 1. Elevated TV E/A may indicate RV diastolic dysfunction, elevated RA/RV pressure, or systemic venous compromise. Consider Ebstein anomaly, RV volume load, or TTTS recipient physiology.'
+  ],
+  hr: [
+    'Fetal bradycardia — sustained rate below the reference range. Assess AV conduction systematically; consider complete AV block (particularly with maternal connective tissue disease or anti-Ro/anti-La antibodies) or ion channelopathy (long QT syndrome).',
+    'Fetal tachycardia — sustained rate above the reference range. Characterise the rhythm to exclude SVT or atrial flutter. Sinus tachycardia may indicate fetal compromise, anaemia, or infection.'
+  ]
+};
+function noteFor(key,z){ const n=NOTE[key]; if(!n) return (z<0?'below':'above')+' the reference range'; return z<0?n[0]:n[1]; }
+
+/* ---------- Result registry ---------- */
+const RESULTS = {}; // key → {label, unit, val, E, z, key, group}
+
+/* ---------- paintZ: colour + centile display ---------- */
+function paintZ(elId, z, hint){
+  const el=$(elId); if(!el) return;
+  if(z==null||!isFinite(z)){
+    el.className='zbox';
+    el.innerHTML=hint?`<span style="color:#aaa;font-size:10px">${hint}</span>`:'';
+    return;
+  }
+  const a=Math.abs(z);
+  const cls=a>=2?'bad':(a>=1.5?'bord':'ok');
+  const tag=a>=2?(z<0?'LOW':'HIGH'):(a>=1.5?(z<0?'BORD-LOW':'BORD-HIGH'):'OK');
+  const tagCls=a>=2?'t-bad':(a>=1.5?'t-bord':'t-ok');
+  el.className='zbox '+cls;
+  el.innerHTML=`<span class="zval">${fmtZ(z)}</span> <span class="tag ${tagCls}">${tag}</span><br><span style="font-size:10px;color:var(--muted)">${fmtC(z)} centile</span>`;
+}
+
+/* ---------- Z calculation ---------- */
+function calcZ(obs, E_fn, MAD_fn, ga){
+  const E = E_fn(ga);
+  if(!isFinite(E)) return null;
+  const mad = MAD_fn(E);
+  if(!isFinite(mad) || mad <= 0) return null;
+  const sd = mad * SQRT_PI_2;
+  const z = (obs - E) / sd;
+  return isFinite(z) ? {z, E, sd} : null;
+}
+
+/* ---------- Row builder ---------- */
+function measRow(p){
+  return `<div class="mrow">
+    <div class="ml">${p[1]} <span class="uu">${p[2]}</span></div>
+    <input type="number" step="0.1" inputmode="decimal" id="in_${p[0]}" placeholder="${p[2]}" oninput="recompute()">
+    <div class="zbox" id="z_${p[0]}"></div>
+  </div>`;
+}
+
+/* ---------- Build rows by section ---------- */
+function buildRows(){
+  ['outflow','mv','tv','hr'].forEach(grp=>{
+    const el=$('rows_'+grp);
+    if(el) el.innerHTML=PARAM.filter(p=>p[3]===grp).map(measRow).join('');
+  });
+}
+
+/* ---------- Recompute all ---------- */
+function recompute(){
+  const gaW=num('gaW'), gaD=num('gaD')||0;
+  const ga = isFinite(gaW) ? gaW + gaD/7 : NaN;
+  const gaOk = isFinite(ga) && ga>=13 && ga<=36;
+
+  PARAM.forEach(p=>{
+    const [id,label,unit,,E_fn,MAD_fn] = p;
+    const obs = num('in_'+id);
+    if(!isFinite(obs)){ delete RESULTS[id]; paintZ('z_'+id, null); return; }
+    if(!gaOk){
+      delete RESULTS[id];
+      paintZ('z_'+id, null, 'enter GA (13–36 wk)');
+      return;
+    }
+    const res = calcZ(obs, E_fn, MAD_fn, ga);
+    const z = res ? res.z : null;
+    paintZ('z_'+id, z);
+    RESULTS[id] = {label, unit, val:obs, E:res?res.E:null, sd:res?res.sd:null, z, key:id, group:p[3]};
+  });
+
+  renderFindings();
+}
+
+/* ---------- Live findings panel ---------- */
+function renderFindings(){
+  const arr = Object.values(RESULTS)
+    .filter(r=>isFinite(r.z) && Math.abs(r.z)>=1.5)
+    .sort((a,b)=>Math.abs(b.z)-Math.abs(a.z));
+  const L=$('findingsList');
+  if(!arr.length){
+    L.innerHTML='<div class="empty">No parameters are outside the reference range. Results will appear here as you enter measurements.</div>';
+    return;
+  }
+  L.innerHTML=arr.map(r=>{
+    const sev=Math.abs(r.z)>=2?'bad':'bord';
+    return `<div class="fitem">
+      <div class="dot ${sev}"></div>
+      <div style="flex:1"><div class="fl">${r.label}</div><div class="fi">${noteFor(r.key,r.z)}</div></div>
+      <div class="fz" style="color:${sev==='bad'?'var(--bad)':'var(--bord)'}">Z ${fmtZ(r.z)}<br><span style="font-weight:500;color:var(--muted)">${fmtC(r.z)}</span></div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- Print helpers ---------- */
+function fmtGAweeks(ga){
+  if(!isFinite(ga)) return '—';
+  const w=Math.floor(ga), d=Math.round((ga-w)*7);
+  return d===7?`${w+1}w 0d`:`${w}w ${d}d`;
+}
+
+const GROUP_LABELS = {outflow:'Outflow tracts', mv:'Mitral valve (left inflow)', tv:'Tricuspid valve (right inflow)', hr:'Fetal heart rate'};
+const GROUP_ORDER  = ['outflow','mv','tv','hr'];
+
+/* ---------- Clinician Report ---------- */
+function generatePrint(){
+  const gaW=num('gaW'), gaD=num('gaD')||0;
+  const ga = isFinite(gaW) ? gaW + gaD/7 : NaN;
+  const name=$('pname').value.trim(), mrn=$('pmrn').value.trim();
+  const dateStr=new Date().toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+
+  let rows='';
+  GROUP_ORDER.forEach(grp=>{
+    const items=Object.values(RESULTS).filter(r=>r.group===grp&&r.val!=null&&isFinite(r.val));
+    if(!items.length) return;
+    rows+=`<tr><td colspan="5" class="pgl">${GROUP_LABELS[grp]}</td></tr>`;
+    items.forEach(r=>{
+      const a=r.z!=null&&isFinite(r.z)?Math.abs(r.z):null;
+      const cls=a!=null&&a>=2?'pbad':(a!=null&&a>=1.5?'pbord':'');
+      const flag=a!=null&&a>=2?'Out of range':(a!=null&&a>=1.5?'Borderline':'Within range');
+      const expStr=r.E!=null&&isFinite(r.E)?r.E.toFixed(1):'—';
+      rows+=`<tr>
+        <td>${r.label}</td>
+        <td class="r">${r.val.toFixed(r.unit==='ratio'?3:1)}</td>
+        <td class="r">${expStr}</td>
+        <td class="r ${cls}">${r.z!=null&&isFinite(r.z)?fmtZ(r.z):'—'}</td>
+        <td class="${cls}">${r.z!=null&&isFinite(r.z)?flag:''}</td>
+      </tr>`;
+    });
+  });
+  if(!rows) rows='<tr><td colspan="5">No measurements entered.</td></tr>';
+
+  // Flagged findings with interpretation (clinician only)
+  const outOfRange=Object.values(RESULTS).filter(r=>r.z!=null&&isFinite(r.z)&&Math.abs(r.z)>=2).sort((a,b)=>Math.abs(b.z)-Math.abs(a.z));
+  const borderline=Object.values(RESULTS).filter(r=>r.z!=null&&isFinite(r.z)&&Math.abs(r.z)>=1.5&&Math.abs(r.z)<2).sort((a,b)=>Math.abs(b.z)-Math.abs(a.z));
+  let findHtml='';
+  if(outOfRange.length){
+    findHtml+=`<div class="pgl" style="color:#c33a3a">Out of range (|Z| ≥ 2)</div>
+      <ul>${outOfRange.map(r=>`<li class="pbad"><b>${r.label}</b> (Z ${fmtZ(r.z)}, ${fmtC(r.z)} centile) — ${noteFor(r.key,r.z)}</li>`).join('')}</ul>`;
+  }
+  if(borderline.length){
+    findHtml+=`<div class="pgl" style="color:#b07400">Borderline (1.5 ≤ |Z| &lt; 2)</div>
+      <ul>${borderline.map(r=>`<li class="pbord">${r.label} (Z ${fmtZ(r.z)}, ${fmtC(r.z)} centile) — ${noteFor(r.key,r.z)}</li>`).join('')}</ul>`;
+  }
+  if(!findHtml) findHtml='<p>All entered parameters are within the reference range (|Z| &lt; 1.5).</p>';
+
+  $('printArea').innerHTML=`
+    <div class="ph">
+      <div><h2>Fetal Cardiac Velocities — Clinician Report</h2><div>fetal-echo.org</div></div>
+      <div style="text-align:right">
+        <div><b>Name:</b> ${name||'—'}</div>
+        <div><b>ID/MRN:</b> ${mrn||'—'}</div>
+        <div><b>Date:</b> ${dateStr}</div>
+      </div>
+    </div>
+    <div><b>Gestational age:</b> ${fmtGAweeks(ga)}</div>
+    <p style="font-size:10px;color:#555;margin:4px 0 8px">Reference: Zidere V et al. J Am Soc Echocardiogr 2021;34(11):1169–1179.e2. Valid 13–36 weeks. Velocities in cm/s; E/A dimensionless; HR in bpm. Expected = regression mean at this GA; Z = (observed − expected) / SD.</p>
+    <table>
+      <thead><tr><th>Parameter</th><th class="r">Measured</th><th class="r">Expected</th><th class="r">Z-score</th><th>Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="pgl">Clinical findings &amp; interpretation</div>
+    ${findHtml}
+    <p style="font-size:10px;color:#555;margin-top:14px">|Z| ≥ 2 lies outside the 95% reference range. Fetal inflow is normally A-wave dominant (E/A &lt; 1); E/A approaching 1 is pathological in fetal life. This report is for clinical decision-support only — interpret with full echocardiographic context, image quality, and serial measurements.</p>
+    <p style="font-size:9.5px;color:#777">Patient identifiers were entered locally for this printout only and are not stored in any database. For clinical decisions, this report must be interpreted by a suitably qualified clinician.</p>`;
+  window.print();
+}
+
+/* ---------- Patient Copy ---------- */
+function generatePatientPrint(){
+  const gaW=num('gaW'), gaD=num('gaD')||0;
+  const ga = isFinite(gaW) ? gaW + gaD/7 : NaN;
+  const name=$('pname').value.trim(), mrn=$('pmrn').value.trim();
+  const dateStr=new Date().toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+
+  let rows='';
+  GROUP_ORDER.forEach(grp=>{
+    const items=Object.values(RESULTS).filter(r=>r.group===grp&&r.val!=null&&isFinite(r.val));
+    if(!items.length) return;
+    rows+=`<tr><td colspan="3" style="background:#f5f5f5;font-weight:700;padding:4px 6px">${GROUP_LABELS[grp]}</td></tr>`;
+    items.forEach(r=>{
+      rows+=`<tr>
+        <td>${r.label}</td>
+        <td class="r">${r.val.toFixed(r.unit==='ratio'?3:1)}</td>
+        <td class="r">${r.z!=null&&isFinite(r.z)?fmtZ(r.z):'—'}</td>
+      </tr>`;
+    });
+  });
+  if(!rows) rows='<tr><td colspan="3">No measurements entered.</td></tr>';
+
+  $('printArea').innerHTML=`
+    <div class="ph">
+      <div><h2>Fetal Heart Scan — Measurements</h2><div>fetal-echo.org</div></div>
+      <div style="text-align:right">
+        <div><b>Name:</b> ${name||'—'}</div>
+        <div><b>ID/MRN:</b> ${mrn||'—'}</div>
+        <div><b>Date:</b> ${dateStr}</div>
+      </div>
+    </div>
+    <div><b>Gestational age:</b> ${fmtGAweeks(ga)}</div>
+    <table>
+      <thead><tr><th>Measurement</th><th class="r">Value</th><th class="r">Z-score</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <p style="font-size:10.5px;color:#555;margin-top:14px">Z-scores compare your baby's measurements to published reference values for this stage of pregnancy. Values outside the reference range will be discussed with you by your specialist. For any questions about these results, please speak with your fetal cardiology team.</p>
+    <p style="font-size:9.5px;color:#777">Patient identifiers were entered locally for this printout only and are not stored in any database.</p>`;
+  window.print();
+}
+
+function resetAll(){ document.querySelectorAll('input').forEach(i=>i.value=''); recompute(); }
+
+/* ---------- Init ---------- */
+buildRows();
+recompute();
+$('yr').textContent=new Date().getFullYear();
+
+window.addEventListener('load',function(){
+  const el=$('_qrcv');
+  if(el && typeof QRCode!=='undefined'){
+    new QRCode(el,{text:'https://fetal-echo.org/pwa/cardiac-velocities.html',width:72,height:72,correctLevel:QRCode.CorrectLevel.L});
+  }
+});
+</script>
+</body>
+</html>
