@@ -171,7 +171,8 @@
     <div class="findings" id="findingsList"><div class="empty">Enter measurements above — flagged results will appear here.</div></div>
     <div class="btns">
       <a class="btn" href="index.html" style="text-decoration:none">← All Calculators</a>
-      <button class="btn primary" onclick="generatePrint()">Generate printable PDF</button>
+      <button class="btn primary" onclick="generatePrint()">Clinician Report</button>
+      <button class="btn" onclick="generatePatientPrint()" style="background:#e8f4e8;border-color:#5a9a5a;color:#2d6b2d">Patient Copy (B&amp;W)</button>
       <button class="btn" onclick="resetAll()">Clear all</button>
     </div>
     <div class="privacy">Patient name and ID are used only to label this printout on your own device. They are
@@ -201,7 +202,8 @@ function erf(x){ // Abramowitz-Stegun 7.1.26
 }
 const normsdist = z => 0.5*(1+erf(z/Math.SQRT2));
 const ln = Math.log;
-function num(id){ const v=parseFloat($(id).value); return isFinite(v)?v:NaN; }
+function num(id){ const el=$(id); if(!el)return NaN; const v=parseFloat(el.value); return isFinite(v)?v:NaN; }
+function numOr(...ids){ for(const id of ids){ const v=num(id); if(isFinite(v))return v; } return NaN; }
 
 /* shared context */
 function ctx(){
@@ -498,6 +500,12 @@ function buildSections(){
   $('dvRows').innerHTML = [
     ['ctr','Cardiothoracic ratio (CA/TA)'],['laca','LA / heart area'],['raca','RA / heart area'],
     ['sph','Cardiac sphericity (long/transv)'],['rvlvb','RV / LV basal diameter'],['rvlvm','RV / LV mid diameter']
+  ].map(r=>`<div class="mrow"><div class="ml">${r[1]}</div><div id="dv_v_${r[0]}" style="font-weight:700">—</div><div class="zbox" id="z_dv_${r[0]}"></div></div>`).join('')
+  + [
+    ['lvsi','LV sphericity index (long÷transv) · no fetal norms'],
+    ['rvsi','RV sphericity index (long÷transv) · no fetal norms'],
+    ['lasi','LA sphericity index (long÷transv) · no fetal norms'],
+    ['rasi','RA sphericity index (long÷transv) · no fetal norms']
   ].map(r=>`<div class="mrow"><div class="ml">${r[1]}</div><div id="dv_v_${r[0]}" style="font-weight:700">—</div><div class="zbox" id="z_dv_${r[0]}"></div></div>`).join('');
   attachInputs();
 }
@@ -621,12 +629,47 @@ function recompute(){
   dv('rvlvb','dv_v_rvlvb','z_dv_rvlvb','RV/LV basal',(rvb>0&&lvb>0)?rvb/lvb:NaN,LNT,GA=>0.00198602365847468*GA-0.0380005952830765,()=>0.11921652);
   dv('rvlvm','dv_v_rvlvm','z_dv_rvlvm','RV/LV mid',(rvm>0&&lvm>0)?rvm/lvm:NaN,LNT,GA=>0.0029058086758513*GA-0.067568872086084,()=>0.151192276408318);
 
+  // Chamber sphericity indices — sourced from BCN; no published fetal Z-score norms for individual chambers
+  (function(){
+    function dvRatioDisplay(key,vId,label,ratio){
+      const el=$(vId); if(el) el.textContent=isFinite(ratio)?ratio.toFixed(3):'—';
+      if(isFinite(ratio)){ RESULTS[key]={label,group:'Ratios & shape',val:ratio,z:null,key}; }
+      else { delete RESULTS[key]; }
+    }
+    const lvlong=num('in_bcn_lvl'), lvtrans=numOr('in_bcn_lvbt','in_bcn_lvmt');
+    const rvlong=num('in_bcn_rvl'), rvtrans=numOr('in_bcn_rvbt','in_bcn_rvmt');
+    const lalong=num('in_bcn_lald'),latrans=num('in_bcn_latd');
+    const ralong=num('in_bcn_rald'),ratrans=num('in_bcn_ratd');
+    dvRatioDisplay('lvsi','dv_v_lvsi','LV sphericity (long÷transv)',(lvlong>0&&lvtrans>0)?lvlong/lvtrans:NaN);
+    dvRatioDisplay('rvsi','dv_v_rvsi','RV sphericity (long÷transv)',(rvlong>0&&rvtrans>0)?rvlong/rvtrans:NaN);
+    dvRatioDisplay('lasi','dv_v_lasi','LA sphericity (long÷transv)',(lalong>0&&latrans>0)?lalong/latrans:NaN);
+    dvRatioDisplay('rasi','dv_v_rasi','RA sphericity (long÷transv)',(ralong>0&&ratrans>0)?ralong/ratrans:NaN);
+  })();
+
+  // DeVore override field placeholders — show BCN-sourced value (with its unit) as a hint
+  // Note: BCN diameters are in mm; DeVore fields are in cm — user divides by 10. Areas (cm²) match.
+  [['in_dvca','in_bcn_ca','cm²'],['in_dvcl','in_bcn_cld','mm'],['in_dvct','in_bcn_ctd','mm'],
+   ['in_dvrvb','in_bcn_rvbt','mm'],['in_dvlvb','in_bcn_lvbt','mm'],
+   ['in_dvrvm','in_bcn_rvmt','mm'],['in_dvlvm','in_bcn_lvmt','mm'],
+   ['in_dvlaa','in_bcn_laa','cm²'],['in_dvraa','in_bcn_raa','cm²']
+  ].forEach(([dvId,bcnId,bcnUnit])=>{
+    const dvEl=$(dvId),bcnEl=$(bcnId); if(!dvEl||!bcnEl)return;
+    const v=parseFloat(bcnEl.value);
+    if(!dvEl.value) dvEl.placeholder=isFinite(v)?`BCN: ${v} ${bcnUnit}`:bcnUnit;
+  });
+
   // Gagnon 2016 Doppler function (valves, DA, isthmus)
   GAGNON.forEach(it=>{
     const v=num('in_gag_'+it[0]); let z=null;
     if(isFinite(v)){ const r=it[3](v,c); if(r&&isFinite(r.z)) z=r.z; }
     paintZ('z_gag_'+it[0], z);
-    setResult('gag::'+it[0], it[1]+(it[2]?' ('+it[2]+')':''), 'Doppler function', v, z);
+    // Show GA hint when value entered but GA not available
+    if(isFinite(v) && z==null){
+      const el=$('z_gag_'+it[0]); if(el){ el.className='zbox'; el.innerHTML='<span style="color:#aaa;font-size:10px">enter GA above for Z</span>'; }
+    }
+    // Store value regardless of z so it appears in report (z shown as — if GA missing)
+    if(isFinite(v)){ RESULTS['gag::'+it[0]]={label:it[1]+(it[2]?' ('+it[2]+')':''),group:'Doppler function',val:v,z,key:it[0]}; }
+    else { delete RESULTS['gag::'+it[0]]; }
   });
   // Ductal PI (Tulzer 1991) — fixed, non-GA reference. Deliberately kept OUT of RESULTS/Z-score findings.
   (function(){
@@ -731,6 +774,11 @@ const REFS=[
 $('refsList').innerHTML=REFS.map(r=>`<li>${r}</li>`).join('');
 
 /* ---------- print ---------- */
+function fmtGAweeks(ga){
+  if(!isFinite(ga)) return '—';
+  const w=Math.floor(ga), d=Math.round((ga-w)*7);
+  return d===7 ? `${w+1}w 0d` : `${w}w ${d}d`;
+}
 function generatePrint(){
   const c=ctx();
   const name=$('pname').value.trim(), mrn=$('pmrn').value.trim();
@@ -751,9 +799,22 @@ function generatePrint(){
     });
   });
   if(!rows) rows='<tr><td colspan="4">No measurements entered.</td></tr>';
-  const flagged=arr.filter(r=>isFinite(r.z)&&Math.abs(r.z)>=1.5).sort((a,b)=>Math.abs(b.z)-Math.abs(a.z));
-  let findHtml = flagged.length? '<ul>'+flagged.map(r=>`<li class="${Math.abs(r.z)>=2?'pbad':'pbord'}">${r.label}: Z ${fmtZ(r.z)} — ${noteFor(r.key,r.z)}</li>`).join('')+'</ul>'
-    : '<p>All entered parameters are within the reference range (|Z| &lt; 1.5).</p>';
+  const outOfRange=Object.values(RESULTS).filter(r=>r.z!=null&&isFinite(r.z)&&Math.abs(r.z)>=2).sort((a,b)=>Math.abs(b.z)-Math.abs(a.z));
+  const borderline=Object.values(RESULTS).filter(r=>r.z!=null&&isFinite(r.z)&&Math.abs(r.z)>=1.5&&Math.abs(r.z)<2).sort((a,b)=>Math.abs(b.z)-Math.abs(a.z));
+  let findHtml='';
+  if(outOfRange.length){
+    findHtml+=`<div class="pgl" style="margin-top:10px;color:#c33a3a">Out of range (|Z| ≥ 2)</div>
+    <ul style="margin:4px 0 8px;padding-left:16px;font-size:11px">
+    ${outOfRange.map(r=>`<li class="pbad"><b>${r.label}</b> (Z ${fmtZ(r.z)}) — ${noteFor(r.key,r.z)}</li>`).join('')}
+    </ul>`;
+  }
+  if(borderline.length){
+    findHtml+=`<div class="pgl" style="margin-top:6px;color:#b07400">Borderline (1.5 ≤ |Z| < 2)</div>
+    <ul style="margin:4px 0;padding-left:16px;font-size:11px">
+    ${borderline.map(r=>`<li class="pbord">${r.label} (Z ${fmtZ(r.z)}) — ${noteFor(r.key,r.z)}</li>`).join('')}
+    </ul>`;
+  }
+  if(!findHtml) findHtml='<p>All entered parameters are within the reference range (|Z| &lt; 1.5).</p>';
   const ductPI=num('in_ductalpi');
   const ductRow = isFinite(ductPI) ? `<div class="pgl">Ductus arteriosus PI (fixed reference, Tulzer 1991 — not a Z-score)</div>
     <table><tr><th>Measurement</th><th class="r">Value</th><th>Normal range</th><th>Status</th></tr>
@@ -769,12 +830,46 @@ function generatePrint(){
         <div><b>Date:</b> ${dateStr}</div>
       </div>
     </div>
-    <div><b>Gestational age:</b> ${isFinite(c.GA)?c.GA.toFixed(1)+' weeks':'—'} &nbsp; <b>EFW:</b> ${isFinite(c.EFWg)?c.EFWg+' g':'—'} &nbsp; <b>BPD:</b> ${isFinite(c.BPD)?c.BPD+' cm':'—'} &nbsp; <b>FL:</b> ${isFinite(c.FL)?c.FL+' cm':'—'}</div>
+    <div><b>Gestational age:</b> ${fmtGAweeks(c.GA)} &nbsp; <b>EFW:</b> ${isFinite(c.EFWg)?c.EFWg+' g':(isFinite(c.EFWest)?c.EFWest.toFixed(0)+' g (est.)':'—')} &nbsp; <b>BPD:</b> ${isFinite(c.BPD)?c.BPD+' cm':'—'} &nbsp; <b>FL:</b> ${isFinite(c.FL)?c.FL+' cm':'—'}</div>
     <table><thead><tr><th>Parameter</th><th class="r">Measured</th><th class="r">Z-score</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>
     <div class="pgl">Flagged findings &amp; interpretation</div>
     ${findHtml}
     ${ductRow}
     <p style="font-size:10px;color:#555;margin-top:14px">Z = (observed − expected)/SD. |Z| ≥ 2 lies outside the 95% reference range. Decision-support only; interpret with image quality, serial data and clinical context. Sources: Schneider 2005, Pasquini 2007, García-Otero 2020 (Fetal Diagn Ther), Luewan 2011, Messing 2011, Carvalho 2017, Mielke 2001, DeVore 2017–18, Gagnon 2016 (J Am Soc Echocardiogr), Tulzer 1991 (J Am Coll Cardiol).</p>
+    <p style="font-size:9.5px;color:#777">Patient identifiers shown here were entered locally for this printout and are not stored in any database.</p>`;
+  window.print();
+}
+
+function generatePatientPrint(){
+  const c=ctx();
+  const name=$('pname').value.trim(), mrn=$('pmrn').value.trim();
+  const now=new Date();
+  const dateStr=now.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+  const arr=Object.values(RESULTS).filter(r=>r.val!=null&&isFinite(r.val));
+  const order=['Valves & vessels','Isthmus & duct','Chambers & walls','RV function','Time fractions','Doppler function','Ratios & shape'];
+  let rows='';
+  order.forEach(g=>{
+    const items=arr.filter(r=>r.group===g);
+    if(!items.length)return;
+    rows+=`<tr><td colspan="3" style="background:#f5f5f5;font-weight:700;padding:4px 6px">${g}</td></tr>`;
+    items.forEach(r=>{
+      rows+=`<tr><td>${r.label}</td><td class="r">${r.val.toFixed(2)}</td><td class="r">${(r.z!=null&&isFinite(r.z))?fmtZ(r.z):'—'}</td></tr>`;
+    });
+  });
+  if(!rows) rows='<tr><td colspan="3">No measurements entered.</td></tr>';
+  $('printArea').innerHTML=`
+    <div class="ph">
+      <div><h2>Fetal Echocardiography — Measurements</h2>
+        <div>fetal-echo.org</div></div>
+      <div style="text-align:right">
+        <div><b>Name:</b> ${name||'—'}</div>
+        <div><b>ID/MRN:</b> ${mrn||'—'}</div>
+        <div><b>Date:</b> ${dateStr}</div>
+      </div>
+    </div>
+    <div><b>Gestational age:</b> ${fmtGAweeks(c.GA)} &nbsp; <b>EFW:</b> ${isFinite(c.EFWg)?c.EFWg+' g':'—'} &nbsp; <b>BPD:</b> ${isFinite(c.BPD)?c.BPD+' cm':'—'} &nbsp; <b>FL:</b> ${isFinite(c.FL)?c.FL+' cm':'—'}</div>
+    <table><thead><tr><th>Parameter</th><th class="r">Measured</th><th class="r">Z-score</th></tr></thead><tbody>${rows}</tbody></table>
+    <p style="font-size:10px;color:#555;margin-top:14px">Z-scores are based on published reference ranges. Values outside the reference range require clinical interpretation. For clinical decisions, please discuss findings with your specialist.</p>
     <p style="font-size:9.5px;color:#777">Patient identifiers shown here were entered locally for this printout and are not stored in any database.</p>`;
   window.print();
 }
