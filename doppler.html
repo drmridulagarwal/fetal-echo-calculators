@@ -116,6 +116,8 @@
     #printArea th{background:#eef5f8}
     #printArea td.r{text-align:right;font-variant-numeric:tabular-nums}
     #printArea .pgl{font-weight:700;color:#15607a;margin:10px 0 2px}
+    details.sec,details.stage,.privacy,.btns,footer{display:none !important}
+    #printArea .ref-note{font-size:9.5px;color:#666;margin:0 0 10px;line-height:1.4}
   }
 </style>
 </head>
@@ -260,7 +262,7 @@
 
   <footer class="noprint">fetal-echo.org · Patient Portal: <a href="https://fetalecho.in" target="_blank" rel="noopener" style="color:var(--muted); text-decoration:underline;">fetalecho.in</a> · Fetal Doppler PI/RI Calculator v1.0 · for use by trained clinicians alongside full clinical assessment</footer>
 
-  <!-- ===== PRINT AREA (patient-facing: numbers only, no interpretive flags) ===== -->
+  <!-- ===== PRINT AREA ===== -->
   <div id="printArea">
     <div class="ph">
       <div>
@@ -271,11 +273,14 @@
     </div>
     <div class="pgl">Umbilical &amp; cerebral Doppler</div>
     <table id="pr_table1"></table>
+    <p class="ref-note" id="pr_ref1"></p>
     <div class="pgl" id="pr_uta_dv_head" style="display:none">Uteroplacental &amp; venous Doppler</div>
     <table id="pr_table2"></table>
+    <p class="ref-note" id="pr_ref2" style="display:none"></p>
     <div class="pgl" id="pr_anemia_head" style="display:none">Anemia surveillance</div>
     <table id="pr_table3"></table>
-    <p style="font-size:10px;color:#5b6b7c;margin-top:14px">
+    <p class="ref-note" id="pr_ref3" style="display:none"></p>
+    <p style="font-size:10px;color:#5b6b7c;margin-top:10px">
       This report lists measured values and their percentile position for gestational age only. It is not a
       diagnosis. Please discuss these results with your treating obstetrician / fetal medicine specialist.
     </p>
@@ -606,6 +611,11 @@ function renderPrint(){
   document.getElementById('pr_meta').innerHTML = `Name: ${name} &nbsp;·&nbsp; ID: ${mrn} &nbsp;·&nbsp; GA at scan: ${w}+${d} weeks`;
   document.getElementById('pr_date').textContent = new Date().toLocaleDateString();
 
+  const REF_CIOBANU = 'Ciobanu A et al. FMF reference ranges for UA-PI, MCA-PI and CPR. <i>Ultrasound Obstet Gynecol</i> 2019;53:465–472.';
+  const REF_GOMEZ   = 'Gómez O et al. Reference ranges for uterine artery mean PI at 11–41 weeks. <i>Ultrasound Obstet Gynecol</i> 2008;32:128–132.';
+  const REF_KESSLER = 'Kessler J et al. Longitudinal reference ranges for ductus venosus flow velocities. <i>Ultrasound Obstet Gynecol</i> 2006;28:890–898.';
+  const REF_MARI    = 'Mari G et al. Noninvasive diagnosis by Doppler of fetal anemia due to red-cell alloimmunization. <i>N Engl J Med</i> 2000;342:9–14.';
+
   let t1 = '<tr><th>Measurement</th><th>Value</th><th>Percentile / MoM</th><th>Normal range</th></tr>';
   if(lastFGR){
     if(!isNaN(lastFGR.uaVal)) t1 += `<tr><td>Umbilical artery PI</td><td class="r">${lastFGR.uaVal}</td><td class="r">${lastFGR.uaPct?fmtPct(lastFGR.uaPct):'—'}</td><td class="r">${lastFGR.uaRangeStr||'—'}</td></tr>`;
@@ -613,23 +623,28 @@ function renderPrint(){
     if(lastFGR.cprVal) t1 += `<tr><td>Cerebroplacental ratio</td><td class="r">${lastFGR.cprVal.toFixed(2)}</td><td class="r">${lastFGR.cprPct?fmtPct(lastFGR.cprPct):'—'}</td><td class="r">${lastFGR.cprRangeStr||'—'}</td></tr>`;
   }
   document.getElementById('pr_table1').innerHTML = t1;
+  document.getElementById('pr_ref1').innerHTML = REF_CIOBANU;
 
   let t2 = '';
   const hasUtaDv = lastFGR && (!isNaN(lastFGR.utaVal) || !isNaN(lastFGR.dvVal));
   document.getElementById('pr_uta_dv_head').style.display = hasUtaDv?'block':'none';
+  document.getElementById('pr_ref2').style.display = hasUtaDv?'block':'none';
   if(hasUtaDv){
     t2 = '<tr><th>Measurement</th><th>Value</th><th>Percentile</th><th>Normal range</th></tr>';
     if(!isNaN(lastFGR.utaVal)) t2 += `<tr><td>Mean uterine artery PI</td><td class="r">${lastFGR.utaVal}</td><td class="r">${lastFGR.utaPct?lastFGR.utaPct.toFixed(0)+'th':'—'}</td><td class="r">${lastFGR.utaRangeStr||'—'}</td></tr>`;
     if(!isNaN(lastFGR.dvVal)) t2 += `<tr><td>Ductus venosus PIV</td><td class="r">${lastFGR.dvVal}</td><td class="r">${lastFGR.dvPct?fmtPct(lastFGR.dvPct):'—'}</td><td class="r">${lastFGR.dvRangeStr||'—'}</td></tr>`;
+    document.getElementById('pr_ref2').innerHTML = [REF_GOMEZ, REF_KESSLER].join(' · ');
   }
   document.getElementById('pr_table2').innerHTML = t2;
 
   const hasAnemia = !!lastAnemia;
   document.getElementById('pr_anemia_head').style.display = hasAnemia?'block':'none';
+  document.getElementById('pr_ref3').style.display = hasAnemia?'block':'none';
   let t3='';
   if(hasAnemia){
     t3 = '<tr><th>Measurement</th><th>Value</th><th>Multiples of median</th><th>Median for GA</th></tr>';
     t3 += `<tr><td>MCA peak systolic velocity</td><td class="r">${lastAnemia.psv} cm/s</td><td class="r">${lastAnemia.mom.toFixed(2)} MoM</td><td class="r">${lastAnemia.median.toFixed(1)} cm/s</td></tr>`;
+    document.getElementById('pr_ref3').innerHTML = REF_MARI;
   }
   document.getElementById('pr_table3').innerHTML = t3;
 

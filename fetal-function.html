@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fetal Cardiac Function Assessment — fetal-echo.org</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<style>
+  :root{
+    --bg:#f6f8fb; --card:#ffffff; --ink:#1d2733; --muted:#5b6b7c; --line:#e5ebf2;
+    --brand:#15607a; --brand-soft:#e8f1f5; --accent:#0f8a6d;
+    --ok:#2f9e6b; --okbg:#e8f6ee; --bord:#d99100; --bordbg:#fcf3df;
+    --bad:#c33a3a; --badbg:#fbe4e4;
+    --radius:14px; --shadow:0 1px 3px rgba(20,40,60,.06),0 6px 24px rgba(20,40,60,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:22px 16px 70px}
+  header.app{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+  .logo{flex:0 0 auto;width:42px;height:42px;border-radius:10px;background:var(--brand);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px}
+  h1{font-size:20px;margin:0;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:13px;margin:2px 0 0}
+  .disclaimer{margin:14px 0 18px;padding:10px 13px;background:#fff7e8;border:1px solid #f0dcae;
+    border-radius:10px;font-size:12.5px;color:#7a5c12}
+  .disclaimer b{color:#5e470c}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+  .card h2{font-size:14px;margin:0 0 2px;letter-spacing:.02em;text-transform:uppercase;color:var(--brand)}
+  .card .hint{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 16px}
+  @media(max-width:620px){.grid,.grid3{grid-template-columns:1fr}}
+  .field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:4px}
+  .field .u{color:var(--muted);font-weight:400}
+  .field input{width:100%;padding:9px 10px;border:1px solid var(--line);
+    border-radius:9px;font-size:14px;background:#fcfdfe;color:var(--ink);transition:border .15s,box-shadow .15s}
+  .field input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+  .mrow{display:grid;grid-template-columns:1.5fr .9fr auto;gap:10px;align-items:center;
+    padding:8px 0;border-top:1px solid var(--line)}
+  .mrow:first-of-type{border-top:none}
+  .mrow .ml{font-size:13px}
+  .mrow .ml .uu{color:var(--muted);font-size:11.5px}
+  .mrow input{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-size:14px;
+    background:#fcfdfe;text-align:right;font-variant-numeric:tabular-nums}
+  .mrow input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+  .zbox{min-width:140px;text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums}
+  .zval{font-weight:700}
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.03em;padding:2px 7px;border-radius:5px;margin-left:6px}
+  .t-ok{background:var(--okbg);color:var(--ok)} .t-bord{background:var(--bordbg);color:var(--bord)}
+  .t-bad{background:var(--badbg);color:var(--bad)}
+  .zbox.ok .zval{color:var(--ok)} .zbox.bord .zval{color:var(--bord)} .zbox.bad .zval{color:var(--bad)}
+  .group-label{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);margin:16px 0 6px}
+  .group-label:first-child{margin-top:0}
+  details.sec{margin-bottom:16px;background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  details.sec>summary{cursor:pointer;list-style:none;padding:16px 18px;font-size:14px;font-weight:700;
+    color:var(--brand);text-transform:uppercase;letter-spacing:.02em;display:flex;justify-content:space-between;align-items:center}
+  details.sec>summary::-webkit-details-marker{display:none}
+  details.sec>summary .cv{font-size:11px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0}
+  details.sec[open]>summary{border-bottom:1px solid var(--line)}
+  .sec-body{padding:6px 18px 18px}
+  .sec-note{font-size:12px;color:var(--muted);margin:2px 0 12px}
+  /* findings */
+  .findings .fitem{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;
+    padding:10px 0;border-top:1px solid var(--line)}
+  .findings .fitem:first-of-type{border-top:none}
+  .dot{width:10px;height:10px;border-radius:50%;margin-top:5px}
+  .dot.bad{background:var(--bad)} .dot.bord{background:var(--bord)}
+  .fitem .fl{font-size:13.5px;font-weight:600}
+  .fitem .fi{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .fitem .fz{font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .empty{font-size:13px;color:var(--muted);padding:8px 0}
+  .context-banner{padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:18px;
+    background:#eef5f8;border:1px solid #c8dde8;color:#1a4f63}
+  .context-banner b{color:#15607a}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);font-size:13px;font-weight:600;
+    padding:10px 16px;border-radius:9px;cursor:pointer}
+  .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn:hover{filter:brightness(.98)}
+  .refs{font-size:11.5px;color:var(--muted)} .refs li{margin-bottom:6px}
+  .refs a{color:var(--brand);text-decoration:none}
+  footer{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px}
+  .privacy{font-size:11.5px;color:#5b6b7c;background:#eef5f8;border:1px solid #d7e6ec;border-radius:9px;
+    padding:9px 12px;margin-top:10px}
+  .home-btn{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;
+    color:var(--brand);text-decoration:none;background:var(--brand-soft);border-radius:7px;
+    padding:4px 10px;margin-bottom:10px;width:fit-content}
+  .home-btn:hover{background:#d5e6ee}
+  /* print */
+  #printArea{display:none}
+  @media print{
+    body{background:#fff}
+    .wrap{max-width:100%;padding:0}
+    .noprint{display:none !important}
+    details.sec,.context-banner,.btns,.privacy,footer{display:none !important}
+    #printArea{display:block;font-size:12px;color:#000}
+    #printArea h2{font-size:15px;margin:0 0 2px}
+    #printArea .ph{display:flex;justify-content:space-between;border-bottom:2px solid #15607a;padding-bottom:8px;margin-bottom:10px}
+    #printArea table{width:100%;border-collapse:collapse;margin:6px 0 6px}
+    #printArea th,#printArea td{border:1px solid #cfd8e0;padding:4px 7px;text-align:left;font-size:11px}
+    #printArea th{background:#eef5f8}
+    #printArea td.r{text-align:right;font-variant-numeric:tabular-nums}
+    #printArea .pbad{color:#c33a3a;font-weight:700}
+    #printArea .pbord{color:#b07400;font-weight:700}
+    #printArea .pgl{font-weight:700;color:#15607a;margin:10px 0 2px;font-size:12px}
+    #printArea .ref-note{font-size:9.5px;color:#666;margin:0 0 4px;line-height:1.4}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="home-btn noprint" href="index.html">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    All calculators
+  </a>
+
+  <header class="app noprint">
+    <div class="logo">FE</div>
+    <div style="flex:1">
+      <h1>Fetal Cardiac Function Assessment <span class="sub" style="display:inline">v1.0</span></h1>
+      <p class="sub">Doppler velocities, inflow E/A, isthmus indices, RV FAC, time fractions &amp; cardiac output · fetal-echo.org</p>
+    </div>
+    <div style="flex:0 0 auto;text-align:center;margin-left:10px">
+      <div id="_qrff" style="border-radius:6px;border:1px solid var(--line);width:72px;height:72px;overflow:hidden;background:#fff;display:block"></div>
+      <p style="font-size:9px;color:var(--muted);margin:3px 0 0">fetal-echo.org</p>
+    </div>
+  </header>
+
+  <div class="disclaimer noprint">
+    <b>Clinical decision-support aid — not a diagnostic test.</b> Z-scores are derived from published reference
+    equations valid within the gestational-age ranges of each source. Cardiac function in FGR, TTTS and
+    placental disease should be interpreted in the context of serial measurements, Doppler staging, growth
+    biometry, and the overall clinical picture.
+  </div>
+
+  <div class="context-banner noprint">
+    <b>Designed for: FGR · TTTS · placental disease.</b> This tool focuses on the parameters most relevant to
+    fetal cardiac adaptation under placental stress — Doppler peak velocities and inflow E/A ratios (Gagnon 2016),
+    aortic isthmus indices, RV fractional area change, ventricular filling and ejection time fractions, and cardiac
+    output. For structural dimensions and arch Z-scores, use the main <a href="zscore.html" style="color:var(--brand)">Fetal Z-Score Calculator</a>.
+  </div>
+
+  <!-- ===== SHARED INPUTS ===== -->
+  <div class="card noprint">
+    <h2>Patient &amp; biometry</h2>
+    <p class="hint">Enter once — all sections below use these values. Name and ID are optional, used only for the printout.</p>
+    <div class="grid">
+      <div class="field"><label>Patient name <span class="u">optional · printout only</span></label><input id="pname" type="text" placeholder="—"></div>
+      <div class="field"><label>ID / MRN <span class="u">optional · printout only</span></label><input id="pmrn" type="text" placeholder="—"></div>
+    </div>
+    <div class="group-label" style="margin-top:12px">Biometric inputs</div>
+    <div class="grid3">
+      <div class="field"><label>Gestational age <span class="u">weeks</span></label><input id="gaW" type="number" step="1" min="18" max="39" inputmode="numeric" placeholder="weeks"></div>
+      <div class="field"><label>+ days <span class="u">0–6</span></label><input id="gaD" type="number" step="1" min="0" max="6" inputmode="numeric" placeholder="days"></div>
+      <div class="field"><label>Estimated fetal weight <span class="u">grams</span></label><input id="efw" type="number" step="1" min="0" inputmode="numeric" placeholder="g"></div>
+      <div class="field"><label>Heart rate <span class="u">bpm · for CO &amp; ETF</span></label><input id="hr" type="number" step="1" min="60" max="220" inputmode="numeric" placeholder="bpm"></div>
+    </div>
+    <p class="sec-note" id="gaEcho" style="margin-top:10px"></p>
+  </div>
+
+  <!-- ===== DOPPLER VELOCITIES (Gagnon 2016) ===== -->
+  <details class="sec" open>
+    <summary>Doppler velocities &amp; inflow E/A — Gagnon 2016 <span class="cv" id="cv_gagnon"></span></summary>
+    <div class="sec-body">
+      <p class="sec-note">Pulsed-wave Doppler peak velocities (m/s) and E/A ratios, Z-scored by gestational age (Gagnon 2016, validated 18–39 weeks). Fetal inflow is A-wave dominant (E/A &lt; 1); E/A rises gradually with gestation as ventricular compliance improves — elevation is a sign of ventricular dysfunction in FGR and TTTS.</p>
+
+      <div class="group-label">Outflow &amp; great vessels</div>
+      <div id="gag_outflow"></div>
+
+      <div class="group-label">Mitral valve inflow (E, A, E/A)</div>
+      <div id="gag_mv"></div>
+
+      <div class="group-label">Tricuspid valve inflow (E, A, E/A)</div>
+      <div id="gag_tv"></div>
+
+      <div class="group-label">Aortic isthmus indices</div>
+      <p class="sec-note" style="margin-top:-8px">Isthmus systolic VTI (m), diastolic antegrade VTI (m), and isthmic flow index (IFI = (systolic+diastolic)/systolic). Negative or absent diastolic flow indicates elevated right-sided afterload — a key finding in FGR.</p>
+      <div id="gag_isthmus"></div>
+    </div>
+  </details>
+
+  <!-- ===== RV FAC ===== -->
+  <details class="sec">
+    <summary>RV fractional area change <span class="cv" id="cv_fac"></span></summary>
+    <div class="sec-body">
+      <p class="sec-note">Enter RV end-diastolic area (EDA) and end-systolic area (ESA) from the 4-chamber view. FAC = (EDA − ESA) / EDA × 100. Z-scored by gestational age (Luewan 2011) and by estimated fetal weight (Messing 2011). FAC &lt; 30–35% in the context of FGR or TTTS suggests significant systolic dysfunction.</p>
+      <div class="group-label">By gestational age (Luewan 2011)</div>
+      <div id="fac_ga_rows"></div>
+      <div class="mrow"><div class="ml">RV FAC <span class="uu">% · computed</span></div><div id="fac_val_ga" style="font-weight:700">—</div><div class="zbox" id="z_facga"></div></div>
+      <div class="group-label">By estimated fetal weight (Messing 2011)</div>
+      <div id="fac_ef_rows"></div>
+      <div class="mrow"><div class="ml">RV FAC <span class="uu">% · computed</span></div><div id="fac_val_ef" style="font-weight:700">—</div><div class="zbox" id="z_facefw"></div></div>
+    </div>
+  </details>
+
+  <!-- ===== TIME FRACTIONS ===== -->
+  <details class="sec">
+    <summary>Filling &amp; ejection time fractions <span class="cv" id="cv_tf"></span></summary>
+    <div class="sec-body">
+      <p class="sec-note">Measure filling time (valve opening to closure, diastole) and ejection time from PW Doppler; cycle length = RR interval (ms). FTF = filling/cycle × 100, ETF = ejection/cycle × 100. Shortened filling fraction is an early sign of diastolic dysfunction in FGR. Reference: Carvalho 2017 (filling), Carvalho 2002 (ejection).</p>
+      <div class="group-label">Filling time fraction</div>
+      <div class="grid">
+        <div class="field"><label>RV filling time <span class="u">ms</span></label><input id="in_rvft" type="number" step="1" inputmode="decimal" placeholder="ms"></div>
+        <div class="field"><label>RV cycle length <span class="u">ms</span></label><input id="in_rvcy" type="number" step="1" inputmode="decimal" placeholder="ms"></div>
+        <div class="field"><label>LV filling time <span class="u">ms</span></label><input id="in_lvft" type="number" step="1" inputmode="decimal" placeholder="ms"></div>
+        <div class="field"><label>LV cycle length <span class="u">ms</span></label><input id="in_lvcy" type="number" step="1" inputmode="decimal" placeholder="ms"></div>
+      </div>
+      <div class="mrow"><div class="ml">RV FTF <span class="uu">%</span></div><div id="rvftf_v" style="font-weight:700">—</div><div class="zbox" id="z_rvftf"></div></div>
+      <div class="mrow"><div class="ml">LV FTF <span class="uu">%</span></div><div id="lvftf_v" style="font-weight:700">—</div><div class="zbox" id="z_lvftf"></div></div>
+      <div class="group-label">Ejection time fraction</div>
+      <div class="grid">
+        <div class="field"><label>RV ejection time <span class="u">ms</span></label><input id="in_rvet" type="number" step="1" inputmode="decimal" placeholder="ms"></div>
+        <div class="field"><label>RV cycle length <span class="u">ms</span></label><input id="in_rvecy" type="number" step="1" inputmode="decimal" placeholder="ms"></div>
+        <div class="field"><label>LV ejection time <span class="u">ms</span></label><input id="in_lvet" type="number" step="1" inputmode="decimal" placeholder="ms"></div>
+        <div class="field"><label>LV cycle length <span class="u">ms</span></label><input id="in_lvecy" type="number" step="1" inputmode="decimal" placeholder="ms"></div>
+      </div>
+      <div class="mrow"><div class="ml">RV ETF <span class="uu">%</span></div><div id="rvetf_v" style="font-weight:700">—</div><div class="zbox" id="z_rvetf"></div></div>
+      <div class="mrow"><div class="ml">LV ETF <span class="uu">%</span></div><div id="lvetf_v" style="font-weight:700">—</div><div class="zbox" id="z_lvetf"></div></div>
+    </div>
+  </details>
+
+  <!-- ===== CARDIAC OUTPUT ===== -->
+  <details class="sec">
+    <summary>Cardiac output <span class="cv" id="cv_co"></span></summary>
+    <div class="sec-body">
+      <p class="sec-note">SV = π/4 × D² × VTI (cm³); CO = SV × HR (mL/min). Combined cardiac output is indexed to estimated fetal weight. Reference range for indexed combined CO: 425–550 mL/min/kg (Mielke 2001). Increased CO is seen in fetal anaemia and early FGR compensation; decreased CO reflects late decompensation.</p>
+      <div class="grid">
+        <div class="field"><label>RVOT diameter <span class="u">cm</span></label><input id="in_rvotd" type="number" step="0.01" inputmode="decimal" placeholder="cm"></div>
+        <div class="field"><label>RVOT VTI <span class="u">cm</span></label><input id="in_rvotv" type="number" step="0.01" inputmode="decimal" placeholder="cm"></div>
+        <div class="field"><label>LVOT diameter <span class="u">cm</span></label><input id="in_lvotd" type="number" step="0.01" inputmode="decimal" placeholder="cm"></div>
+        <div class="field"><label>LVOT VTI <span class="u">cm</span></label><input id="in_lvotv" type="number" step="0.01" inputmode="decimal" placeholder="cm"></div>
+      </div>
+      <div id="coOut" class="sec-note" style="margin-top:8px">Enter outflow diameter, VTI and heart rate (above) to compute.</div>
+    </div>
+  </details>
+
+  <!-- ===== DUCTAL PI ===== -->
+  <details class="sec">
+    <summary>Ductus arteriosus PI — fixed reference <span class="cv"></span></summary>
+    <div class="sec-body">
+      <p class="sec-note">Non-GA-dependent fixed reference (Tulzer 1991): mean 2.46, normal range 1.94–2.98 (mean ± 2SD). Low PI (ductal constriction) occurs with maternal NSAIDs; high PI occurs with tocolytics (terbutaline) or duct-dependent systemic circulation (e.g. HLHS). This index deliberately does not enter the Z-score findings.</p>
+      <div class="mrow">
+        <div class="ml">Ductal PI <span class="uu">unitless · (peak − end-diastolic) / mean velocity</span></div>
+        <input type="number" step="0.01" inputmode="decimal" id="in_ductalpi" placeholder="e.g. 2.40">
+        <div class="zbox" id="z_ductalpi"></div>
+      </div>
+      <div class="sec-note" id="ductalpi_note" style="margin-top:6px"></div>
+    </div>
+  </details>
+
+  <!-- ===== FINDINGS ===== -->
+  <div class="card noprint" id="findingsCard">
+    <h2>Findings &amp; interpretation</h2>
+    <p class="hint">Parameters outside the reference range appear here, most abnormal first. <b>|Z| ≥ 2</b> = outside the 95% range (red); <b>|Z| 1.5–2</b> = borderline (orange).</p>
+    <div class="findings" id="findingsList"><div class="empty">Enter measurements above — flagged results will appear here.</div></div>
+    <div class="btns">
+      <a class="btn" href="index.html" style="text-decoration:none">← All Calculators</a>
+      <button class="btn primary" onclick="generatePrint()">Generate printable report (PDF)</button>
+      <button class="btn" onclick="resetAll()">Clear all</button>
+    </div>
+    <div class="privacy">Patient name and ID are used only to label this printout on your own device. They are
+      <b>not transmitted, saved, or stored in any database</b>. The study date is added automatically.</div>
+  </div>
+
+  <!-- ===== REFERENCES ===== -->
+  <div class="card noprint">
+    <h2>References</h2>
+    <ul class="refs">
+      <li>Gagnon C, Bigras JL, Fouron JC, Dallaire F. Reference Values and Z Scores for Pulsed-Wave Doppler and M-Mode Measurements in Fetal Echocardiography. <i>J Am Soc Echocardiogr</i> 2016;29(5):448–460.e9. doi:10.1016/j.echo.2016.01.002.</li>
+      <li>Luewan S, Tongprasert F, Srisupundit K, Tongsong T. Fetal cardiac dimensions at 14–40 weeks. <i>J Ultrasound Med</i> 2011;30:943–948.</li>
+      <li>Messing B, et al. Fetal right ventricular fractional area change by 4D ultrasound. <i>Ultrasound Obstet Gynecol</i> 2011;38:528–535.</li>
+      <li>Carvalho JS, et al. Filling and ejection time fractions; <i>Heart</i> 2002;88:387–391 and updated Z-scores, <i>Ultrasound Obstet Gynecol</i> 2017.</li>
+      <li>Mielke G, Benda N. Cardiac output and central distribution of blood flow in the human fetus. <i>Circulation</i> 2001;103:1662–1668.</li>
+      <li>Tulzer G, et al. Doppler echocardiography of fetal ductus arteriosus constriction versus increased right ventricular output. <i>J Am Coll Cardiol</i> 1991;18(2):532–536.</li>
+    </ul>
+  </div>
+
+  <footer class="noprint">fetal-echo.org · Patient Portal: <a href="https://fetalecho.in" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline;">fetalecho.in</a> · Fetal Cardiac Function Assessment v1.0</footer>
+
+  <!-- ===== PRINT AREA ===== -->
+  <div id="printArea"></div>
+</div>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+function erf(x){
+  const s=x<0?-1:1; x=Math.abs(x);
+  const t=1/(1+0.3275911*x);
+  const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);
+  return s*y;
+}
+const normsdist = z => 0.5*(1+erf(z/Math.SQRT2));
+const ln = Math.log;
+function num(id){ const el=$(id); if(!el) return NaN; const v=parseFloat(el.value); return isFinite(v)?v:NaN; }
+
+/* shared context */
+function ctx(){
+  const w=num('gaW'), d=num('gaD');
+  const GA = isFinite(w)? w + (isFinite(d)?d:0)/7 : NaN;
+  const EFWg = num('efw');
+  return { GA, EFWg, EFWkg: isFinite(EFWg)?EFWg/1000:NaN, HR:num('hr') };
+}
+
+const IDENT=(v)=>v;
+
+/* ---------- Gagnon 2016 ---------- */
+const GAGNON = [
+  ['aov','Ascending aortic peak velocity','m/s','outflow', c=>-0.000365*c.GA*c.GA+0.0457*c.GA-0.0413, c=>0.00403*c.GA+0.0189],
+  ['mpa','Main pulmonary artery peak velocity','m/s','outflow', c=>-0.000027*Math.pow(c.GA,3)+0.00244*c.GA*c.GA-0.0523*c.GA+0.904, c=>0.00260*c.GA+0.0379],
+  ['da', 'Ductus arteriosus peak velocity','m/s','outflow', c=>0.000083*Math.pow(c.GA,3)-0.00621*c.GA*c.GA+0.184*c.GA-1.073, c=>0.0122*c.GA-0.128],
+  ['mve','Mitral E-wave peak velocity','m/s','mv', c=>-0.000478*c.GA*c.GA+0.0354*c.GA-0.205, c=>0.000370*c.GA+0.0567],
+  ['mva','Mitral A-wave peak velocity','m/s','mv', c=>-0.000674*c.GA*c.GA+0.0420*c.GA-0.0834, c=>0.00146*c.GA+0.0472],
+  ['mvea','Mitral E/A ratio','ratio','mv', c=>0.000231*c.GA*c.GA-0.000536*c.GA+0.560, c=>0.00354*c.GA-0.0197],
+  ['tve','Tricuspid E-wave peak velocity','m/s','tv', c=>0.0000155*c.GA*c.GA+0.00969*c.GA+0.155, c=>0.00294*c.GA-0.0157],
+  ['tva','Tricuspid A-wave peak velocity','m/s','tv', c=>-0.000275*c.GA*c.GA+0.0236*c.GA+0.161, c=>0.000499*c.GA+0.0600],
+  ['tvea','Tricuspid E/A ratio','ratio','tv', c=>-0.0000589*c.GA*c.GA+0.0115*c.GA+0.471, c=>0.00514*c.GA-0.0586],
+  ['isv','Isthmus systolic VTI','m','isthmus', c=>-0.000296*c.GA*c.GA+0.0179*c.GA-0.163, c=>0.000657*c.GA-0.000244],
+  ['iav','Isthmus diastolic antegrade VTI','m','isthmus', c=>-0.000136*c.GA*c.GA+0.00830*c.GA-0.0907, c=>0.000231*c.GA+0.000279],
+  ['ifi','Isthmic flow index','ratio','isthmus', c=>-0.00134*c.GA*c.GA+0.0742*c.GA+0.303, c=>0.00348*c.GA-0.00518]
+];
+
+/* ---------- registry ---------- */
+const RESULTS = {};
+function setResult(id,label,group,val,z){ if(z==null||!isFinite(z)){ delete RESULTS[id]; } else { RESULTS[id]={label,group,val,z,key:id}; } }
+
+/* ---------- interpretation notes ---------- */
+const NOTE = {
+  aov: ['low ascending aortic velocity — consider reduced cardiac output or LVOTO', 'elevated ascending aortic velocity — consider increased output or mild obstruction'],
+  mpa: ['low pulmonary velocity — reduced RV output', 'elevated pulmonary velocity — increased RV output; assess for RVOTO'],
+  da:  ['low ductal velocity — assess ductal patency', 'elevated ductal velocity — consider constriction or increased right-sided output'],
+  mve: ['low mitral E-wave — early mitral inflow reduced; assess diastolic function', 'elevated mitral E-wave — consider elevated LA pressure or MR'],
+  mva: ['low mitral A-wave — atrial contraction reduced', 'elevated mitral A-wave — common in FGR; increased atrial contractile load'],
+  mvea:['low mitral E/A (normal in fetus, A-dominant) — increased atrial load pattern', 'elevated mitral E/A (E≥A or reversal) — abnormal in fetus; sign of impaired ventricular relaxation in FGR/TTTS'],
+  tve: ['low tricuspid E-wave', 'elevated tricuspid E-wave'],
+  tva: ['low tricuspid A-wave — atrial contractile load reduced', 'elevated tricuspid A-wave — increased atrial contractile load; common in FGR'],
+  tvea:['low tricuspid E/A (normal fetal pattern)', 'elevated tricuspid E/A (E≥A) — impaired right ventricular compliance; key finding in TTTS and advanced FGR'],
+  isv: ['reduced isthmus systolic VTI — lower left-sided cardiac output to lower body', 'elevated isthmus systolic VTI'],
+  iav: ['absent or reversed isthmus diastolic VTI — elevated right-sided afterload; a late finding in FGR', 'elevated isthmus diastolic antegrade VTI'],
+  ifi: ['low isthmic flow index — retrograde diastolic component; sign of advanced FGR', 'elevated isthmic flow index'],
+  facga: ['reduced RV systolic function (low FAC by GA) — myocardial dysfunction in FGR or TTTS', 'high RV FAC by GA — reassess measurement'],
+  facefw: ['reduced RV systolic function (low FAC by EFW)', 'high RV FAC by EFW — reassess'],
+  rvftf: ['shortened RV filling fraction — diastolic dysfunction or tachycardia', 'prolonged RV filling fraction'],
+  lvftf: ['shortened LV filling fraction — diastolic dysfunction', 'prolonged LV filling fraction'],
+  rvetf: ['shortened RV ejection time fraction', 'prolonged RV ejection time fraction'],
+  lvetf: ['shortened LV ejection time fraction', 'prolonged LV ejection time fraction']
+};
+function noteFor(key,z){ const n=NOTE[key]; if(!n) return (z<0?'below':'above')+' the reference range'; return z<0?n[0]:n[1]; }
+
+/* ---------- Z rendering ---------- */
+function fmtZ(z){ return (z>=0?'+':'')+z.toFixed(2); }
+function classZ(z){ const a=Math.abs(z); return a>=2?'bad':(a>=1.5?'bord':'ok'); }
+function tagZ(z){ const a=Math.abs(z); return a>=2?'<span class="tag t-bad">OUT OF RANGE</span>':(a>=1.5?'<span class="tag t-bord">BORDERLINE</span>':'<span class="tag t-ok">WITHIN RANGE</span>'); }
+function paintZ(elId,z){ const el=$(elId); if(!el)return; if(z==null||!isFinite(z)){el.className='zbox';el.innerHTML='';return;} const cl=classZ(z); el.className='zbox '+cl; el.innerHTML=`<span class="zval">Z ${fmtZ(z)}</span> · ${(normsdist(z)*100).toFixed(0)}c ${tagZ(z)}`; }
+
+/* ---------- row builder ---------- */
+function measRow(uid,label,unit){
+  return `<div class="mrow">
+    <div class="ml">${label} <span class="uu">${unit}</span></div>
+    <input type="number" step="0.001" inputmode="decimal" id="in_${uid}" placeholder="${unit}">
+    <div class="zbox" id="z_${uid}"></div>
+  </div>`;
+}
+
+/* ---------- build sections ---------- */
+function buildSections(){
+  $('gag_outflow').innerHTML  = GAGNON.filter(g=>g[3]==='outflow').map(g=>measRow('gag_'+g[0],g[1],g[2])).join('');
+  $('gag_mv').innerHTML       = GAGNON.filter(g=>g[3]==='mv').map(g=>measRow('gag_'+g[0],g[1],g[2])).join('');
+  $('gag_tv').innerHTML       = GAGNON.filter(g=>g[3]==='tv').map(g=>measRow('gag_'+g[0],g[1],g[2])).join('');
+  $('gag_isthmus').innerHTML  = GAGNON.filter(g=>g[3]==='isthmus').map(g=>measRow('gag_'+g[0],g[1],g[2])).join('');
+  $('fac_ga_rows').innerHTML  = measRow('facEDAga','RV end-diastolic area','cm²') + measRow('facESAga','RV end-systolic area','cm²');
+  $('fac_ef_rows').innerHTML  = measRow('facEDAef','RV end-diastolic area','cm²') + measRow('facESAef','RV end-systolic area','cm²');
+  attachInputs();
+}
+
+function attachInputs(){
+  document.querySelectorAll('input[type="number"]').forEach(i=>{ if(!i._b){ i._b=1; i.addEventListener('input', recompute); }});
+}
+
+/* ---------- recompute ---------- */
+function recompute(){
+  const c = ctx();
+  $('gaEcho').textContent = isFinite(c.GA)? `Decimal GA ${c.GA.toFixed(2)} weeks · EFW ${isFinite(c.EFWkg)?c.EFWkg.toFixed(3)+' kg':'—'}` : 'Enter gestational age (18–39 weeks) to compute Z-scores.';
+  for(const k in RESULTS) delete RESULTS[k];
+
+  // Gagnon 2016
+  GAGNON.forEach(g=>{
+    const v=num('in_gag_'+g[0]); let z=null;
+    if(isFinite(v)&&isFinite(c.GA)){
+      const e=g[4](c), s=g[5](c);
+      if(isFinite(e)&&isFinite(s)&&s!==0) z=(v-e)/s;
+    }
+    paintZ('z_gag_'+g[0], z);
+    setResult('gag_'+g[0], g[1]+' ('+g[2]+')', 'Doppler velocities', isFinite(v)?v:null, z);
+  });
+
+  // FAC by GA
+  (function(){
+    const eda=num('in_facEDAga'), esa=num('in_facESAga');
+    let fac=NaN,z=null;
+    if(eda>0&&esa>=0){ fac=(eda-esa)/eda*100; if(isFinite(c.GA)){ const E=51.4900542103663-1.11487606786*c.GA+0.0136637202546493*c.GA*c.GA; z=(fac-E)/8.579155802; } }
+    $('fac_val_ga').textContent = isFinite(fac)?fac.toFixed(1)+' %':'—';
+    paintZ('z_facga',z); setResult('facga','RV FAC % (by GA)','RV function',isFinite(fac)?fac:null,z);
+  })();
+
+  // FAC by EFW
+  (function(){
+    const eda=num('in_facEDAef'), esa=num('in_facESAef'); const g=c.EFWg;
+    let fac=NaN,z=null;
+    if(eda>0&&esa>=0){ fac=(eda-esa)/eda*100; if(g>0){ const E=36.4143017178579-0.00545999060758537*g+0.0000008654591*g*g; z=(fac-E)/8.48139867; } }
+    $('fac_val_ef').textContent = isFinite(fac)?fac.toFixed(1)+' %':'—';
+    paintZ('z_facefw',z); setResult('facefw','RV FAC % (by EFW)','RV function',isFinite(fac)?fac:null,z);
+  })();
+
+  // FTF
+  function ftf(ftId,cyId,vId,zId,key,label,expFn){
+    const f=num(ftId), cy=num(cyId); let val=NaN,z=null;
+    if(f>0&&cy>0){ val=f/cy*100; const HR=60000/cy; const E=expFn.E(HR,c); const S=expFn.S(HR,c); if(isFinite(E)&&isFinite(S)&&S!==0) z=(val-E)/S; }
+    $(vId).textContent=isFinite(val)?val.toFixed(1)+' %':'—'; paintZ(zId,z); setResult(key,label,'Time fractions',isFinite(val)?val:null,z);
+  }
+  ftf('in_rvft','in_rvcy','rvftf_v','z_rvftf','rvftf','RV FTF %',{E:(HR)=>18.7332759662306+2889.91651663146/HR,S:(HR)=>6.14809868332898-0.01826993*HR});
+  ftf('in_lvft','in_lvcy','lvftf_v','z_lvftf','lvftf','LV FTF %',{E:(HR)=>16.4299563228872+3617.92445040645/HR,S:(HR)=>6.43206887534064-0.0178035288151452*HR});
+
+  // ETF
+  function etf(etId,cyId,vId,zId,key,label,EF,SD){
+    const e=num(etId), cy=num(cyId); let val=NaN,z=null;
+    if(e>0&&cy>0){ val=e/cy*100; const HR=60000/cy; const E=EF(HR,c.GA); if(isFinite(E)&&isFinite(c.GA)) z=(val-E)/SD; }
+    $(vId).textContent=isFinite(val)?val.toFixed(1)+' %':'—'; paintZ(zId,z); setResult(key,label,'Time fractions',isFinite(val)?val:null,z);
+  }
+  etf('in_rvet','in_rvecy','rvetf_v','z_rvetf','rvetf','RV ETF %',(HR,GA)=>26.748934+0.124522*HR-0.080492*GA,2.6371);
+  etf('in_lvet','in_lvecy','lvetf_v','z_lvetf','lvetf','LV ETF %',(HR,GA)=>29.692919+0.108611*HR-0.139257*GA,2.365145);
+
+  // Cardiac output
+  (function(){
+    const rd=num('in_rvotd'),rv=num('in_rvotv'),ld=num('in_lvotd'),lv=num('in_lvotv'),HR=c.HR;
+    function sv(d,v){ return (d>0&&v>0)?(Math.PI/4)*d*d*v:NaN; }
+    const svR=sv(rd,rv), svL=sv(ld,lv);
+    let co=0,any=false;
+    if(isFinite(svR)&&HR>0){co+=svR*HR;any=true;}
+    if(isFinite(svL)&&HR>0){co+=svL*HR;any=true;}
+    let out='';
+    if(any){
+      out=`Combined CO ${co.toFixed(0)} mL/min`;
+      if(isFinite(c.EFWkg)&&c.EFWkg>0){
+        const idx=co/c.EFWkg; const flag=idx<425?' — <b>below reference (425–550)</b>':(idx>550?' — <b>above reference (425–550)</b>':' — within 425–550 mL/min/kg');
+        out+=` · indexed <b>${idx.toFixed(0)} mL/min/kg</b>${flag}`;
+      } else out+=' · enter EFW and HR to index';
+    } else out='Enter outflow diameter, VTI and heart rate (above) to compute.';
+    $('coOut').innerHTML=out;
+  })();
+
+  // Ductal PI (Tulzer 1991) — fixed reference, not stored in RESULTS
+  (function(){
+    const pi=num('in_ductalpi');
+    const el=$('z_ductalpi'), noteEl=$('ductalpi_note');
+    if(!isFinite(pi)){if(el){el.className='zbox';el.innerHTML='';}if(noteEl)noteEl.textContent='';return;}
+    let cls='ok',tag='NORMAL',note='Within the normal range (1.94–2.98, mean 2.46 ± 2SD 0.52). This index does not change with gestational age.';
+    if(pi<1.94){cls='bad';tag='LOW';note='Below normal — pattern seen with ductal constriction (Tulzer 1991: mean 1.25 ± 0.76 in fetuses with NSAID-induced constriction). Review maternal medication history and reassess.';}
+    else if(pi>2.98){cls='bord';tag='HIGH';note='Above normal — pattern seen with increased right ventricular output: tocolytic (terbutaline) effect (mean 3.11 ± 0.46) or duct-dependent systemic circulation, e.g. HLHS (mean 3.09 ± 0.7). Correlate with cardiac anatomy and maternal medications.';}
+    if(el){el.className='zbox '+cls;el.innerHTML=`<span class="zval">${pi.toFixed(2)}</span> <span class="tag ${cls==='bad'?'t-bad':(cls==='bord'?'t-bord':'t-ok')}">${tag}</span>`;}
+    if(noteEl)noteEl.textContent=note;
+  })();
+
+  updateCounts(); renderFindings();
+}
+
+/* ---------- section badges ---------- */
+function updateCounts(){
+  const map={'Doppler velocities':'cv_gagnon','RV function':'cv_fac','Time fractions':'cv_tf'};
+  const tally={};
+  Object.values(RESULTS).forEach(r=>{ const a=Math.abs(r.z); if(a>=1.5){tally[r.group]=(tally[r.group]||0)+1;} });
+  for(const g in map){ const el=$(map[g]); if(el) el.textContent=tally[g]?`${tally[g]} flagged`:''; }
+}
+
+/* ---------- findings ---------- */
+function renderFindings(){
+  const arr=Object.entries(RESULTS).filter(([id,r])=>isFinite(r.z)&&Math.abs(r.z)>=1.5)
+    .map(([id,r])=>r).sort((a,b)=>Math.abs(b.z)-Math.abs(a.z));
+  const L=$('findingsList');
+  if(!arr.length){L.innerHTML='<div class="empty">No parameters are outside the reference range. Borderline and abnormal results will appear here as you enter measurements.</div>';return;}
+  L.innerHTML=arr.map(r=>{
+    const sev=Math.abs(r.z)>=2?'bad':'bord';
+    return `<div class="fitem"><div class="dot ${sev}"></div>
+      <div><div class="fl">${r.label}</div><div class="fi">${noteFor(r.key,r.z)}</div></div>
+      <div class="fz" style="color:${sev==='bad'?'var(--bad)':'var(--bord)'}">Z ${fmtZ(r.z)}<br><span style="font-weight:500;color:var(--muted)">${(normsdist(r.z)*100).toFixed(0)} c</span></div></div>`;
+  }).join('');
+}
+
+/* ---------- print ---------- */
+function generatePrint(){
+  const c=ctx();
+  const name=$('pname').value.trim(), mrn=$('pmrn').value.trim();
+  const dateStr=new Date().toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+  const arr=Object.values(RESULTS).filter(r=>r.val!=null&&isFinite(r.val));
+  const order=['Doppler velocities','RV function','Time fractions'];
+  let rows='';
+  order.forEach(g=>{
+    const items=arr.filter(r=>r.group===g);
+    if(!items.length)return;
+    rows+=`<tr><td colspan="4" class="pgl">${g}</td></tr>`;
+    items.forEach(r=>{
+      const a=Math.abs(r.z); const cls=a>=2?'pbad':(a>=1.5?'pbord':'');
+      const flag=a>=2?'Out of range':(a>=1.5?'Borderline':'Within range');
+      rows+=`<tr><td>${r.label}</td><td class="r">${r.val.toFixed(3)}</td><td class="r ${cls}">${isFinite(r.z)?fmtZ(r.z):'—'}</td><td class="${cls}">${isFinite(r.z)?flag:''}</td></tr>`;
+    });
+  });
+  if(!rows) rows='<tr><td colspan="4">No measurements entered.</td></tr>';
+
+  const flagged=arr.filter(r=>isFinite(r.z)&&Math.abs(r.z)>=1.5).sort((a,b)=>Math.abs(b.z)-Math.abs(a.z));
+  let findHtml=flagged.length?'<ul>'+flagged.map(r=>`<li class="${Math.abs(r.z)>=2?'pbad':'pbord'}">${r.label}: Z ${fmtZ(r.z)} — ${noteFor(r.key,r.z)}</li>`).join('')+'</ul>'
+    :'<p>All entered parameters are within the reference range (|Z| &lt; 1.5).</p>';
+
+  const ductPI=num('in_ductalpi');
+  const ductRow = isFinite(ductPI) ? `<div class="pgl">Ductus arteriosus PI (fixed reference, Tulzer 1991)</div>
+    <table><tr><th>Measurement</th><th class="r">Value</th><th>Normal range</th><th>Status</th></tr>
+    <tr><td>Ductal PI</td><td class="r">${ductPI.toFixed(2)}</td><td>1.94–2.98</td>
+    <td class="${ductPI<1.94?'pbad':(ductPI>2.98?'pbord':'')}">${ductPI<1.94?'Low — assess for ductal constriction':(ductPI>2.98?'High — assess for increased RV output':'Normal')}</td></tr></table>` : '';
+
+  const coOut=$('coOut').textContent||'';
+
+  $('printArea').innerHTML=`
+    <div class="ph">
+      <div><h2>Fetal Cardiac Function Report</h2><div>fetal-echo.org · Cardiac Function Assessment v1.0</div></div>
+      <div style="text-align:right">
+        <div><b>Name:</b> ${name||'—'}</div>
+        <div><b>ID/MRN:</b> ${mrn||'—'}</div>
+        <div><b>Date:</b> ${dateStr}</div>
+      </div>
+    </div>
+    <div style="margin-bottom:8px"><b>GA:</b> ${isFinite(c.GA)?c.GA.toFixed(1)+' weeks':'—'} &nbsp; <b>EFW:</b> ${isFinite(c.EFWg)?c.EFWg+' g':'—'} &nbsp; <b>HR:</b> ${isFinite(c.HR)?c.HR+' bpm':'—'}</div>
+    <table><thead><tr><th>Parameter</th><th class="r">Measured</th><th class="r">Z-score</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="pgl">Flagged findings &amp; interpretation</div>
+    ${findHtml}
+    ${ductRow}
+    ${coOut&&coOut!=='Enter outflow diameter, VTI and heart rate (above) to compute.'?`<div class="pgl">Cardiac output</div><p>${coOut}</p>`:''}
+    <p class="ref-note" style="margin-top:12px">Z = (observed − expected)/SD. |Z| ≥ 2 lies outside the 95% reference range. Decision-support only — interpret with serial data, Doppler staging, and full clinical context.</p>
+    <p class="ref-note">Sources: Gagnon 2016 (J Am Soc Echocardiogr) · Luewan 2011 (J Ultrasound Med) · Messing 2011 (Ultrasound Obstet Gynecol) · Carvalho 2002, 2017 · Mielke 2001 (Circulation) · Tulzer 1991 (J Am Coll Cardiol).</p>
+    <p style="font-size:9.5px;color:#777">Patient identifiers were entered locally for this printout and are not stored in any database.</p>`;
+  window.print();
+}
+
+function resetAll(){ document.querySelectorAll('input[type="number"]').forEach(i=>i.value=''); recompute(); }
+
+/* ---------- init ---------- */
+buildSections();
+recompute();
+
+window.addEventListener('load', function(){
+  var el=document.getElementById('_qrff');
+  if(el && typeof QRCode!=='undefined'){
+    new QRCode(el,{text:'https://fetal-echo.org/',width:72,height:72,correctLevel:QRCode.CorrectLevel.L});
+  }
+});
+</script>
+</body>
+</html>

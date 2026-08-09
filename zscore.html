@@ -462,7 +462,7 @@ function buildSections(){
   // DeVore ratios
   h+=`<details class="sec"><summary>Ratios &amp; shape — DeVore <span class="cv" id="cv_dv"></span></summary>
    <div class="sec-body">
-     <div class="sec-note">Cardiothoracic ratio, chamber-area ratios, sphericity &amp; RV:LV ratios (DeVore 2017–18). Areas in cm², diameters in cm.</div>
+     <div class="sec-note">Cardiothoracic ratio, chamber-area ratios, sphericity &amp; RV:LV ratios (DeVore 2017–18). Areas in <b>cm²</b>, diameters in <b>cm</b>. Gestational age (entered above) is required for Z-score computation.</div>
      <div class="grid">
        <div class="field"><label>Cardiac area <span class="u">cm²</span></label><input id="in_dvca" type="number" step="0.01" inputmode="decimal"></div>
        <div class="field"><label>Thoracic area <span class="u">cm²</span></label><input id="in_dvta" type="number" step="0.01" inputmode="decimal"></div>
@@ -608,7 +608,7 @@ function recompute(){
   // DeVore ratios
   function dv(key,vId,zId,label,ratio,t,E,S){
     let val=NaN,z=null;
-    if(isFinite(ratio)){ val=ratio; const tr=t(ratio); const e=E(c.GA), s=S(c.GA); if(isFinite(tr)&&isFinite(e)&&isFinite(s)&&s!==0&&isFinite(c.GA)) z=(tr-e)/s; }
+    if(isFinite(ratio)){ val=ratio; const tr=t(ratio); const e=E(c.GA), s=S(c.GA); if(isFinite(tr)&&isFinite(e)&&isFinite(s)&&s!==0) z=(tr-e)/s; }
     $(vId).textContent=isFinite(val)?val.toFixed(3):'—'; paintZ(zId,z); setResult(key,label,'Ratios & shape',isFinite(val)?val:null,z);
   }
   const ca=num('in_dvca'),ta=num('in_dvta'),cl=num('in_dvcl'),ct=num('in_dvct'),
