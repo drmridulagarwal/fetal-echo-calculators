@@ -623,8 +623,12 @@ function recompute(){
 
   // Gagnon 2016 Doppler function (valves, DA, isthmus)
   GAGNON.forEach(it=>{
-    const v=num('in_gag_'+it[0]); let z=null;
-    if(isFinite(v)){ const r=it[3](v,c); if(r&&isFinite(r.z)) z=r.z; }
+    let v=num('in_gag_'+it[0]); let z=null;
+    if(isFinite(v)){
+      const calcV = (it[2]==='m' && v > 2.0) ? v/100 : v;
+      const r=it[3](calcV,c);
+      if(r&&isFinite(r.z)) z=r.z;
+    }
     paintZ('z_gag_'+it[0], z);
     setResult('gag::'+it[0], it[1]+(it[2]?' ('+it[2]+')':''), 'Doppler function', v, z);
   });

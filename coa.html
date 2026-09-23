@@ -587,7 +587,7 @@ function qualScore(pts){ return pts>=8?'++++':pts>=5?'+++':pts>=2?'++':pts>0?'+'
 /* ============================================================
    DOM helpers + live render
    ============================================================ */
-function val(id){ return document.getElementById(id).value.trim(); }
+function val(id){ const el = document.getElementById(id); return el ? (el.value || '').trim() : ''; }
 
 function setZ(id, z, rule){
   const el = document.getElementById(id);
