@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "fetal-echo-calculators",
     "public": ".",
     "ignore": [
       "firebase.json",
@@ -37,6 +38,18 @@
       {
         "source": "/pediatric",
         "destination": "/pediatric-echo-zscore-calculator.html"
+      },
+      {
+        "source": "/kawasaki",
+        "destination": "/kawasaki.html"
+      },
+      {
+        "source": "/doppler",
+        "destination": "/doppler.html"
+      },
+      {
+        "source": "/cardiac-velocities",
+        "destination": "/cardiac-velocities.html"
       }
     ]
   }

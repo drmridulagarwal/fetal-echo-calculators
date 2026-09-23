@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kawasaki Disease Coronary Z-Scores &amp; Management Calculator — fetal-echo.org</title>
+<meta name="description" content="Kawasaki Disease decision support: Coronary artery Z-scores (McCrindle 2007 & Dallaire 2011), 2024 AHA Risk Stratification, Son et al. & Kobayashi risk scores, and antithrombotic guidelines.">
+<style>
+:root{
+  --bg:#f6f8fb; --card:#ffffff; --ink:#1d2733; --muted:#5b6b7c; --line:#e5ebf2;
+  --brand:#15607a; --brand-soft:#e8f1f5; --brand-dark:#0d4a5e;
+  --accent:#0f8a6d; --accent-soft:#e4f4ef;
+  --ok:#2f9e6b; --okbg:#e8f6ee; 
+  --dilation:#0288d1; --dilationbg:#e1f5fe;
+  --small:#f57c00; --smallbg:#fff3e0;
+  --medium:#e65100; --mediumbg:#ffe0b2;
+  --giant:#c33a3a; --giantbg:#fbe4e4;
+  --bord:#d99100; --bordbg:#fcf3df;
+  --bad:#c33a3a; --badbg:#fbe4e4;
+  --radius:14px; --shadow:0 1px 3px rgba(20,40,60,.06),0 6px 24px rgba(20,40,60,.06);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:0 auto;padding:22px 16px 70px}
+header.app{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+.logo{flex:0 0 auto;width:42px;height:42px;border-radius:10px;background:var(--brand);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:17px}
+.home-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;
+  color:var(--brand);text-decoration:none;background:var(--brand-soft);border-radius:7px;
+  padding:4px 10px;margin-bottom:10px;width:fit-content;transition:background .15s}
+.home-btn:hover{background:#d5e6ee}
+h1{font-size:21px;margin:0;letter-spacing:-.2px}
+.sub{color:var(--muted);font-size:13px;margin:2px 0 0}
+.guideline-badge{display:inline-block;background:var(--brand-soft);color:var(--brand);
+  padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;margin-top:5px;letter-spacing:.02em}
+
+.disclaimer{margin:14px 0 18px;padding:10px 13px;background:#fff7e8;border:1px solid #f0dcae;
+  border-radius:10px;font-size:12.5px;color:#7a5c12}
+.disclaimer b{color:#5e470c}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+.card h2{font-size:14px;margin:0 0 2px;letter-spacing:.02em;text-transform:uppercase;color:var(--brand)}
+.card .hint{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 16px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 16px}
+@media(max-width:620px){.grid,.grid3,.grid4{grid-template-columns:1fr}}
+
+.field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:4px}
+.field .u{color:var(--muted);font-weight:400}
+.field input,.field select{width:100%;padding:9px 10px;border:1px solid var(--line);
+  border-radius:9px;font-size:14px;background:#fcfdfe;color:var(--ink);transition:border .15s,box-shadow .15s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+
+.bsa-bar{background:var(--brand-soft);border-radius:9px;padding:9px 13px;font-size:12.5px;
+  margin-top:12px;color:var(--brand);font-weight:600;display:none}
+
+/* Segmented selector */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff}
+.seg button{border:0;background:#fff;color:var(--muted);font-size:12.5px;font-weight:600;
+  padding:7px 14px;cursor:pointer;transition:background .12s,color .12s}
+.seg button.on{background:var(--brand);color:#fff}
+
+/* Measurement Row */
+.mrow{display:grid;grid-template-columns:1.6fr .9fr 1.5fr;gap:10px;align-items:center;
+  padding:10px 0;border-top:1px solid var(--line)}
+.mrow:first-of-type{border-top:none}
+@media(max-width:640px){.mrow{grid-template-columns:1fr 1fr;gap:8px}.mrow .zbox{grid-column:1/-1}}
+.mrow .ml{font-size:13px;font-weight:600}
+.mrow .ml .uu{color:var(--muted);font-size:11.5px;font-weight:400}
+.mrow input{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-size:14px;
+  background:#fcfdfe;text-align:right;font-variant-numeric:tabular-nums}
+.mrow input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+
+.zbox{min-width:160px;text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums}
+.zval{font-weight:700}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.03em;
+  padding:2px 7px;border-radius:5px;margin-left:4px;white-space:nowrap}
+.t-ok{background:var(--okbg);color:var(--ok)}
+.t-dil{background:var(--dilationbg);color:var(--dilation)}
+.t-small{background:var(--smallbg);color:var(--small)}
+.t-med{background:var(--mediumbg);color:var(--medium)}
+.t-giant{background:var(--giantbg);color:var(--giant)}
+
+.zbox.ok .zval{color:var(--ok)}
+.zbox.dil .zval{color:var(--dilation)}
+.zbox.small .zval{color:var(--small)}
+.zbox.med .zval{color:var(--medium)}
+.zbox.giant .zval{color:var(--giant)}
+
+/* Status Banner */
+.status-banner{background:#fff;border:2px solid var(--brand);border-radius:var(--radius);
+  padding:16px;margin:16px 0;box-shadow:var(--shadow)}
+.status-banner.lvl-1{border-color:var(--ok);background:var(--okbg)}
+.status-banner.lvl-2{border-color:var(--dilation);background:var(--dilationbg)}
+.status-banner.lvl-3{border-color:var(--small);background:var(--smallbg)}
+.status-banner.lvl-4{border-color:var(--medium);background:var(--mediumbg)}
+.status-banner.lvl-5{border-color:var(--giant);background:var(--giantbg)}
+.status-title{font-size:16px;font-weight:800;letter-spacing:-.2px;display:flex;align-items:center;gap:8px}
+.status-meta{font-size:12.5px;color:var(--ink);margin-top:6px;line-height:1.5}
+
+/* Collapsible sections */
+details.sec{margin-bottom:16px;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+details.sec>summary{cursor:pointer;list-style:none;padding:16px 18px;font-size:14px;font-weight:700;
+  color:var(--brand);text-transform:uppercase;letter-spacing:.02em;
+  display:flex;justify-content:space-between;align-items:center}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary .cv{font-size:11px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0}
+details.sec[open]>summary{border-bottom:1px solid var(--line)}
+.sec-body{padding:14px 18px 20px}
+.sec-note{font-size:12px;color:var(--muted);margin:0 0 14px;line-height:1.5}
+
+/* Checkbox & interactive list */
+.checklist{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:#f9fbfd;
+  border:1px solid var(--line);border-radius:8px;font-size:13px;cursor:pointer;transition:background .15s}
+.check-item:hover{background:var(--brand-soft)}
+.check-item input[type="checkbox"]{margin-top:2px;cursor:pointer;width:16px;height:16px;accent-color:var(--brand)}
+.check-item .ci-lbl{flex:1}
+.check-item .ci-pts{font-weight:700;color:var(--brand);font-size:12px}
+
+/* Score box */
+.score-badge{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;
+  background:var(--brand-soft);border:1px solid #cfdce4;margin-top:12px}
+.score-val{font-size:18px;font-weight:800;color:var(--brand)}
+.score-desc{font-size:13px;color:var(--ink);font-weight:600}
+.score-badge.high-risk{background:var(--badbg);border-color:#f0b4b4}
+.score-badge.high-risk .score-val{color:var(--bad)}
+.score-badge.high-risk .score-desc{color:var(--bad)}
+
+/* Guidance Cards */
+.guide-card{background:#fdfefe;border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+.guide-card h3{font-size:13.5px;margin:0 0 6px;color:var(--brand);display:flex;align-items:center;gap:6px}
+.guide-card p,.guide-card ul{font-size:12.5px;color:var(--ink);margin:0;line-height:1.55}
+.guide-card ul{padding-left:18px;margin-top:4px}
+.guide-card li{margin-bottom:4px}
+
+/* Tables */
+.table-wrap{overflow-x:auto;margin:12px 0}
+table.guide-tbl{width:100%;border-collapse:collapse;font-size:12px}
+table.guide-tbl th,table.guide-tbl td{padding:8px 10px;border:1px solid var(--line);text-align:left}
+table.guide-tbl th{background:var(--brand-soft);color:var(--brand);font-weight:700}
+table.guide-tbl tr:nth-child(even){background:#fafcfd}
+table.guide-tbl td.highlight{background:#e8f4fa;font-weight:600}
+
+/* Buttons */
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);font-size:13px;font-weight:600;
+  padding:9px 16px;border-radius:9px;cursor:pointer;transition:all .15s}
+.btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn:hover{filter:brightness(.96)}
+.btn.primary:hover{filter:brightness(1.1)}
+
+.refs{font-size:11.5px;color:var(--muted);line-height:1.6}
+.refs li{margin-bottom:6px}
+.refs a{color:var(--brand);text-decoration:none}
+.refs a:hover{text-decoration:underline}
+
+/* Print styling */
+#printArea{display:none}
+@media print{
+  body{background:#fff;margin:0}
+  .wrap{max-width:100%;padding:4px 10px}
+  .wrap>*{display:none!important}
+  #printArea{display:block!important;font-size:11.5px;color:#000}
+  #printArea h2{font-size:14px;color:#15607a;border-bottom:2px solid #15607a;padding-bottom:4px;margin-bottom:8px}
+  #printArea .psec{margin-bottom:12px;page-break-inside:avoid}
+  #printArea table{width:100%;border-collapse:collapse;margin:6px 0}
+  #printArea th,#printArea td{border:1px solid #cfd8e0;padding:4px 6px;font-size:10.5px}
+  #printArea th{background:#eef5f8;font-weight:700}
+  #printArea .badge-pr{font-weight:700}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <a class="home-btn" href="index.html">← All Echo Calculators</a>
+  
+  <header class="app">
+    <div class="logo">KD</div>
+    <div>
+      <h1>Kawasaki Disease Coronary &amp; Risk Calculator</h1>
+      <div class="sub">Coronary Z-scores, 2024 AHA Risk Stratification, Son &amp; Kobayashi Scores, Antithrombotic Guidelines</div>
+      <div class="guideline-badge">AHA 2024 Scientific Statement Update · Circulation 2024</div>
+    </div>
+  </header>
+
+  <div class="disclaimer">
+    <b>Clinical Decision Support:</b> For use by qualified pediatric cardiologists and physicians. Normal coronary dimensions do not rule out Kawasaki Disease. Treatment should be initiated promptly when KD is suspected.
+  </div>
+
+  <!-- PATIENT BIOMETRICS -->
+  <div class="card">
+    <h2>1. Patient Demographics &amp; BSA</h2>
+    <div class="hint">Accurate weight &amp; height are required for Haycock Body Surface Area (BSA) calculation.</div>
+    <div class="grid4">
+      <div class="field">
+        <label>Age <span class="u">(years)</span></label>
+        <input type="number" step="0.01" min="0" max="21" id="in_age_y" placeholder="Years (e.g. 2.5)" oninput="onAgeYChange()">
+      </div>
+      <div class="field">
+        <label>Age <span class="u">(months)</span></label>
+        <input type="number" step="0.1" min="0" max="250" id="in_age_m" placeholder="Months (e.g. 30)" oninput="onAgeMChange()">
+      </div>
+      <div class="field">
+        <label>Weight <span class="u">(kg)</span></label>
+        <input type="number" step="0.1" min="0.5" max="150" id="in_wt" placeholder="Weight in kg" oninput="recalc()">
+      </div>
+      <div class="field">
+        <label>Height / Length <span class="u">(cm)</span></label>
+        <input type="number" step="0.1" min="20" max="220" id="in_ht" placeholder="Height in cm" oninput="recalc()">
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:10px">
+      <div class="field">
+        <label>Sex</label>
+        <select id="in_sex" onchange="recalc()">
+          <option value="unspecified">Unspecified / Either</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Patient ID / Name <span class="u">(for print report)</span></label>
+        <input type="text" id="in_pid" placeholder="Optional ID / initials">
+      </div>
+    </div>
+
+    <div class="bsa-bar" id="bsa_bar"></div>
+  </div>
+
+  <!-- MAIN SECTION: CORONARY ARTERY Z-SCORES -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:6px">
+      <div>
+        <h2>2. Coronary Artery Measurements &amp; Z-Scores</h2>
+        <div class="hint" style="margin-bottom:6px">Measurements in <b>mm</b> from inner-edge to inner-edge excluding branching points.</div>
+      </div>
+      <div class="seg">
+        <button id="btn_boston" class="on" onclick="setCorRef('boston')">Boston · McCrindle 2007</button>
+        <button id="btn_montreal" onclick="setCorRef('montreal')">Montreal · Dallaire 2011</button>
+      </div>
+    </div>
+    
+    <div class="sec-note" id="ref_note" style="margin-bottom:12px">
+      <b>Boston (McCrindle 2007):</b> Exponential model with Haycock BSA. Default AHA recommendation. (LCx computed via Dallaire 2011).
+    </div>
+
+    <!-- Coronary Inputs -->
+    <div class="mrow">
+      <div class="ml">LMCA — Left main coronary artery <span class="uu">mm</span></div>
+      <input type="number" step="0.01" inputmode="decimal" id="in_lmca" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_lmca">—</div>
+    </div>
+    <div class="mrow">
+      <div class="ml">LAD — Left anterior descending <span class="uu">mm</span></div>
+      <input type="number" step="0.01" inputmode="decimal" id="in_lad" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_lad">—</div>
+    </div>
+    <div class="mrow">
+      <div class="ml">LCx — Left circumflex <span class="uu">mm</span></div>
+      <input type="number" step="0.01" inputmode="decimal" id="in_lcx" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_lcx">—</div>
+    </div>
+    <div class="mrow">
+      <div class="ml">RCA — Right coronary artery <span class="uu">mm</span></div>
+      <input type="number" step="0.01" inputmode="decimal" id="in_rca" placeholder="mm" oninput="recalc()">
+      <div class="zbox" id="z_rca">—</div>
+    </div>
+
+    <!-- Timeline & Regression adjustment -->
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line)">
+      <div class="grid">
+        <div class="field">
+          <label>Assessment Timing / Phase</label>
+          <select id="in_phase" onchange="recalc()">
+            <option value="acute">Acute Phase (≤6 weeks from fever onset)</option>
+            <option value="convalescent">Convalescent / Long-Term Follow-up (>6 weeks)</option>
+          </select>
+        </div>
+        <div class="field" id="prior_max_field">
+          <label>Historical Maximal Coronary Involvement</label>
+          <select id="in_prior_max" onchange="recalc()">
+            <option value="auto">Auto (Derived from current max Z)</option>
+            <option value="1">Level 1: Never > Z &lt; 2</option>
+            <option value="2">Level 2: Dilation Only (Z 2 to &lt;2.5)</option>
+            <option value="3">Level 3: Prior Small Aneurysm (Z 2.5 to &lt;5)</option>
+            <option value="4">Level 4: Prior Medium Aneurysm (Z 5 to &lt;10, &lt;8mm)</option>
+            <option value="5">Level 5: Prior Large / Giant Aneurysm (Z ≥ 10 or ≥ 8mm)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE DYNAMIC AHA CLASSIFICATION BANNER -->
+  <div id="status_banner" class="status-banner" style="display:none">
+    <div class="status-title" id="status_title">AHA Risk Level</div>
+    <div class="status-meta" id="status_meta"></div>
+  </div>
+
+  <!-- COLLAPSIBLE SECTION 1: RISK SCORING AS PER NEWEST GUIDELINES -->
+  <details class="sec" id="sec_risk_scores" open>
+    <summary>1. Risk Scoring &amp; Diagnostic Criteria <span class="cv">Son 2019 · Kobayashi · AHA 2024</span></summary>
+    <div class="sec-body">
+      <div class="sec-note">
+        Evaluates risk for <b>Coronary Artery Aneurysms (CAA)</b> and <b>IVIG Resistance</b> to identify candidates for intensified primary anti-inflammatory therapy.
+      </div>
+
+      <!-- NORTH AMERICAN RISK MODEL (SON ET AL. 2019 / 2024 AHA) -->
+      <div class="guide-card">
+        <h3>North American Risk Score for CAA (Son et al. 2019 · AHA 2024 Update)</h3>
+        <p>Predicts high risk of coronary artery aneurysms by 8 weeks post-acute illness. Validated in diverse North American cohorts.</p>
+        
+        <div class="checklist">
+          <label class="check-item">
+            <input type="checkbox" id="son_age" onchange="recalcScores()">
+            <div class="ci-lbl"><b>Age &lt; 6 months</b> <span style="color:var(--muted)">(Auto-checked if age entered &lt;0.5 yr)</span></div>
+            <div class="ci-pts">+1 pt</div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="son_asian" onchange="recalcScores()">
+            <div class="ci-lbl"><b>Asian race / ancestry</b></div>
+            <div class="ci-pts">+1 pt</div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="son_z" onchange="recalcScores()">
+            <div class="ci-lbl"><b>Baseline Coronary Z-score &gt; 2.0</b> on initial echocardiogram <span style="color:var(--muted)">(Auto-checked if max Z &gt; 2.0)</span></div>
+            <div class="ci-pts">+2 pts</div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="son_crp" onchange="recalcScores()">
+            <div class="ci-lbl"><b>C-reactive protein (CRP) &gt; 13 mg/dL</b> (&gt;130 mg/L)</div>
+            <div class="ci-pts">+1 pt</div>
+          </label>
+        </div>
+
+        <div id="son_result" class="score-badge">
+          <div class="score-val" id="son_score_val">0 / 5</div>
+          <div class="score-desc" id="son_score_desc">Standard Risk (Score &lt; 3)</div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px">
+          💡 <b>AHA 2024 Clinical Implication:</b> Score <b>≥ 3 points</b> is strongly predictive of CAA. High-risk patients should be considered for <b>intensification of primary therapy</b> (IVIG + Infliximab 10 mg/kg OR IVIG + Prednisolone).
+        </div>
+      </div>
+
+      <!-- JAPANESE KOBAYASHI SCORE -->
+      <div class="guide-card" style="margin-top:14px">
+        <h3>Japanese Kobayashi Risk Score (IVIG Resistance Prediction · RAISE / KAICA)</h3>
+        <p>Predicts non-response to standard initial IVIG infusion. Score ≥ 4 (or ≥ 5) indicates high risk of IVIG resistance and CAA.</p>
+        
+        <div class="checklist">
+          <label class="check-item">
+            <input type="checkbox" id="kb_na" onchange="recalcScores()">
+            <div class="ci-lbl">Serum Sodium ≤ 133 mmol/L (mEq/L)</div>
+            <div class="ci-pts">+1 pt</div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="kb_day" onchange="recalcScores()">
+            <div class="ci-lbl">Days of illness at diagnosis ≤ 4 days</div>
+            <div class="ci-pts">+2 pts</div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="kb_ast" onchange="recalcScores()">
+            <div class="ci-lbl">AST (SGOT) ≥ 100 U/L</div>
+            <div class="ci-pts">+2 pts</div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="kb_neut" onchange="recalcScores()">
+            <div class="ci-lbl">% Neutrophils ≥ 80%</div>
+            <div class="ci-pts">+2 pts</div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="kb_crp" onchange="recalcScores()">
+            <div class="ci-lbl">CRP ≥ 10 mg/dL (≥ 100 mg/L)</div>
+            <div class="ci-pts">+1 pt</div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="kb_age" onchange="recalcScores()">
+            <div class="ci-lbl">Age ≤ 12 months <span style="color:var(--muted)">(Auto-checked if age entered ≤1.0 yr)</span></div>
+            <div class="ci-pts">+1 pt</div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="kb_plt" onchange="recalcScores()">
+            <div class="ci-lbl">Platelet count ≤ 300,000 /mm³ (≤ 300 × 10⁹/L)</div>
+            <div class="ci-pts">+1 pt</div>
+          </label>
+        </div>
+
+        <div id="kb_result" class="score-badge">
+          <div class="score-val" id="kb_score_val">0 / 10</div>
+          <div class="score-desc" id="kb_score_desc">Low Risk for IVIG Resistance (&lt; 4 pts)</div>
+        </div>
+      </div>
+
+      <!-- 2024 AHA COMPLETE / INCOMPLETE DIAGNOSTIC CHECK -->
+      <div class="guide-card" style="margin-top:14px">
+        <h3>2024 AHA Diagnostic Algorithm: Complete vs. Incomplete KD</h3>
+        <p><b>Complete KD:</b> Fever ≥ 4–5 days + ≥ 4 of 5 principal clinical criteria:</p>
+        <ul style="margin:4px 0 8px 18px;font-size:12.5px;color:var(--muted)">
+          <li>1. Bilateral nonexudative bulbar conjunctival injection</li>
+          <li>2. Oral mucosal erythema, cracked red lips, or strawberry tongue</li>
+          <li>3. Polymorphous rash (maculopapular, diffuse erythroderma, erythema multiforme)</li>
+          <li>4. Extremity erythema/edema in acute phase or periungual peeling in subacute</li>
+          <li>5. Cervical lymphadenopathy (≥ 1.5 cm diameter, usually unilateral)</li>
+        </ul>
+        <p><b>Incomplete KD:</b> Fever ≥ 5 days + 2–3 compatible features (or infant &lt;6 mo with fever ≥7 days) + <b>CRP ≥ 3.0 mg/dL or ESR ≥ 40 mm/hr</b> PLUS either <b>≥ 3 supplemental lab criteria</b> (anemia, platelets ≥450k after d7, albumin ≤3.0 g/dL, elevated ALT, WBC ≥15k, urine WBC ≥10/hpf) OR <b>Positive Echocardiogram</b> (LAD/RCA Z ≥ 2.5, CAA, or ≥3 features: decreased LV function, MR, pericardial effusion, Z 2.0–2.5).</p>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- COLLAPSIBLE SECTION 2: FOLLOW-UP & SURVEILLANCE GUIDELINES -->
+  <details class="sec" id="sec_followup" open>
+    <summary>2. Follow-up &amp; Surveillance Schedule <span class="cv">AHA 2024 Table 2</span></summary>
+    <div class="sec-body">
+      <div class="sec-note">
+        Long-term surveillance tailored to the patient's maximum and current coronary artery involvement.
+      </div>
+
+      <!-- Dynamic Current Patient Recommendation -->
+      <div id="tailored_followup_card" class="guide-card" style="border-left:4px solid var(--brand);background:#f4f9fc">
+        <h3 id="tf_title">Tailored Surveillance Protocol</h3>
+        <div id="tf_content" style="font-size:13px;line-height:1.6">
+          Please enter coronary measurements above to generate the patient's personalized follow-up schedule.
+        </div>
+      </div>
+
+      <!-- Comprehensive Master AHA 2024 Follow-up Reference Table -->
+      <div class="table-wrap">
+        <table class="guide-tbl">
+          <thead>
+            <tr>
+              <th>Risk Level</th>
+              <th>Description</th>
+              <th>Clinic &amp; Echo Follow-up</th>
+              <th>Ischemia Stress Tests</th>
+              <th>Advanced Imaging (CTA/CMR)</th>
+              <th>Physical Activity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr id="row_lvl_1">
+              <td><b>Level 1</b></td>
+              <td>No CA involvement (Z &lt; 2)</td>
+              <td>1–2 wk (consider 4–6 wk if suboptimal or abnormal labs); discharge 4 wk to 1 yr</td>
+              <td>None</td>
+              <td>None</td>
+              <td>Full activity, promotion at every visit</td>
+            </tr>
+            <tr id="row_lvl_2">
+              <td><b>Level 2</b></td>
+              <td>Dilation only (Z 2 to &lt;2.5)</td>
+              <td>1–2 wk (visit at 6 wk if abnormal); 1 yr; discharge if normal. Assess q2–5y if persistent.</td>
+              <td>None</td>
+              <td>None</td>
+              <td>Full activity, promotion at every visit</td>
+            </tr>
+            <tr id="row_lvl_3_1">
+              <td><b>Level 3.1</b></td>
+              <td>Small CAA, persistent (Z 2.5 to &lt;5)</td>
+              <td>1 wk (weekly if enlarging until stable); 6 wk; 6 mo; 12 mo; then yearly</td>
+              <td>Every 3–5 years</td>
+              <td>Consider CTA at 1 yr baseline; q3–5y</td>
+              <td>Promotion counseling; restrict contact</td>
+            </tr>
+            <tr id="row_lvl_3_2">
+              <td><b>Level 3.2</b></td>
+              <td>Small CAA, regressed to normal/dilation</td>
+              <td>1 wk; 6 wk; 1 yr; 5 yr (discharge if stress test &amp; CTA normal)</td>
+              <td>Every 5 years</td>
+              <td>Consider CTA at 1 yr; if inducible ischemia</td>
+              <td>Full activity promotion</td>
+            </tr>
+            <tr id="row_lvl_4_1">
+              <td><b>Level 4.1</b></td>
+              <td>Medium CAA, persistent (Z 5 to &lt;10, &lt;8mm)</td>
+              <td>1 wk (weekly until stable); 6 wk; 3 mo; 6 mo; 12 mo; then yearly</td>
+              <td>Every 2–5 years</td>
+              <td>Consider CTA at 1 yr baseline; q2–5y</td>
+              <td>Promotion; consider restrict contact; self-limit</td>
+            </tr>
+            <tr id="row_lvl_4_2">
+              <td><b>Level 4.2</b></td>
+              <td>Medium CAA, regressed to small</td>
+              <td>1 wk; 6 wk; 6 mo; 12 mo; then yearly</td>
+              <td>Every 3–5 years</td>
+              <td>Consider CTA at 1 yr baseline; q3–5y</td>
+              <td>Promotion; restrict contact; self-limit</td>
+            </tr>
+            <tr id="row_lvl_4_3">
+              <td><b>Level 4.3</b></td>
+              <td>Medium CAA, regressed to normal/dilation</td>
+              <td>1 wk; 6 wk; 6 mo; 12 mo; every 2 years</td>
+              <td>Every 4–5 years</td>
+              <td>Consider CTA at 1 yr; if inducible ischemia</td>
+              <td>Promotion; restrict contact; self-limit</td>
+            </tr>
+            <tr id="row_lvl_5_1">
+              <td><b>Level 5.1</b></td>
+              <td>Large/Giant CAA, persistent (Z ≥ 10 or ≥ 8mm)</td>
+              <td>1 wk (weekly until stable); 6 wk; 3, 6, 9, 12 mo; then every 6–12 mo</td>
+              <td>Every 6–12 months</td>
+              <td>Baseline CTA within 2–6 mo; q1–5y or invasive angiography</td>
+              <td>Promotion; restrict contact; self-limit</td>
+            </tr>
+            <tr id="row_lvl_5_2">
+              <td><b>Level 5.2</b></td>
+              <td>Large/Giant CAA, regressed to medium</td>
+              <td>1 wk (weekly until stable); 6 wk; 3, 6, 9, 12 mo; then every 6–12 mo</td>
+              <td>Every 2–5 years</td>
+              <td>Consider CTA at 1 yr baseline; q2–5y</td>
+              <td>Promotion; restrict contact; self-limit</td>
+            </tr>
+            <tr id="row_lvl_5_3">
+              <td><b>Level 5.3</b></td>
+              <td>Large/Giant CAA, regressed to small</td>
+              <td>1 wk; 6 wk; 3, 6, 9, 12 mo; then yearly</td>
+              <td>Every 3–5 years</td>
+              <td>Consider CTA at 1 yr baseline; q3–5y</td>
+              <td>Promotion; restrict contact; self-limit</td>
+            </tr>
+            <tr id="row_lvl_5_4">
+              <td><b>Level 5.4</b></td>
+              <td>Large/Giant CAA, regressed to normal/dilation</td>
+              <td>1 wk; 6 wk; 3, 6, 9, 12 mo; then every 1–2 years</td>
+              <td>Every 3–5 years</td>
+              <td>Consider CTA at 1 yr baseline; q3–5y</td>
+              <td>Promotion; restrict contact; self-limit</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <!-- COLLAPSIBLE SECTION 3: ANTIPLATELET & ANTICOAGULANT GUIDELINES -->
+  <details class="sec" id="sec_medical" open>
+    <summary>3. Antiplatelet, Anticoagulant &amp; Medical Therapy <span class="cv">AHA 2024 Update · DOACs &amp; Acute Protocols</span></summary>
+    <div class="sec-body">
+      <div class="sec-note">
+        Evidence-based thromboprophylaxis ladders, DOAC updates, acute intensification, IVIG resistance rescue, and emergency MI management.
+      </div>
+
+      <!-- Dynamic Patient Thromboprophylaxis Recommendation -->
+      <div id="tailored_rx_card" class="guide-card" style="border-left:4px solid var(--accent);background:#f2faf7">
+        <h3 id="trx_title" style="color:var(--accent)">Tailored Thromboprophylaxis Regimen</h3>
+        <div id="trx_content" style="font-size:13px;line-height:1.6">
+          Please enter coronary measurements above to view recommended medical therapy.
+        </div>
+      </div>
+
+      <!-- Antithrombotic Drug Table -->
+      <div class="table-wrap">
+        <table class="guide-tbl">
+          <thead>
+            <tr>
+              <th>Medication</th>
+              <th>Mechanism / Class</th>
+              <th>Pediatric Dosing</th>
+              <th>Target Range / Monitoring</th>
+              <th>Key Clinical Points</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Aspirin (ASA)</b></td>
+              <td>Antiplatelet (COX-1 inhibitor)</td>
+              <td>
+                <b>Acute phase:</b> 30–50 mg/kg/day divided q6h until afebrile 48–72h.<br>
+                <b>Maintenance / Antiplatelet:</b> 3–5 mg/kg once daily (max 81–325 mg/day).
+              </td>
+              <td>Clinical response. Platelet aggregation if resistance suspected.</td>
+              <td>Avoid NSAIDs (ibuprofen blocks antiplatelet effect). Defer live vaccines (MMR, Varicella) for 11 mo after IVIG. Inactivated flu vaccine recommended.</td>
+            </tr>
+            <tr>
+              <td><b>Clopidogrel</b></td>
+              <td>P2Y₁₂ ADP-receptor inhibitor</td>
+              <td><b>0.2–1.0 mg/kg once daily</b> PO (typical infant/child dose ~0.2 mg/kg/day; adult max 75 mg/day)</td>
+              <td>Clinical observation; monitor for bruising/bleeding.</td>
+              <td>Used in DAPT for Medium CAA (Level 4.1), ASA allergy/resistance, or in Triple Therapy for Giant CAA / thrombosis.</td>
+            </tr>
+            <tr>
+              <td><b>Warfarin</b></td>
+              <td>Vitamin K antagonist (factors II, VII, IX, X)</td>
+              <td>Load with 0.2 mg/kg/day, maintain with ~0.1 mg/kg/day titrated to INR.</td>
+              <td><b>Target INR: 2.0 – 3.0</b><br>(Daily until stable, then at least monthly).</td>
+              <td>Indicated for Giant CAA (Level 5.1). Avoid in 1st trimester of pregnancy (teratogenic). Many food/drug interactions.</td>
+            </tr>
+            <tr>
+              <td><b>LMWH (Enoxaparin)</b></td>
+              <td>Factor Xa inhibitor</td>
+              <td>
+                <b>&lt;2 months:</b> 1.5 mg/kg SC q12h<br>
+                <b>&gt;2 months:</b> 1.0 mg/kg SC q12h
+              </td>
+              <td><b>Target anti-Factor Xa: 0.5 – 1.0 U/mL</b> (drawn 4–6 h post-dose).</td>
+              <td>Preferred in infants &amp; acute evolving aneurysms. Monitor antithrombin III if target anti-Xa not reached.</td>
+            </tr>
+            <tr>
+              <td><b>DOACs (Direct Oral Anticoagulants)</b><br><span class="guideline-badge" style="background:#e0f2fe;color:#0369a1">AHA 2024 Update</span></td>
+              <td>Direct Factor Xa / Thrombin inhibitors (Apixaban, Edoxaban)</td>
+              <td>
+                <b>Apixaban:</b> Weight-based twice daily (SAXOPHONE trial)<br>
+                <b>Edoxaban:</b> Weight-based once daily (ENNOBLE-ATE trial)
+              </td>
+              <td>Infrequent monitoring; no routine INR testing required.</td>
+              <td>2024 AHA Update notes DOACs provide a convenient and safe alternative to Warfarin/LMWH with fewer dietary/drug interactions. Reversal agents available.</td>
+            </tr>
+            <tr>
+              <td><b>Statins (Atorvastatin)</b></td>
+              <td>HMG-CoA reductase inhibitor</td>
+              <td>0.125 to 0.75 mg/kg/day PO (evaluated in children ≥2 yrs with CAA)</td>
+              <td>Lipid profile, liver enzymes (ALT/AST), CPK.</td>
+              <td>Pleiotropic anti-inflammatory &amp; endothelial stabilization benefits for persistent/regressed CAA (Level 3–5). Avoid concurrent cyclosporine (CYP3A4).</td>
+            </tr>
+            <tr>
+              <td><b>β-Blockers</b></td>
+              <td>Cardioselective β-blockade</td>
+              <td>Carvedilol, Metoprolol succinate, or Bisoprolol</td>
+              <td>Heart rate &amp; blood pressure.</td>
+              <td>May be considered in large/giant aneurysms (Level 5) to reduce myocardial oxygen demand and wall stress.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Acute Intensification & IVIG Resistance Protocol -->
+      <div class="grid" style="margin-top:14px">
+        <div class="guide-card">
+          <h3>Acute Initial &amp; Primary Intensification (AHA 2024)</h3>
+          <ul>
+            <li><b>Standard Initial:</b> IVIG 2 g/kg as single infusion over 8–12h + Aspirin 30–50 mg/kg/day.</li>
+            <li><b>High-Risk Primary Intensification (Dual Therapy):</b> Indicated if Age &lt;6 mo, Baseline Z ≥ 2.5, or Son Score ≥ 3:
+              <ul>
+                <li><b>Infliximab:</b> 10 mg/kg IV single infusion over 2h with IVIG; OR</li>
+                <li><b>Prednisolone (RAISE protocol):</b> 2 mg/kg/day IV divided q8h for 5d, then PO prednisolone 2 mg/kg/day with slow taper over 15d once CRP normalizes (+ famotidine for GI prophylaxis).</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div class="guide-card">
+          <h3>IVIG Resistance &amp; Refractory KD Protocols</h3>
+          <ul>
+            <li><b>Definition:</b> Persistent or recrudescent fever ≥ 36h after completion of first IVIG infusion.</li>
+            <li><b>First-Line Rescue Options:</b>
+              <ul>
+                <li><b>Infliximab:</b> 10 mg/kg IV over 2h (KIDCARE trial: faster defervescence, shorter stay).</li>
+                <li><b>Second IVIG Infusion:</b> 2 g/kg IV over 8–12h.</li>
+                <li><b>Pulse Methylprednisolone:</b> 20–30 mg/kg/day IV for 3 consecutive days.</li>
+              </ul>
+            </li>
+            <li><b>Refractory Multi-Agent Options:</b>
+              <ul>
+                <li><b>Anakinra (IL-1RA):</b> 2–10 mg/kg/day IV/SC divided q12h.</li>
+                <li><b>Cyclosporine:</b> 5 mg/kg/day PO divided q12h (target 2h level 300–600 ng/mL; + Mg supplement).</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Acute MI & Coronary Thrombosis Emergency Box -->
+      <div class="guide-card" style="margin-top:14px;border:1px solid #e57373;background:#fff8f8">
+        <h3 style="color:#c62828">🚨 Acute Myocardial Infarction / Coronary Thrombosis Management (AHA 2024 Figure 3)</h3>
+        <p style="font-size:12.5px;color:#333;margin-bottom:8px">
+          Peak MI risk occurs in the first 2–3 months in large/giant CAA. Presenting symptoms in infants include irritability, unexplained crying, pallor, and diaphoresis; in older children chest/abdominal pain and vomiting.
+        </p>
+        <div class="grid">
+          <div>
+            <b>STEMI Pathway:</b>
+            <ul style="font-size:12px">
+              <li>Time to cath lab &lt;90 min: Urgent transfer for <b>Primary PCI / catheter thrombectomy</b>.</li>
+              <li>Cath lab &gt;90 min or small infant (no catheters): <b>Fibrinolysis (tPA)</b> or emergent CABG.</li>
+            </ul>
+          </div>
+          <div>
+            <b>Pediatric tPA Fibrinolysis Protocol:</b>
+            <ul style="font-size:12px">
+              <li><b>Alteplase (tPA):</b> 0.05 to 0.1 mg/kg/h IV for 6–12 h (max 2 mg/h).</li>
+              <li>Check Fibrinogen (&gt;150 mg/dL; give FFP 10–20 mL/kg if low).</li>
+              <li>Unfractionated Heparin: 75 U/kg bolus then 20 U/kg/h (target ACT 200–250s).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- ACTIONS & PRINT -->
+  <div class="card noprint">
+    <div class="btns">
+      <button class="btn primary" onclick="window.print()">🖨️ Print / Save Clinical Report</button>
+      <button class="btn" onclick="resetAll()">↺ Reset Calculator</button>
+    </div>
+  </div>
+
+  <!-- REFERENCES -->
+  <div class="card noprint">
+    <h2>Evidence Base &amp; Key References</h2>
+    <ul class="refs">
+      <li><b>Jone P-N, Tremoulet A, Choueiter N, et al.</b> Update on Diagnosis and Management of Kawasaki Disease: A Scientific Statement From the American Heart Association. <i>Circulation</i>. 2024;150:e481–e500. Correction: <i>Circulation</i>. 2025;151:e863.</li>
+      <li><b>McCrindle BW, Rowley AH, Newburger JW, et al.</b> Diagnosis, Treatment, and Long-Term Management of Kawasaki Disease: A Scientific Statement for Health Professionals From the American Heart Association. <i>Circulation</i>. 2017;135:e927–e999.</li>
+      <li><b>McCrindle BW, Li JS, Minich LL, et al.</b> Coronary artery involvement in children with Kawasaki disease: risk factors from analysis of serial normalized measurements. <i>Circulation</i>. 2007;116:174–179.</li>
+      <li><b>Dallaire F, Dahdah N.</b> New equations and a critical appraisal of coronary artery Z scores in healthy children. <i>J Am Soc Echocardiogr</i>. 2011;24:60–74.</li>
+      <li><b>Son MBF, Gauvreau K, Tremoulet AH, et al.</b> Risk model development and validation for prediction of coronary artery aneurysms in Kawasaki disease in a North American population. <i>J Am Heart Assoc</i>. 2019;8:e011319.</li>
+      <li><b>Kobayashi T, Inoue Y, Takeuchi K, et al.</b> Prediction of intravenous immunoglobulin unresponsiveness in patients with Kawasaki disease. <i>Circulation</i>. 2006;113:2606–2612.</li>
+      <li><b>Kobayashi T, Saji T, Otani T, et al. (RAISE study).</b> Efficacy of immunoglobulin plus prednisolone for prevention of coronary artery abnormalities in severe Kawasaki disease. <i>Lancet</i>. 2012;379:1613–1620.</li>
+    </ul>
+  </div>
+
+  <div class="disclaimer noprint" style="font-size:11.5px;text-align:center">
+    fetal-echo.org · Clinical Calculator Suite · Dr Mridul Agarwal, Pediatric Cardiologist
+  </div>
+</div>
+
+<!-- PRINT REPORT TEMPLATE -->
+<div id="printArea">
+  <div style="border-bottom:2px solid #15607a;padding-bottom:6px;margin-bottom:12px;display:flex;justify-content:space-between">
+    <div>
+      <h2 style="margin:0;color:#15607a">Kawasaki Disease Coronary &amp; Risk Assessment Report</h2>
+      <div style="font-size:11px;color:#555">fetal-echo.org · Guidelines: AHA 2024 Update &amp; 2017 Statements</div>
+    </div>
+    <div style="text-align:right;font-size:11px" id="pr_date"></div>
+  </div>
+
+  <div class="psec">
+    <table style="width:100%">
+      <tr>
+        <td><b>Patient ID / Name:</b> <span id="pr_pid">—</span></td>
+        <td><b>Age:</b> <span id="pr_age">—</span></td>
+        <td><b>Sex:</b> <span id="pr_sex">—</span></td>
+      </tr>
+      <tr>
+        <td><b>Weight:</b> <span id="pr_wt">—</span> kg</td>
+        <td><b>Height:</b> <span id="pr_ht">—</span> cm</td>
+        <td><b>BSA (Haycock):</b> <span id="pr_bsa">—</span> m²</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="psec">
+    <h3 style="font-size:12px;margin:6px 0;color:#15607a">Coronary Artery Measurements &amp; Z-Scores (<span id="pr_ref">Boston · McCrindle 2007</span>)</h3>
+    <table style="width:100%">
+      <thead>
+        <tr>
+          <th>Artery</th>
+          <th>Dimension (mm)</th>
+          <th>Z-Score</th>
+          <th>AHA Classification</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>LMCA (Left Main)</td><td id="pr_lmca_v">—</td><td id="pr_lmca_z">—</td><td id="pr_lmca_k">—</td></tr>
+        <tr><td>LAD (Left Anterior Descending)</td><td id="pr_lad_v">—</td><td id="pr_lad_z">—</td><td id="pr_lad_k">—</td></tr>
+        <tr><td>LCx (Left Circumflex)</td><td id="pr_lcx_v">—</td><td id="pr_lcx_z">—</td><td id="pr_lcx_k">—</td></tr>
+        <tr><td>RCA (Right Coronary)</td><td id="pr_rca_v">—</td><td id="pr_rca_z">—</td><td id="pr_rca_k">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="psec" style="background:#f0f7fa;padding:8px;border:1px solid #b8d9e8;border-radius:6px">
+    <b>Maximum Coronary Z-Score:</b> <span id="pr_max_z" style="font-weight:700">—</span> | 
+    <b>AHA Risk Classification:</b> <span id="pr_risk_lvl" style="font-weight:700">—</span>
+  </div>
+
+  <div class="psec" style="margin-top:10px">
+    <h3 style="font-size:12px;margin:4px 0;color:#15607a">Risk Stratification &amp; Diagnostic Models</h3>
+    <table style="width:100%">
+      <tr>
+        <td style="width:50%"><b>Son et al. 2019 Score (CAA Risk):</b> <span id="pr_son_score">—</span></td>
+        <td style="width:50%"><b>Kobayashi Score (IVIG Resistance):</b> <span id="pr_kb_score">—</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="psec" style="margin-top:10px">
+    <h3 style="font-size:12px;margin:4px 0;color:#15607a">Recommended Management &amp; Follow-up Schedule (AHA 2024 Table 2)</h3>
+    <div id="pr_recommendations" style="font-size:11px;line-height:1.5;padding:6px;background:#fafafa;border:1px solid #ddd">
+      —
+    </div>
+  </div>
+
+  <div style="margin-top:18px;border-top:1px solid #ccc;padding-top:6px;font-size:10px;color:#777;display:flex;justify-content:space-between">
+    <span>Report generated via fetal-echo.org</span>
+    <span>Clinician Signature: ___________________________</span>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   MATHEMATICAL MODELS & COEFFICIENTS
+   ================================================================ */
+
+/* BSA — Haycock formula: BSA (m²) = 0.024265 × Wt(kg)^0.5378 × Ht(cm)^0.3964 */
+function calcBsaHaycock(wt, ht) {
+  if (!wt || !ht || wt <= 0 || ht <= 0) return null;
+  return 0.024265 * Math.pow(wt, 0.5378) * Math.pow(ht, 0.3964);
+}
+
+/* McCRINDLE 2007 (BOSTON) — Circulation 2007;116:174-9
+   Mean(mm) = 10 × (a1 + b1 × BSA^exp)
+   SD(mm)   = 10 × (a2 + b2 × BSA)
+*/
+const BOSTON = {
+  lmca: { a1:-0.02887, b1:0.31747, exp:0.36008, a2:0.03040, b2:0.01514 },
+  lad:  { a1:-0.02852, b1:0.26108, exp:0.37893, a2:0.01465, b2:0.01996 },
+  rca:  { a1:-0.02756, b1:0.26117, exp:0.39992, a2:0.02407, b2:0.01597 },
+};
+
+function bostonZ(val, key, bsa) {
+  const c = BOSTON[key]; if (!c || !bsa || bsa <= 0) return null;
+  const mean = 10 * (c.a1 + c.b1 * Math.pow(bsa, c.exp));
+  const sd   = 10 * (c.a2 + c.b2 * bsa);
+  return sd > 0 ? (val - mean) / sd : null;
+}
+
+/* DALLAIRE 2011 (MONTREAL) — JASE 2011;24:60-74
+   Mean(mm) = a1 + b1 × √BSA
+   SD(mm)   = a2 + b2 × √BSA
+*/
+const MONTREAL = {
+  lmca: { a1:-0.1817, b1:2.9238, a2:0.1801, b2:0.2530 },
+  lad:  { a1:-0.1502, b1:2.2672, a2:0.1709, b2:0.2293 },
+  circ: { a1:-0.2716, b1:2.3458, a2:0.1142, b2:0.3423 },
+  rca:  { a1:-0.3039, b1:2.7521, a2:0.1626, b2:0.2881 },
+};
+
+function montrealZ(val, key, bsa) {
+  const c = MONTREAL[key]; if (!c || !bsa || bsa <= 0) return null;
+  const sq = Math.sqrt(bsa);
+  const mean = c.a1 + c.b1 * sq;
+  const sd   = c.a2 + c.b2 * sq;
+  return sd > 0 ? (val - mean) / sd : null;
+}
+
+/* AHA Kawasaki Aneurysm Classification */
+function classifyKawasaki(z, rawVal) {
+  if (z === null || !isFinite(z)) return null;
+  if (z >= 10 || (rawVal && rawVal >= 8)) {
+    return { cls:'giant', tag:'t-giant', text:'Large / Giant Aneurysm', level:5, desc:'Z ≥ 10 or absolute dimension ≥ 8 mm' };
+  }
+  if (z >= 5) {
+    return { cls:'med', tag:'t-med', text:'Medium Aneurysm', level:4, desc:'Z 5 to <10 and absolute dimension < 8 mm' };
+  }
+  if (z >= 2.5) {
+    return { cls:'small', tag:'t-small', text:'Small Aneurysm', level:3, desc:'Z 2.5 to <5' };
+  }
+  if (z >= 2.0) {
+    return { cls:'dil', tag:'t-dil', text:'Dilation Only', level:2, desc:'Z 2.0 to <2.5' };
+  }
+  return { cls:'ok', tag:'t-ok', text:'Normal (<2)', level:1, desc:'Z < 2' };
+}
+
+/* ================================================================
+   STATE & CONTROLLERS
+   ================================================================ */
+let currentCorRef = 'boston';
+
+function setCorRef(ref) {
+  currentCorRef = ref;
+  document.getElementById('btn_boston').className = ref === 'boston' ? 'on' : '';
+  document.getElementById('btn_montreal').className = ref === 'montreal' ? 'on' : '';
+  
+  const noteEl = document.getElementById('ref_note');
+  if (ref === 'boston') {
+    noteEl.innerHTML = '<b>Boston (McCrindle 2007):</b> Exponential model with Haycock BSA. Default AHA recommendation. (LCx computed via Dallaire 2011).';
+  } else {
+    noteEl.innerHTML = '<b>Montreal (Dallaire 2011):</b> Square-root model with Haycock BSA. Includes normative data for LMCA, LAD, LCx, and RCA.';
+  }
+  recalc();
+}
+
+function onAgeYChange() {
+  const y = parseFloat(document.getElementById('in_age_y').value);
+  if (isFinite(y)) {
+    document.getElementById('in_age_m').value = (y * 12).toFixed(1);
+  } else {
+    document.getElementById('in_age_m').value = '';
+  }
+  syncAgeCheckboxes();
+  recalc();
+}
+
+function onAgeMChange() {
+  const m = parseFloat(document.getElementById('in_age_m').value);
+  if (isFinite(m)) {
+    document.getElementById('in_age_y').value = (m / 12).toFixed(2);
+  } else {
+    document.getElementById('in_age_y').value = '';
+  }
+  syncAgeCheckboxes();
+  recalc();
+}
+
+function syncAgeCheckboxes() {
+  const m = parseFloat(document.getElementById('in_age_m').value);
+  const y = parseFloat(document.getElementById('in_age_y').value);
+  const isInfant6Mo = isFinite(m) ? m < 6 : (isFinite(y) ? y < 0.5 : false);
+  const isInfant12Mo = isFinite(m) ? m <= 12 : (isFinite(y) ? y <= 1.0 : false);
+
+  const sonAgeCb = document.getElementById('son_age');
+  const kbAgeCb = document.getElementById('kb_age');
+
+  if (isInfant6Mo) sonAgeCb.checked = true;
+  if (isInfant12Mo) kbAgeCb.checked = true;
+  recalcScores();
+}
+
+function recalcScores() {
+  /* Son et al. 2019 Score */
+  let sonScore = 0;
+  if (document.getElementById('son_age').checked) sonScore += 1;
+  if (document.getElementById('son_asian').checked) sonScore += 1;
+  if (document.getElementById('son_z').checked) sonScore += 2;
+  if (document.getElementById('son_crp').checked) sonScore += 1;
+
+  const sonValEl = document.getElementById('son_score_val');
+  const sonDescEl = document.getElementById('son_score_desc');
+  const sonBadge = document.getElementById('son_result');
+  sonValEl.textContent = `${sonScore} / 5`;
+
+  if (sonScore >= 3) {
+    sonBadge.className = 'score-badge high-risk';
+    sonDescEl.innerHTML = '⚠️ <b>HIGH RISK for CAA</b> (Score ≥ 3) — Intensification recommended';
+  } else {
+    sonBadge.className = 'score-badge';
+    sonDescEl.textContent = 'Standard Risk (Score < 3)';
+  }
+
+  /* Kobayashi Score */
+  let kbScore = 0;
+  if (document.getElementById('kb_na').checked) kbScore += 1;
+  if (document.getElementById('kb_day').checked) kbScore += 2;
+  if (document.getElementById('kb_ast').checked) kbScore += 2;
+  if (document.getElementById('kb_neut').checked) kbScore += 2;
+  if (document.getElementById('kb_crp').checked) kbScore += 1;
+  if (document.getElementById('kb_age').checked) kbScore += 1;
+  if (document.getElementById('kb_plt').checked) kbScore += 1;
+
+  const kbValEl = document.getElementById('kb_score_val');
+  const kbDescEl = document.getElementById('kb_score_desc');
+  const kbBadge = document.getElementById('kb_result');
+  kbValEl.textContent = `${kbScore} / 10`;
+
+  if (kbScore >= 4) {
+    kbBadge.className = 'score-badge high-risk';
+    kbDescEl.innerHTML = '⚠️ <b>HIGH RISK for IVIG Resistance</b> (Score ≥ 4)';
+  } else {
+    kbBadge.className = 'score-badge';
+    kbDescEl.textContent = 'Low Risk for IVIG Resistance (< 4 pts)';
+  }
+}
+
+/* ================================================================
+   MAIN RECALCULATION & RISK LEVEL ASSIGNMENT
+   ================================================================ */
+function recalc() {
+  const wt = parseFloat(document.getElementById('in_wt').value);
+  const ht = parseFloat(document.getElementById('in_ht').value);
+  const bsa = calcBsaHaycock(wt, ht);
+
+  const bsaBar = document.getElementById('bsa_bar');
+  if (bsa) {
+    bsaBar.style.display = 'block';
+    bsaBar.innerHTML = `BSA (Haycock): <b>${bsa.toFixed(3)} m²</b> · Weight: ${wt} kg · Height: ${ht} cm`;
+  } else {
+    bsaBar.style.display = 'none';
+  }
+
+  const arteries = [
+    { id:'lmca', key:'lmca', lbl:'LMCA', raw:parseFloat(document.getElementById('in_lmca').value) },
+    { id:'lad',  key:'lad',  lbl:'LAD',  raw:parseFloat(document.getElementById('in_lad').value) },
+    { id:'lcx',  key:'circ', lbl:'LCx',  raw:parseFloat(document.getElementById('in_lcx').value) },
+    { id:'rca',  key:'rca',  lbl:'RCA',  raw:parseFloat(document.getElementById('in_rca').value) },
+  ];
+
+  let maxZ = -Infinity;
+  let maxRaw = 0;
+  let hasAnyZ = false;
+
+  arteries.forEach(art => {
+    const zBox = document.getElementById('z_' + art.id);
+    if (!isFinite(art.raw) || !bsa) {
+      zBox.textContent = '—';
+      zBox.className = 'zbox';
+      return;
+    }
+
+    let z = null;
+    if (art.id === 'lcx') {
+      z = montrealZ(art.raw, 'circ', bsa);
+    } else {
+      z = currentCorRef === 'boston' ? bostonZ(art.raw, art.key, bsa) : montrealZ(art.raw, art.key, bsa);
+    }
+
+    if (z !== null && isFinite(z)) {
+      hasAnyZ = true;
+      if (z > maxZ) maxZ = z;
+      if (art.raw > maxRaw) maxRaw = art.raw;
+
+      const info = classifyKawasaki(z, art.raw);
+      const sign = z >= 0 ? '+' : '';
+      const refNote = (currentCorRef === 'boston' && art.id === 'lcx') ? '<br><span style="font-size:10.5px;color:var(--muted)">(Dallaire 2011)</span>' : '';
+      
+      zBox.className = 'zbox ' + info.cls;
+      zBox.innerHTML = `<span class="zval">Z = ${sign}${z.toFixed(2)}</span> <span class="tag ${info.tag}">${info.text}</span>${refNote}`;
+    } else {
+      zBox.textContent = '—';
+      zBox.className = 'zbox';
+    }
+  });
+
+  /* Auto-sync Baseline Z > 2 to Son Score */
+  const sonZCb = document.getElementById('son_z');
+  if (hasAnyZ && maxZ > 2.0) {
+    sonZCb.checked = true;
+  }
+  recalcScores();
+
+  /* Determine Risk Level */
+  const phase = document.getElementById('in_phase').value;
+  const priorMaxVal = document.getElementById('in_prior_max').value;
+
+  if (hasAnyZ) {
+    const currentClass = classifyKawasaki(maxZ, maxRaw);
+    let effectiveMaxLevel = currentClass.level;
+
+    if (priorMaxVal !== 'auto') {
+      const pLvl = parseInt(priorMaxVal);
+      if (pLvl > effectiveMaxLevel) effectiveMaxLevel = pLvl;
+    }
+
+    let riskLevelCode = '';
+    let riskLevelName = '';
+    let riskLevelDesc = '';
+    let bannerCls = 'lvl-' + effectiveMaxLevel;
+
+    if (effectiveMaxLevel === 1) {
+      riskLevelCode = '1';
+      riskLevelName = 'Risk Level 1: No Coronary Artery Involvement';
+      riskLevelDesc = 'Coronary artery Z-scores always < 2 at all time points.';
+    } else if (effectiveMaxLevel === 2) {
+      riskLevelCode = '2';
+      riskLevelName = 'Risk Level 2: Coronary Artery Dilation Only';
+      riskLevelDesc = 'Maximal coronary Z-score 2.0 to < 2.5 (or transient dilation resolving to <2).';
+    } else if (effectiveMaxLevel === 3) {
+      if (currentClass.level === 3) {
+        riskLevelCode = '3.1';
+        riskLevelName = 'Risk Level 3.1: Small Aneurysm (Current or Persistent)';
+        riskLevelDesc = 'Current coronary Z-score ≥ 2.5 to < 5.';
+      } else {
+        riskLevelCode = '3.2';
+        riskLevelName = 'Risk Level 3.2: Small Aneurysm (Regressed to Normal / Dilation)';
+        riskLevelDesc = 'Prior small aneurysm (Z 2.5 to <5) regressed to normal lumen or dilation only.';
+      }
+    } else if (effectiveMaxLevel === 4) {
+      if (currentClass.level === 4) {
+        riskLevelCode = '4.1';
+        riskLevelName = 'Risk Level 4.1: Medium Aneurysm (Current or Persistent)';
+        riskLevelDesc = 'Current coronary Z-score ≥ 5 to < 10 and absolute dimension < 8 mm.';
+      } else if (currentClass.level === 3) {
+        riskLevelCode = '4.2';
+        riskLevelName = 'Risk Level 4.2: Medium Aneurysm (Regressed to Small Aneurysm)';
+        riskLevelDesc = 'Prior medium aneurysm (Z 5 to <10) decreased in size to small aneurysm (Z 2.5 to <5).';
+      } else {
+        riskLevelCode = '4.3';
+        riskLevelName = 'Risk Level 4.3: Medium Aneurysm (Regressed to Normal / Dilation)';
+        riskLevelDesc = 'Prior medium aneurysm (Z 5 to <10) decreased to normal lumen or dilation only.';
+      }
+    } else if (effectiveMaxLevel === 5) {
+      if (currentClass.level === 5) {
+        riskLevelCode = '5.1';
+        riskLevelName = 'Risk Level 5.1: Large or Giant Aneurysm (Current or Persistent)';
+        riskLevelDesc = 'Current coronary Z-score ≥ 10 or absolute internal lumen dimension ≥ 8 mm.';
+      } else if (currentClass.level === 4) {
+        riskLevelCode = '5.2';
+        riskLevelName = 'Risk Level 5.2: Large/Giant Aneurysm (Regressed to Medium Aneurysm)';
+        riskLevelDesc = 'Prior large/giant aneurysm (Z ≥ 10 or ≥ 8mm) regressed in lumen diameter to medium aneurysm.';
+      } else if (currentClass.level === 3) {
+        riskLevelCode = '5.3';
+        riskLevelName = 'Risk Level 5.3: Large/Giant Aneurysm (Regressed to Small Aneurysm)';
+        riskLevelDesc = 'Prior large/giant aneurysm (Z ≥ 10 or ≥ 8mm) regressed in lumen diameter to small aneurysm.';
+      } else {
+        riskLevelCode = '5.4';
+        riskLevelName = 'Risk Level 5.4: Large/Giant Aneurysm (Regressed to Normal / Dilation)';
+        riskLevelDesc = 'Prior large/giant aneurysm (Z ≥ 10 or ≥ 8mm) regressed to normal luminal dimension or dilation only.';
+      }
+    }
+
+    renderStatusBanner(riskLevelCode, riskLevelName, riskLevelDesc, maxZ, bannerCls);
+    renderTailoredGuidance(riskLevelCode);
+    highlightTableRow(riskLevelCode);
+  } else {
+    document.getElementById('status_banner').style.display = 'none';
+    clearTailoredGuidance();
+  }
+}
+
+function renderStatusBanner(code, title, desc, maxZ, bannerCls) {
+  const banner = document.getElementById('status_banner');
+  banner.className = 'status-banner ' + bannerCls;
+  banner.style.display = 'block';
+  
+  const sign = maxZ >= 0 ? '+' : '';
+  document.getElementById('status_title').innerHTML = `
+    <span>${title}</span>
+    <span style="font-size:13px;font-weight:600;margin-left:auto;background:rgba(0,0,0,0.06);padding:3px 8px;border-radius:6px">
+      Max Z = ${sign}${maxZ.toFixed(2)}
+    </span>
+  `;
+  document.getElementById('status_meta').innerHTML = `
+    <b>Definition:</b> ${desc}<br>
+    <b>Management Class:</b> AHA 2024 Table 2 Risk Stratification Category <b>Level ${code}</b>.
+  `;
+}
+
+function renderTailoredGuidance(code) {
+  const fCard = document.getElementById('tailored_followup_card');
+  const rxCard = document.getElementById('tailored_rx_card');
+  const tfTitle = document.getElementById('tf_title');
+  const tfContent = document.getElementById('tf_content');
+  const trxTitle = document.getElementById('trx_title');
+  const trxContent = document.getElementById('trx_content');
+
+  tfTitle.textContent = `AHA 2024 Follow-up Protocol for Risk Level ${code}`;
+  trxTitle.textContent = `AHA 2024 Antithrombotic & Medical Plan for Risk Level ${code}`;
+
+  let fHtml = '';
+  let rxHtml = '';
+
+  switch(code) {
+    case '1':
+      fHtml = `
+        <ul>
+          <li><b>Clinic, Echo &amp; ECG:</b> 1–2 weeks post-discharge. Consider 4–6 week follow-up if imaging was suboptimal or inflammatory markers were abnormal at 1–2 weeks. May discharge from cardiology care between 4 weeks and 1 year if normal.</li>
+          <li><b>Ischemia Stress Testing:</b> None indicated.</li>
+          <li><b>Advanced Imaging (CTA/CMR):</b> None indicated.</li>
+          <li><b>Physical Activity:</b> General counseling promoting healthy lifestyle and physical activity at every visit without restrictions.</li>
+        </ul>
+      `;
+      rxHtml = `
+        <ul>
+          <li><b>Antiplatelet Therapy:</b> Low-dose Aspirin (3–5 mg/kg/day) for 4 to 6 weeks, then <b>discontinue</b>.</li>
+          <li><b>Anticoagulation:</b> Not indicated.</li>
+          <li><b>Medical Therapy:</b> None indicated.</li>
+        </ul>
+      `;
+      break;
+
+    case '2':
+      fHtml = `
+        <ul>
+          <li><b>Clinic, Echo &amp; ECG:</b> 1–2 weeks (repeat at 6 wk if abnormal at 1–2 wk); 1 year. If coronary dimensions normalize, may discharge after 1 year. If dilation persists at 1 yr, assess every 2–5 years (consider dominant branch).</li>
+          <li><b>Ischemia Stress Testing:</b> None indicated.</li>
+          <li><b>Advanced Imaging:</b> None indicated.</li>
+          <li><b>Physical Activity:</b> Promote healthy physical activity; no restrictions.</li>
+        </ul>
+      `;
+      rxHtml = `
+        <ul>
+          <li><b>Antiplatelet Therapy:</b> Low-dose Aspirin (3–5 mg/kg/day) for 6 weeks; if normal coronaries at 6 weeks, discontinue. If dilation is still present at 4–6 weeks, continue until resolution.</li>
+          <li><b>Anticoagulation:</b> Not indicated.</li>
+        </ul>
+      `;
+      break;
+
+    case '3.1':
+      fHtml = `
+        <ul>
+          <li><b>Clinic, Echo &amp; ECG:</b> Within 1 week (if progressive enlargement, close follow-up once weekly until stable); 6 weeks; 6 months; 12 months; then <b>yearly</b>.</li>
+          <li><b>Ischemia Stress Testing:</b> Assess for inducible myocardial ischemia every <b>3 to 5 years</b> (stress echo, stress CMR).</li>
+          <li><b>Advanced Imaging:</b> Consider coronary CTA at 1 year as baseline; may consider every 3 to 5 years.</li>
+          <li><b>Physical Activity:</b> Promotion counseling; restrict collision/contact sports if on antithrombotics.</li>
+        </ul>
+      `;
+      rxHtml = `
+        <ul>
+          <li><b>Antiplatelet Therapy:</b> <b>Low-dose Aspirin (3–5 mg/kg/day)</b> monotherapy indefinitely while persistent. (Clopidogrel if ASA allergic/resistant).</li>
+          <li><b>Anticoagulation:</b> Not indicated. Dual antiplatelet therapy is not indicated for small aneurysms alone.</li>
+          <li><b>Statins:</b> Empirical low-dose statin therapy (Atorvastatin) for pleiotropic anti-inflammatory/endothelial effects may be considered.</li>
+        </ul>
+      `;
+      break;
+
+    case '3.2':
+      fHtml = `
+        <ul>
+          <li><b>Clinic, Echo &amp; ECG:</b> Within 1 week; 6 weeks; 1 year; 5 years. May discharge provided stress test and coronary CTA are normal.</li>
+          <li><b>Ischemia Stress Testing:</b> Assess every <b>5 years</b>.</li>
+          <li><b>Advanced Imaging:</b> Consider coronary CTA at 1 year as baseline; consider if inducible ischemia or ventricular dysfunction.</li>
+          <li><b>Physical Activity:</b> Full physical activity promotion.</li>
+        </ul>
+      `;
+      rxHtml = `
+        <ul>
+          <li><b>Antiplatelet Therapy:</b> Low-dose Aspirin continued until normal dimensions documented, then may be discontinued.</li>
+          <li><b>Anticoagulation:</b> Not indicated.</li>
+          <li><b>Statins:</b> Statin therapy for pleiotropic effects may be considered.</li>
+        </ul>
+      `;
+      break;
+
+    case '4.1':
+      fHtml = `
+        <ul>
+          <li><b>Clinic, Echo &amp; ECG:</b> Within 1 week (weekly if expanding until stable); 6 weeks; 3 months; 6 months; 12 months; then <b>every 6–12 months</b>.</li>
+          <li><b>Ischemia Stress Testing:</b> Assess for inducible ischemia every <b>2 to 5 years</b>.</li>
+          <li><b>Advanced Imaging:</b> Consider coronary CTA at 1 year as baseline; consider every 2 to 5 years.</li>
+          <li><b>Physical Activity:</b> Promotion counseling; <b>restrict contact/collision sports</b> (due to DAPT); allow self-limiting exertion; competitive sports guided by ischemia testing.</li>
+          <li><b>Reproductive:</b> Discourage oral contraceptives that increase thrombosis risk (prefer progestin-only/low-estrogen); multidisciplinary cardiology/OB pregnancy supervision.</li>
+        </ul>
+      `;
+      rxHtml = `
+        <ul>
+          <li><b>Antiplatelet Therapy:</b> <b>Dual Antiplatelet Therapy (DAPT)</b>: Low-dose Aspirin (3–5 mg/kg/day) + Clopidogrel (0.2–1.0 mg/kg/day).</li>
+          <li><b>Anticoagulation:</b> Not routinely indicated (warfarin/LMWH) unless additional high-risk features / thrombosis history exist.</li>
+          <li><b>Statins:</b> Statin therapy for pleiotropic effects may be considered.</li>
+          <li><b>β-Blockers:</b> May be considered in select patients.</li>
+        </ul>
+      `;
+      break;
+
+    case '4.2':
+      fHtml = `
+        <ul>
+          <li><b>Clinic, Echo &amp; ECG:</b> Within 1 week; 6 weeks; 6 months; 12 months; then <b>yearly</b>.</li>
+          <li><b>Ischemia Stress Testing:</b> Assess every <b>3 to 5 years</b>.</li>
+          <li><b>Advanced Imaging:</b> Consider coronary CTA at 1 year as baseline; consider every 3 to 5 years.</li>
+          <li><b>Physical Activity:</b> Promotion counseling; restrict contact sports if on DAPT; self-limit.</li>
+        </ul>
+      `;
+      rxHtml = `
+        <ul>
+          <li><b>Antiplatelet Therapy:</b> <b>Low-dose Aspirin</b> monotherapy. Dual antiplatelet therapy may be considered based on individual characteristics.</li>
+          <li><b>Anticoagulation:</b> Not indicated.</li>
+          <li><b>Statins:</b> Statin therapy for pleiotropic effects may be considered.</li>
+        </ul>
+      `;
+      break;
+
+    case '4.3':
+      fHtml = `
+        <ul>
+          <li><b>Clinic, Echo &amp; ECG:</b> Within 1 week; 6 weeks; 6 months; 12 months; then <b>every 2 years</b>.</li>
+          <li><b>Ischemia Stress Testing:</b> Assess every <b>4 to 5 years</b>.</li>
+          <li><b>Advanced Imaging:</b> Coronary CTA at 1 year baseline; further imaging if inducible ischemia.</li>
+          <li><b>Physical Activity:</b> Promotion counseling; restrict contact sports; self-limit.</li>
+        </ul>
+      `;
+      rxHtml = `
+        <ul>
+          <li><b>Antiplatelet Therapy:</b> Low-dose Aspirin monotherapy (reasonably indicated).</li>
+          <li><b>Anticoagulation:</b> Not indicated.</li>
+          <li><b>Statins:</b> Statin therapy may be considered.</li>
+        </ul>
+      `;
+      break;
+
+    case '5.1':
+      fHtml = `
+        <ul>
+          <li><b>Clinic, Echo &amp; ECG:</b> Within 1 week (weekly if expanding until stable); 6 weeks; 3, 6, 9, 12 months; then <b>every 3 to 6 months</b> (or 6–12 mo if stable).</li>
+          <li><b>Ischemia Stress Testing:</b> Assess for inducible myocardial ischemia <b>every 6 to 12 months</b> (Stress echo, Stress CMR, or Nuclear MPI/PET).</li>
+          <li><b>Advanced Imaging:</b> Baseline coronary CTA within <b>2 to 6 months</b>; repeat every 1 to 5 years or perform invasive coronary angiography.</li>
+          <li><b>Physical Activity:</b> Promotion counseling; <b>strictly restrict contact sports</b>; avoid heavy dynamic/static competitive sports; allow self-limiting play. CPR education for family.</li>
+          <li><b>Reproductive:</b> High-risk pregnancy counseling; switch warfarin to LMWH/heparin before 1st trimester; multidisciplinary team care.</li>
+        </ul>
+      `;
+      rxHtml = `
+        <ul>
+          <li><b>Antithrombotic Therapy:</b> <b>Low-dose Aspirin + Systemic Anticoagulation</b>:
+            <ul>
+              <li><b>Warfarin:</b> Target INR 2.0 – 3.0; OR</li>
+              <li><b>LMWH (Enoxaparin):</b> Target anti-Xa 0.5 – 1.0 U/mL (especially for infants / expanding CAA); OR</li>
+              <li><b>DOACs (Apixaban / Edoxaban):</b> Per AHA 2024 update, DOACs provide an attractive, safe, and effective oral alternative without frequent INR monitoring.</li>
+            </ul>
+          </li>
+          <li><b>Dual Antiplatelet / Triple Therapy:</b> Adding Clopidogrel to ASA + Anticoagulation (Triple Therapy) may be considered in very extensive/distal aneurysms or recent thrombosis history.</li>
+          <li><b>Cardioprotective Medical Therapy:</b> <b>β-Blockers</b> (Carvedilol, Metoprolol succinate) and <b>Statins</b> (Atorvastatin) are reasonably considered to decrease wall stress, myocardial oxygen demand, and persistent vessel inflammation.</li>
+        </ul>
+      `;
+      break;
+
+    case '5.2':
+      fHtml = `
+        <ul>
+          <li><b>Clinic, Echo &amp; ECG:</b> Within 1 week; 6 weeks; 3, 6, 9, 12 months; then <b>every 6 to 12 months</b>.</li>
+          <li><b>Ischemia Stress Testing:</b> Assess every <b>2 to 5 years</b>.</li>
+          <li><b>Advanced Imaging:</b> Consider coronary CTA at 1 year as baseline; repeat every 2 to 5 years.</li>
+          <li><b>Physical Activity:</b> Promotion counseling; restrict contact sports; self-limit exertion.</li>
+        </ul>
+      `;
+      rxHtml = `
+        <ul>
+          <li><b>Antiplatelet Therapy:</b> Low-dose Aspirin; Dual antiplatelet therapy with Clopidogrel may be considered.</li>
+          <li><b>Anticoagulation:</b> <b>Warfarin, LMWH, or DOAC may be considered</b> (AHA 2024 Update Table 2 &amp; p. e491): Reduction in lumen size may be due to layered mural thrombosis or myofibroblastic proliferation, in which case anticoagulation is indicated. Consult KD expert.</li>
+          <li><b>Statins &amp; β-Blockers:</b> May be considered.</li>
+        </ul>
+      `;
+      break;
+
+    case '5.3':
+      fHtml = `
+        <ul>
+          <li><b>Clinic, Echo &amp; ECG:</b> Within 1 week; 6 weeks; 3, 6, 9, 12 months; then <b>yearly</b>.</li>
+          <li><b>Ischemia Stress Testing:</b> Assess every <b>3 to 5 years</b>.</li>
+          <li><b>Advanced Imaging:</b> Consider coronary CTA at 1 year as baseline; repeat every 3 to 5 years.</li>
+          <li><b>Physical Activity:</b> Promotion counseling; restrict contact sports; self-limit.</li>
+        </ul>
+      `;
+      rxHtml = `
+        <ul>
+          <li><b>Antiplatelet Therapy:</b> Low-dose Aspirin; DAPT with clopidogrel may be considered.</li>
+          <li><b>Anticoagulation:</b> Not indicated once regressed to small without thrombus.</li>
+          <li><b>Statins &amp; β-Blockers:</b> May be considered.</li>
+        </ul>
+      `;
+      break;
+
+    case '5.4':
+      fHtml = `
+        <ul>
+          <li><b>Clinic, Echo &amp; ECG:</b> Within 1 week; 6 weeks; 3, 6, 9, 12 months; then <b>every 1 to 2 years</b>.</li>
+          <li><b>Ischemia Stress Testing:</b> Assess every <b>3 to 5 years</b>.</li>
+          <li><b>Advanced Imaging:</b> Consider coronary CTA at 1 year as baseline; repeat every 3 to 5 years.</li>
+          <li><b>Physical Activity:</b> Promotion counseling; restrict contact sports; self-limit.</li>
+        </ul>
+      `;
+      rxHtml = `
+        <ul>
+          <li><b>Antiplatelet Therapy:</b> Low-dose Aspirin (reasonably indicated long-term).</li>
+          <li><b>Anticoagulation:</b> Not indicated.</li>
+          <li><b>Statins:</b> Statin therapy for pleiotropic effects may be considered.</li>
+        </ul>
+      `;
+      break;
+  }
+
+  tfContent.innerHTML = fHtml;
+  trxContent.innerHTML = rxHtml;
+}
+
+function clearTailoredGuidance() {
+  document.getElementById('tf_title').textContent = 'Tailored Surveillance Protocol';
+  document.getElementById('tf_content').innerHTML = 'Please enter coronary measurements above to generate the patient\'s personalized follow-up schedule.';
+  document.getElementById('trx_title').textContent = 'Tailored Thromboprophylaxis Regimen';
+  document.getElementById('trx_content').innerHTML = 'Please enter coronary measurements above to view recommended medical therapy.';
+  highlightTableRow('');
+}
+
+function highlightTableRow(code) {
+  const rowIds = ['1','2','3_1','3_2','4_1','4_2','4_3','5_1','5_2','5_3','5_4'];
+  rowIds.forEach(id => {
+    const el = document.getElementById('row_lvl_' + id);
+    if (el) el.className = (code.replace('.','_') === id) ? 'highlight' : '';
+  });
+}
+
+function resetAll() {
+  document.getElementById('in_age_y').value = '';
+  document.getElementById('in_age_m').value = '';
+  document.getElementById('in_wt').value = '';
+  document.getElementById('in_ht').value = '';
+  document.getElementById('in_pid').value = '';
+  document.getElementById('in_lmca').value = '';
+  document.getElementById('in_lad').value = '';
+  document.getElementById('in_lcx').value = '';
+  document.getElementById('in_rca').value = '';
+  document.getElementById('in_phase').value = 'acute';
+  document.getElementById('in_prior_max').value = 'auto';
+
+  const checkboxes = ['son_age','son_asian','son_z','son_crp','kb_na','kb_day','kb_ast','kb_neut','kb_crp','kb_age','kb_plt'];
+  checkboxes.forEach(id => {
+    const cb = document.getElementById(id);
+    if (cb) cb.checked = false;
+  });
+
+  setCorRef('boston');
+}
+
+/* ================================================================
+   PRINT REPORT POPULATION
+   ================================================================ */
+window.addEventListener('beforeprint', () => {
+  const now = new Date();
+  document.getElementById('pr_date').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('pr_pid').textContent = document.getElementById('in_pid').value || 'Anonymous';
+  
+  const ageY = document.getElementById('in_age_y').value;
+  const ageM = document.getElementById('in_age_m').value;
+  document.getElementById('pr_age').textContent = ageY ? `${ageY} yrs (${ageM || (ageY*12).toFixed(1)} mo)` : (ageM ? `${ageM} mo` : '—');
+  document.getElementById('pr_sex').textContent = document.getElementById('in_sex').value;
+  document.getElementById('pr_wt').textContent = document.getElementById('in_wt').value || '—';
+  document.getElementById('pr_ht').textContent = document.getElementById('in_ht').value || '—';
+  
+  const wt = parseFloat(document.getElementById('in_wt').value);
+  const ht = parseFloat(document.getElementById('in_ht').value);
+  const bsa = calcBsaHaycock(wt, ht);
+  document.getElementById('pr_bsa').textContent = bsa ? bsa.toFixed(3) : '—';
+  document.getElementById('pr_ref').textContent = currentCorRef === 'boston' ? 'Boston · McCrindle 2007 (LCx: Dallaire)' : 'Montreal · Dallaire 2011';
+
+  ['lmca','lad','lcx','rca'].forEach(id => {
+    const raw = document.getElementById('in_' + id).value;
+    const zBox = document.getElementById('z_' + id);
+    document.getElementById(`pr_${id}_v`).textContent = raw ? `${raw} mm` : '—';
+    if (zBox && zBox.textContent !== '—') {
+      document.getElementById(`pr_${id}_z`).textContent = zBox.querySelector('.zval') ? zBox.querySelector('.zval').textContent : '—';
+      document.getElementById(`pr_${id}_k`).textContent = zBox.querySelector('.tag') ? zBox.querySelector('.tag').textContent : '—';
+    } else {
+      document.getElementById(`pr_${id}_z`).textContent = '—';
+      document.getElementById(`pr_${id}_k`).textContent = '—';
+    }
+  });
+
+  const banner = document.getElementById('status_banner');
+  if (banner && banner.style.display !== 'none') {
+    document.getElementById('pr_risk_lvl').textContent = document.getElementById('status_title').textContent;
+    document.getElementById('pr_max_z').textContent = document.getElementById('status_meta').textContent;
+  } else {
+    document.getElementById('pr_risk_lvl').textContent = 'Not calculated';
+    document.getElementById('pr_max_z').textContent = '—';
+  }
+
+  document.getElementById('pr_son_score').textContent = document.getElementById('son_score_val').textContent + ' (' + document.getElementById('son_score_desc').textContent + ')';
+  document.getElementById('pr_kb_score').textContent = document.getElementById('kb_score_val').textContent + ' (' + document.getElementById('kb_score_desc').textContent + ')';
+
+  const tfContent = document.getElementById('tf_content').innerHTML;
+  const trxContent = document.getElementById('trx_content').innerHTML;
+  document.getElementById('pr_recommendations').innerHTML = `
+    <b>Surveillance &amp; Follow-up:</b><br>${tfContent}<br>
+    <b>Thromboprophylaxis &amp; Medical Therapy:</b><br>${trxContent}
+  `;
+});
+</script>
+</body>
+</html>

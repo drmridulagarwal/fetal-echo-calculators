@@ -3,7 +3,7 @@
    Cache-first strategy. All app files cached on install.
    ================================================================ */
 
-const CACHE_NAME = 'fetal-echo-calc-v2';
+const CACHE_NAME = 'fetal-echo-calc-v3';
 
 const APP_SHELL = [
   '/',
@@ -11,6 +11,10 @@ const APP_SHELL = [
   '/coa.html',
   '/zscore.html',
   '/pediatric-echo-zscore-calculator.html',
+  '/kawasaki.html',
+  '/kawasaki-disease-calculator.html',
+  '/doppler.html',
+  '/cardiac-velocities.html',
   '/manifest.json',
   '/icons/icon.svg',
   '/icons/icon-192.png',
